@@ -1,0 +1,87 @@
+.home {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.home .body {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  top: 65px;
+}
+
+.home .body .background {
+  width: 100px;
+  height: 100%;
+  top: 0;
+  object-fit: cover;
+  left: 0;
+}
+
+.home #homecontent {
+  width: 100%;
+  height: 100%;
+  background-color: antiquewhite;
+  padding: 20px;
+  color: chocolate;
+}
+
+.home .mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.home .mask .big-box {
+  width: 70%;
+  height: 50%;
+  position: relative;
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.home .mask .big-box .x {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  color: black;
+}
+
+.home .mask .big-box .searchbar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.home .mask .big-box .searchbar input {
+  width: 300px;
+  height: 30px;
+  margin-bottom: 10px;
+}
+
+.home .mask .big-box .searchbar button {
+  width: 100px;
+  height: 20px;
+  background-color: rgba(169, 228, 169, 0.5);
+  border: 0.5px solid;
+  border-radius: 20px;
+}

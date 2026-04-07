@@ -1,0 +1,44 @@
+.testhead {
+  width: 100%;
+  height: 60px;
+  padding-left: 80px;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  position: fixed;
+  background-color: white;
+  box-shadow: 0 10px 15px -20px rgba(0, 0, 0, 0.5);
+}
+
+.testhead .logo {
+  height: 50px;
+  position: absolute;
+  left: 5%;
+  top: 50%;
+  transition: transform 0.3s;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+}
+
+.testhead .logo:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  cursor: pointer;
+}
+
+.testhead .user {
+  border-left: 1px dotted grey;
+  width: 120px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.testhead .user img {
+  width: 30px;
+}
+
+.testhead .user a {
+  color: black;
+}

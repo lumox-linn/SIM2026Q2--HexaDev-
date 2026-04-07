@@ -1,0 +1,93 @@
+.login {
+  width: 100%;
+  height: 100%;
+
+  .loginbox {
+    height: 400px;
+    width: 600px;
+    // background-color: antiquewhite;
+    box-shadow: 10px 10px 15px -10px rgba(0, 0, 0, 0.5);
+    position: absolute;
+    margin: auto;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    .code {
+      width: 160px;
+    }
+    .emailinp {
+      position: relative;
+    }
+    #send {
+      position: relative;
+      top: -56px;
+      left: 310px;
+      width: 90px;
+    }
+
+    .wrongpass {
+      // width: 100%;
+      margin-top: -10px;
+      padding-left: 20px;
+      color: red;
+    }
+    .companyname {
+      margin-bottom: 35px;
+      font-size: 27px;
+    }
+    .ant-form-item-additional {
+      width: 200px;
+    }
+    .css-var-root {
+      max-width: 400px;
+    }
+    .regpass {
+      margin-top: -30px;
+    }
+    .anticon-arrow-left {
+      position: absolute;
+      top: 10px;
+      left: 40px;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+    #basic {
+      width: 100%;
+      padding-left: 50px;
+    }
+    .ant-col {
+      width: 50px;
+    }
+    #basic_username {
+      width: 300px;
+    }
+    #basic_password {
+      width: 300px;
+    }
+    .ant-form-item-control-input-content {
+      max-width: 300px;
+    }
+    .css-dev-only-do-not-override-ch9ese {
+      max-width: 400px;
+    }
+  }
+
+  .set {
+    width: 250px;
+    height: 30px;
+    margin-left: auto;
+    margin-top: -10px;
+    span {
+      margin-right: 10px;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
