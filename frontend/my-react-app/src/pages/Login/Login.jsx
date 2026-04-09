@@ -65,8 +65,16 @@ function Login() {
             });
           }, 1000);
         } else if (res.status === "fail") {
-          setshow(true);
-          return Promise.reject(new Error(res.message || "login failed"));
+          if (res.reason) {
+            message.open({
+              type: "error",
+              content: res.message,
+            });
+          } else {
+            setshow(true);
+          }
+
+          return Promise.reject(new Error(res.message || "Login failed"));
         }
       } else {
         const reg = await apiRegister(values);
@@ -83,7 +91,7 @@ function Login() {
             navigate("/login");
           }, 1000);
         } else if (reg.status === "fail") {
-          return Promise.reject(new Error(reg.message || "register failed"));
+          return Promise.reject(new Error(reg.message || "Register failed"));
         }
       }
     } catch (err) {
@@ -123,7 +131,11 @@ function Login() {
             }}
           />
         ) : (
-          ""
+          <ArrowLeftOutlined
+            onClick={() => {
+              navigate("/home");
+            }}
+          />
         )}
 
         <span className="companyname">CompanyName</span>
@@ -174,11 +186,15 @@ function Login() {
                 rules={[{ required: true, message: "Province is required" }]}
                 placeholder="Choose your identity"
                 options={[
-                  { label: <span>User admin</span>, value: "User Admin" },
-                  { label: <span>Doner</span>, value: "Doner" },
+                  { label: <span>Admin</span>, value: "Admin" },
+
                   {
                     label: <span>Platform manager</span>,
                     value: "Platform Manager",
+                  },
+                  {
+                    label: <span>User</span>,
+                    value: "User",
                   },
                 ]}
               />
@@ -275,7 +291,12 @@ function Login() {
             </Form.Item>
 
             <Form.Item label={null}>
-              <Button type="primary" htmlType="submit">
+              <Button
+                type="dashed"
+                color="cyan"
+                variant="filled"
+                htmlType="submit"
+              >
                 Register
               </Button>
             </Form.Item>

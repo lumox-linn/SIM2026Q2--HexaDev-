@@ -55,6 +55,7 @@ function Home(props) {
       <div className="body">
         {/* <img src={homeimg} alt="" className="background" /> */}
         <div id="homecontent">
+          <span className="cn">Company name</span>
           _________________________________________________________________________________________________
           SCIT School of Computing and Information Technology Faculty of
           Engineering & Information Sciences SIM Session 2, 2026 Subject Outline

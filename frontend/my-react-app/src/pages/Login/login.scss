@@ -31,9 +31,9 @@
     }
 
     .wrongpass {
-      // width: 100%;
-      margin-top: -10px;
-      padding-left: 20px;
+      margin-top: -20px;
+      margin-bottom: 10px;
+      padding-left: 135px;
       color: red;
     }
     .companyname {
@@ -83,6 +83,9 @@
     height: 30px;
     margin-left: auto;
     margin-top: -10px;
+    &:hover {
+      cursor: pointer;
+    }
     span {
       margin-right: 10px;
       &:hover {

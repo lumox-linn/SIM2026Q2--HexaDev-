@@ -35,8 +35,9 @@
 }
 
 .login .loginbox .wrongpass {
-  margin-top: -10px;
-  padding-left: 20px;
+  margin-top: -20px;
+  margin-bottom: 10px;
+  padding-left: 135px;
   color: red;
 }
 
@@ -97,6 +98,10 @@
   height: 30px;
   margin-left: auto;
   margin-top: -10px;
+}
+
+.login .set:hover {
+  cursor: pointer;
 }
 
 .login .set span {

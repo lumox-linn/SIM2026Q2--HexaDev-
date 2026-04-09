@@ -8,7 +8,7 @@ function Footer() {
       <li className="about">
         <a href="/donate">Donate</a>
         <a href="/about">About</a>
-        <a href="/fundraise">Fondraise</a>
+        <a href="/fundraise">Fundraise</a>
         {/* <a href=""></a> */}
       </li>
       <hr />

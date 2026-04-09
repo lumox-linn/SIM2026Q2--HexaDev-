@@ -1,5 +1,11 @@
-import { useEffect, Suspense } from "react";
-import { useLocation, Outlet, Link, useParams } from "react-router-dom";
+import { useEffect, Suspense, useState } from "react";
+import {
+  useLocation,
+  Outlet,
+  Link,
+  useParams,
+  useNavigate,
+} from "react-router-dom";
 import "../profile/profile.css";
 import Router from "../../router/Router";
 import avatar from "../../assets/Avatar.svg";
@@ -9,7 +15,12 @@ function Profile() {
   const location = useLocation();
   const userdata = location.state?.userdata;
   const currentAvatar = location.state?.userRavatar;
-
+  const navigate = useNavigate();
+  const [link, setlink] = useState([
+    { to: "personalinfo" },
+    { to: "myactivities" },
+  ]);
+  console.log(location);
   useEffect(() => {
     // if avatar is in the state, store into the sessionstorage
     if (currentAvatar) {
@@ -21,7 +32,12 @@ function Profile() {
   return (
     <div className="profile">
       <div className="usernav">
-        <img src={logo} alt="" className="logo" />
+        <img
+          src={logo}
+          alt=""
+          className="logo"
+          onClick={() => navigate("/home")}
+        />
         <ul className="userhead">
           <li>
             <img src={finalAvatar} alt="" />

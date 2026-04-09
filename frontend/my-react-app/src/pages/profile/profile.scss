@@ -7,21 +7,29 @@
   .logo {
     width: 40px;
     margin: 10px;
+    transition: transform 0.3s ease;
+    &:hover {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
   }
   .usernav {
     width: 170px;
     height: 100%;
     flex-shrink: 0;
-    background-color: green;
+    background-color: rgb(149, 189, 149);
+    box-shadow: 4px 0 15px -5px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     .userhead {
-      background-color: antiquewhite;
+      //   background-color: antiquewhite;
+      //   border-top: 1px solid rgb(108, 138, 108);
       width: 100%;
       height: 100px;
       display: flex;
       flex-direction: row;
       align-items: center;
+      padding-left: 17px;
       img {
         width: 45px;
         margin: 0 10px;
@@ -33,6 +41,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        margin-left: 13px;
         span {
           margin: 2px 0;
         }
@@ -44,13 +53,14 @@
       height: 100%;
       li {
         padding: 0;
-        background-color: rgb(246, 212, 212);
+        // background-color: rgb(246, 212, 212);
         width: 100%;
         height: 60px;
 
         &:hover {
-          background-color: azure;
+          background-color: rgba(92, 155, 92, 0.5);
           cursor: pointer;
+          border-bottom: 1px dotted rgba(66, 114, 66, 0.5);
         }
         // line-height: 60px;
         .nav-link {
