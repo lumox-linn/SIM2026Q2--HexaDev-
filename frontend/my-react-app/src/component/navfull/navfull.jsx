@@ -1,8 +1,8 @@
 import "../navfull/navfull.css";
-
+import RouterConfig from "../../router/Router";
+import { Link } from "react-router-dom";
 function Navfull({
   onLinkClick,
-  Router,
 
   className,
 }) {
@@ -13,9 +13,9 @@ function Navfull({
           Search
         </li>
         <li>
-          <a href="/activities">Activities</a>
+          <Link href="/activities">Activities</Link>
         </li>
-        {Router.filter((item) => item.nav?.title).map((item, idx) => (
+        {RouterConfig.filter((item) => item.nav?.title).map((item, idx) => (
           <li key={idx}>
             <a href={item.path}>{item.nav.title}</a>
           </li>

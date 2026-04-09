@@ -1,9 +1,5 @@
-import ProfileBar from "../../../component/profiebar/profillebar";
+import "./Donate.css";
 function Donate() {
-  return (
-    <div>
-      <ProfileBar></ProfileBar>
-    </div>
-  );
+  return <div className="donate">donate</div>;
 }
 export default Donate;

@@ -1,4 +1,5 @@
+import "./Personalinfo.css";
 function Personalinfo() {
-  return <div>Personalinfo</div>;
+  return <div className="pi">Personalinfo</div>;
 }
 export default Personalinfo;

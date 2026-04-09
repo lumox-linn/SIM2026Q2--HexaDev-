@@ -1,4 +1,5 @@
+import "./Myactivities.css";
 function Myactivities() {
-  return <div>Myactivities</div>;
+  return <div className="myact">Myactivities</div>;
 }
 export default Myactivities;

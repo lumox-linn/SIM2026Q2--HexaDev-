@@ -2,7 +2,7 @@ import { useEffect, Suspense, useState } from "react";
 import {
   useLocation,
   Outlet,
-  Link,
+  NavLink,
   useParams,
   useNavigate,
 } from "react-router-dom";
@@ -13,20 +13,33 @@ import logo from "../../assets/logo.svg";
 function Profile() {
   const { id } = useParams();
   const location = useLocation();
-  const userdata = location.state?.userdata;
+  const userdata = location.state?.userdata || {};
   const currentAvatar = location.state?.userRavatar;
   const navigate = useNavigate();
+  const lastPage = sessionStorage.getItem("last_page");
   const [link, setlink] = useState([
-    { to: "personalinfo" },
-    { to: "myactivities" },
+    { to: "ManageAccount", label: "Manage Account" },
   ]);
-  console.log(location);
   useEffect(() => {
     // if avatar is in the state, store into the sessionstorage
     if (currentAvatar) {
       sessionStorage.setItem("user_avatar_cache", currentAvatar);
     }
   }, [currentAvatar]);
+  // change link routes
+  useEffect(() => {
+    if (!userdata) return;
+    if (userdata.role === "Admin") {
+      setlink([{ to: "ManageAccount", label: "User Management" }]);
+    } else if (userdata.role === "Platform manager") {
+      setlink([{ to: "ManageActivities", label: "Activity Management" }]);
+    } else if (userdata.role === "User") {
+      setlink([
+        { to: "personalinfo", label: "Personal Info" },
+        { to: "ActivityStatus", label: "Activity Status" },
+      ]);
+    }
+  }, [userdata]);
   const finalAvatar =
     currentAvatar || sessionStorage.getItem("user_avatar_cache") || avatar;
   return (
@@ -39,7 +52,7 @@ function Profile() {
           onClick={() => navigate("/home")}
         />
         <ul className="userhead">
-          <li>
+          <li className="ava">
             <img src={finalAvatar} alt="" />
           </li>
           <li className="role">
@@ -48,32 +61,28 @@ function Profile() {
           </li>
         </ul>
         <ul className="userbody">
-          <li>
-            <Link
-              to={`/profile/${id}/personalinfo`}
-              className="nav-link"
-              state={{
-                userdata: userdata,
-              }}
-            >
-              Personal Info
-            </Link>
-          </li>
-          <li>
-            <Link
-              to={`/profile/${id}/myactivities`}
-              className="nav-link"
-              state={{
-                userdata: userdata,
-              }}
-            >
-              My Activities
-            </Link>
-          </li>
+          {link.map((links) => (
+            <li key={links.to}>
+              <NavLink
+                to={`/profile/${id}/${links.to}`}
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+                state={{
+                  userdata: userdata,
+                  userRavatar: finalAvatar,
+                }}
+              >
+                {links.label}
+              </NavLink>
+            </li>
+          ))}
         </ul>
       </div>
       <div className="proshow">
-        <Outlet />
+        <Suspense fallback={<div>Loading...</div>}>
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   );

@@ -10,11 +10,29 @@ const Personalinfo = lazy(
   () => import("../pages/Profilepage/personalinfo/personalinfo"),
 );
 const Fundraise = lazy(
-  () => import("../pages/navigationbar/Fondraise/Fondraise"),
+  () => import("../pages/navigationbar/Fondraise/Fundraise"),
 );
 const MyActivities = lazy(
   () => import("../pages/Profilepage/myActivities/myactivities"),
 );
+const ManageAccount = lazy(
+  () => import("../pages/Profilepage/mangeAccount/ManageAccount"),
+);
+const ManageCategory = lazy(
+  () => import("../pages/Profilepage/ManageCategories/manageCategory"),
+);
+
+const ManageActivities = lazy(
+  () => import("../pages/Profilepage/ManageActivities/ManageActivities"),
+);
+
+const ActivityStatus = lazy(
+  () => import("../pages/Profilepage/ActivityStatus/ActivityStatus"),
+);
+const DefaultPage = lazy(
+  () => import("../pages/Profilepage/proDefaultpage/DefaultPage"),
+);
+
 const Router = [
   {
     path: "/",
@@ -31,10 +49,16 @@ const Router = [
     element: <Login />,
   },
   {
-    path: "/profile/:id",
+    path: "/profile/:id/*",
     stuff: { title: "User profile" },
     element: <Profile />,
     children: [
+      {
+        index: true,
+        stuff: {},
+        element: <DefaultPage />,
+      },
+
       {
         path: "personalinfo",
         stuff: { title: "User Personal Info" },
@@ -44,6 +68,26 @@ const Router = [
         path: "myactivities",
         stuff: { title: "My Activities" },
         element: <MyActivities />,
+      },
+      {
+        path: "ManageAccount",
+        stuff: { title: "User Management" },
+        element: <ManageAccount />,
+      },
+      {
+        path: "ManageCategory",
+        stuff: { title: "Manage Category" },
+        element: <ManageCategory />,
+      },
+      {
+        path: "ManageActivities",
+        stuff: { title: "Activity Management" },
+        element: <ManageActivities />,
+      },
+      {
+        path: "ActivityStatus",
+        stuff: { title: "Activity Status" },
+        element: <ActivityStatus />,
       },
     ],
   },
