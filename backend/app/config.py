@@ -8,5 +8,5 @@ class Config:
     MYSQL_HOST     = os.getenv('MYSQL_HOST', 'localhost')
     MYSQL_USER     = os.getenv('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
-    MYSQL_DB       = os.getenv('MYSQL_DB', 'fundraising_db')
+    MYSQL_DB       = os.getenv('MYSQL_DB', 'csit314')
     FRONTEND_URL   = os.getenv('FRONTEND_URL', 'http://localhost:5173')

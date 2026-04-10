@@ -1,47 +1,41 @@
 import newRequest from "../utils/request";
 
 export function apiLogin(data) {
-  console.log(data);
   return newRequest({
-    url: "/login/",
+    url: "/auth/login",
     method: "post",
     data: data,
   });
 }
 export function apiRegister(data) {
-  console.log(data);
   return newRequest({
-    url: "/register/",
-    method: "post",
-    data: data,
-  });
-}
-export function apiSendCode(data) {
-  return newRequest({
-    url: "/send_code/",
+    url: "/auth/register",
     method: "post",
     data: data,
   });
 }
 export function apiLogout(data) {
-  // console.log(data);
   return newRequest({
-    url: "/logout/",
+    url: "/auth/logout",
     method: "post",
     data: data,
   });
 }
-export function apiUserinfo(data) {
-  // console.log(data);
+export function apiGetMe() {
   return newRequest({
-    url: "/userInfo/",
-    method: "post",
+    url: "/auth/me",
+    method: "get",
+  });
+}
+export function apiGetAccounts() {
+  return newRequest({
+    url: "/auth/accounts",
+    method: "get",
   });
 }
 export function apiCreateAcc(data) {
-  console.log(data);
   return newRequest({
-    url: "/createAcc/",
+    url: "/auth/accounts",
     method: "post",
     data: data,
   });

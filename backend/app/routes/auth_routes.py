@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.services.auth_login_cotroller import AuthLoginCotroller
-from app.services.auth_logout_cotroller import AuthLogoutCotroller
+from app.services.auth_login_controller import AuthLoginController
+from app.services.auth_logout_controller import AuthLogoutController
 from app.services.account_controller import AccountController
 from app.services.register_controller import RegisterController
 from app.models.user_session import UserSession
@@ -35,7 +35,7 @@ def login():
     if not data:
         return jsonify({'error': 'Request body must be JSON.'}), 400
 
-    success, payload = AuthLoginCotroller.login(
+    success, payload = AuthLoginController.login(
         data.get('username', ''),
         data.get('password', '')
     )
@@ -63,10 +63,10 @@ def logout():
     session = UserSession.findByToken(token) if token else None
     if session:
         # Active session — call UserAccount.logout(accountId)
-        AuthLogoutCotroller.logout(str(session['user_id']))
+        AuthLogoutController.logout(str(session['user_id']))
     else:
         # Already expired — expire by token just in case
-        AuthLogoutCotroller.logoutByToken(token)
+        AuthLogoutController.logoutByToken(token)
 
     return jsonify({'message': 'Logged out successfully.'}), 200
 
@@ -104,6 +104,19 @@ def register():
 # Protected — requires Bearer token + admin role
 # Can create any role including admin, platform_manager
 # ══════════════════════════════════════════════════════════════
+
+@auth_bp.route('/accounts', methods=['GET'])
+@token_required(roles=['admin'])
+def list_accounts(current_user):
+    """
+    GET /api/auth/accounts
+    Header: Authorization: Bearer <admin token>
+    Returns all user accounts (without password_hash).
+    """
+    from app.models.user_account import UserAccount
+    accounts = UserAccount.getAll()
+    return jsonify({'accounts': accounts}), 200
+
 
 @auth_bp.route('/accounts', methods=['POST'])
 @token_required(roles=['admin'])

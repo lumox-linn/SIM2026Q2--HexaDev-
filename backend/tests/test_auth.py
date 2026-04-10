@@ -6,8 +6,8 @@ Screenshot output as TDD evidence for the report.
 """
 import pytest
 from unittest.mock import patch
-from app.services.auth_login_cotroller  import AuthLoginCotroller
-from app.services.auth_logout_cotroller import AuthLogoutCotroller
+from app.services.auth_login_controller  import AuthLoginController
+from app.services.auth_logout_controller import AuthLogoutController
 from app.services.account_controller   import AccountController
 from app.services.register_controller  import RegisterController
 
@@ -22,39 +22,39 @@ def make_account(role='admin', is_active=1):
 
 
 # ══════════════════════════════════════════════════════════════
-# LOGIN — AuthLoginCotroller
+# LOGIN — AuthLoginController
 # ══════════════════════════════════════════════════════════════
 
 class TestLoginValidation:
     def test_empty_username(self):
-        ok, d = AuthLoginCotroller.login('', 'pass'); assert ok is False
+        ok, d = AuthLoginController.login('', 'pass'); assert ok is False
     def test_whitespace_username(self):
-        ok, d = AuthLoginCotroller.login('   ', 'pass'); assert ok is False
+        ok, d = AuthLoginController.login('   ', 'pass'); assert ok is False
     def test_empty_password(self):
-        ok, d = AuthLoginCotroller.login('admin01', ''); assert ok is False
+        ok, d = AuthLoginController.login('admin01', ''); assert ok is False
     def test_both_empty(self):
-        ok, d = AuthLoginCotroller.login('', ''); assert ok is False
+        ok, d = AuthLoginController.login('', ''); assert ok is False
 
 
 class TestLoginAltFlows:
 
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername', return_value=None)
+    @patch('app.services.auth_login_controller.UserAccount.findByUsername', return_value=None)
     def test_alt1_account_not_found(self, _):
-        ok, d = AuthLoginCotroller.login('nobody', 'pass')
+        ok, d = AuthLoginController.login('nobody', 'pass')
         assert ok is False and 'error' in d
 
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=False)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
+    @patch('app.services.auth_login_controller.UserAccount.verifyPassword', return_value=False)
+    @patch('app.services.auth_login_controller.UserAccount.findByUsername')
     def test_alt2_wrong_password(self, mock_find, _):
         mock_find.return_value = make_account()
-        ok, d = AuthLoginCotroller.login('admin01', 'wrong')
+        ok, d = AuthLoginController.login('admin01', 'wrong')
         assert ok is False
 
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
+    @patch('app.services.auth_login_controller.UserAccount.verifyPassword', return_value=True)
+    @patch('app.services.auth_login_controller.UserAccount.findByUsername')
     def test_alt3_suspended_account(self, mock_find, _):
         mock_find.return_value = make_account(is_active=0)
-        ok, d = AuthLoginCotroller.login('admin01', 'pass')
+        ok, d = AuthLoginController.login('admin01', 'pass')
         assert ok is False
 
 
@@ -64,77 +64,77 @@ class TestLoginRoleRedirects:
     def _login(self, role, mock_find, mock_session):
         mock_find.return_value = make_account(role=role)
         mock_session.return_value = 'tok'
-        return AuthLoginCotroller.login('user', 'pass')
+        return AuthLoginController.login('user', 'pass')
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
+    @patch('app.services.auth_login_controller.UserSession.create', return_value='tok')
+    @patch('app.services.auth_login_controller.UserAccount.verifyPassword', return_value=True)
+    @patch('app.services.auth_login_controller.UserAccount.findByUsername')
     def test_admin_redirect(self, mock_find, _, mock_session):
         mock_find.return_value = make_account(role='admin')
-        ok, d = AuthLoginCotroller.login('admin01', 'pass')
+        ok, d = AuthLoginController.login('admin01', 'pass')
         assert ok and d['redirectTo'] == '/admin/dashboard'
         assert d['role_label'] == 'User Admin'
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
+    @patch('app.services.auth_login_controller.UserSession.create', return_value='tok')
+    @patch('app.services.auth_login_controller.UserAccount.verifyPassword', return_value=True)
+    @patch('app.services.auth_login_controller.UserAccount.findByUsername')
     def test_fund_raiser_redirect(self, mock_find, _, mock_session):
         mock_find.return_value = make_account(role='fund_raiser')
-        ok, d = AuthLoginCotroller.login('fr01', 'pass')
+        ok, d = AuthLoginController.login('fr01', 'pass')
         assert ok and d['redirectTo'] == '/fr/dashboard'
         assert d['role_label'] == 'Fund Raiser'
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
+    @patch('app.services.auth_login_controller.UserSession.create', return_value='tok')
+    @patch('app.services.auth_login_controller.UserAccount.verifyPassword', return_value=True)
+    @patch('app.services.auth_login_controller.UserAccount.findByUsername')
     def test_donee_redirect(self, mock_find, _, mock_session):
         mock_find.return_value = make_account(role='donee')
-        ok, d = AuthLoginCotroller.login('donee01', 'pass')
+        ok, d = AuthLoginController.login('donee01', 'pass')
         assert ok and d['redirectTo'] == '/donee/dashboard'
         assert d['role_label'] == 'Donee'
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
+    @patch('app.services.auth_login_controller.UserSession.create', return_value='tok')
+    @patch('app.services.auth_login_controller.UserAccount.verifyPassword', return_value=True)
+    @patch('app.services.auth_login_controller.UserAccount.findByUsername')
     def test_platform_manager_redirect(self, mock_find, _, mock_session):
         mock_find.return_value = make_account(role='platform_manager')
-        ok, d = AuthLoginCotroller.login('pm01', 'pass')
+        ok, d = AuthLoginController.login('pm01', 'pass')
         assert ok and d['redirectTo'] == '/pm/dashboard'
         assert d['role_label'] == 'Platform Manager'
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
+    @patch('app.services.auth_login_controller.UserSession.create', return_value='tok')
+    @patch('app.services.auth_login_controller.UserAccount.verifyPassword', return_value=True)
+    @patch('app.services.auth_login_controller.UserAccount.findByUsername')
     def test_session_created_on_login(self, mock_find, _, mock_session):
         mock_find.return_value = make_account()
-        AuthLoginCotroller.login('admin01', 'pass')
+        AuthLoginController.login('admin01', 'pass')
         mock_session.assert_called_once_with(1)
 
 
 # ══════════════════════════════════════════════════════════════
-# LOGOUT — AuthLogoutCotroller
+# LOGOUT — AuthLogoutController
 # ══════════════════════════════════════════════════════════════
 
 class TestLogout:
 
-    @patch('app.services.auth_logout_cotroller.UserAccount.logout')
+    @patch('app.services.auth_logout_controller.UserAccount.logout')
     def test_logout_calls_useraccount(self, mock_logout):
-        AuthLogoutCotroller.logout('1')
+        AuthLogoutController.logout('1')
         mock_logout.assert_called_once_with('1')
 
-    @patch('app.services.auth_logout_cotroller.UserAccount.logout')
+    @patch('app.services.auth_logout_controller.UserAccount.logout')
     def test_logout_none_safe(self, mock_logout):
-        AuthLogoutCotroller.logout(None)
+        AuthLogoutController.logout(None)
         mock_logout.assert_not_called()
 
-    @patch('app.services.auth_logout_cotroller.UserSession.expire')
+    @patch('app.services.auth_logout_controller.UserSession.expire')
     def test_logout_by_token(self, mock_expire):
-        AuthLogoutCotroller.logoutByToken('tok')
+        AuthLogoutController.logoutByToken('tok')
         mock_expire.assert_called_once_with('tok')
 
-    @patch('app.services.auth_logout_cotroller.UserSession.expire')
+    @patch('app.services.auth_logout_controller.UserSession.expire')
     def test_logout_expired_token_safe(self, mock_expire):
-        AuthLogoutCotroller.logoutByToken('expired-tok')
+        AuthLogoutController.logoutByToken('expired-tok')
         mock_expire.assert_called_once()
 
 

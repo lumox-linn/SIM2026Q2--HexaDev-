@@ -16,9 +16,9 @@ ROLE_LABELS = {
 }
 
 
-class AuthLoginCotroller:
+class AuthLoginController:
     """
-    Control — AuthLoginCotroller <controller> from BCE diagram.
+    Control — AuthLoginController <controller> from BCE diagram.
     Method: login(username: String, password: String)
     Implements 4-alt flow from sequence diagram.
     """
@@ -51,7 +51,7 @@ class AuthLoginCotroller:
 
         # alt 4: Wrong role
         valid_roles = list(ROLE_ROUTES.keys())
-        if not UserAccount.hasRole(account, account['role']) or account['role'] not in valid_roles:
+        if account['role'] not in valid_roles:
             return False, {'error': 'Access denied.'}
 
         # All checks passed — create session in usersession table

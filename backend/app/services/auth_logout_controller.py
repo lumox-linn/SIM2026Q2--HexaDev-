@@ -2,9 +2,9 @@ from app.models.user_account import UserAccount
 from app.models.user_session import UserSession
 
 
-class AuthLogoutCotroller:
+class AuthLogoutController:
     """
-    Control — AuthLogoutCotroller <controller> from BCE diagram.
+    Control — AuthLogoutController <controller> from BCE diagram.
     Method: logout(accountId: String)
     Delegates to UserAccount.logout(accountId) per sequence diagram.
     """
