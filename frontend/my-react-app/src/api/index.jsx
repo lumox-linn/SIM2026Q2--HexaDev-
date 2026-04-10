@@ -24,9 +24,24 @@ export function apiSendCode(data) {
   });
 }
 export function apiLogout(data) {
-  console.log(data);
+  // console.log(data);
   return newRequest({
     url: "/logout/",
+    method: "post",
+    data: data,
+  });
+}
+export function apiUserinfo(data) {
+  // console.log(data);
+  return newRequest({
+    url: "/userInfo/",
+    method: "post",
+  });
+}
+export function apiCreateAcc(data) {
+  console.log(data);
+  return newRequest({
+    url: "/createAcc/",
     method: "post",
     data: data,
   });

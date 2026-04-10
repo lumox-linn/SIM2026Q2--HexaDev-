@@ -41,7 +41,6 @@ function Login() {
     }
   };
   const onFinish = async (values) => {
-    console.log(values);
     try {
       if (!register) {
         const res = await apiLogin(values);
@@ -76,12 +75,12 @@ function Login() {
 
           return Promise.reject(new Error(res.message || "Login failed"));
         }
+        form.resetFields();
       } else {
+        // register
         const reg = await apiRegister(values);
 
         if (reg.status == "success") {
-          console.log("get", reg);
-
           message.open({
             type: "success",
             content: reg.message,
@@ -93,6 +92,7 @@ function Login() {
         } else if (reg.status === "fail") {
           return Promise.reject(new Error(reg.message || "Register failed"));
         }
+        form.resetFields();
       }
     } catch (err) {
       console.log(err);
@@ -115,6 +115,12 @@ function Login() {
       }
     };
   }, [codeable, time]);
+  const onValuesChange = (_, v) => {
+    // when input is empty set alart message to false
+    if (v.username === "" || v.password === "") {
+      setshow(false);
+    }
+  };
   const handleChange = (value) => {
     console.log(`selected ${value}`);
   };
@@ -150,6 +156,7 @@ function Login() {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
             autoComplete="off"
+            onValuesChange={onValuesChange}
           >
             <Form.Item
               label="Username"

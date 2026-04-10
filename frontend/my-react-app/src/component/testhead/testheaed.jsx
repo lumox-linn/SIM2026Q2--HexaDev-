@@ -11,21 +11,11 @@ function Testheader({ onNavClick, Router, user, isVisible, setIsVisible }) {
   const location = useLocation();
   const [showpro, setshowpro] = useState(false);
   const [userRavatar, setuserRavatar] = useState(avatar);
-  const currentAvatar = location.state?.userRavatar;
 
-  useEffect(() => {
-    // if avatar is in the state, store into the sessionstorage
-    if (currentAvatar) {
-      sessionStorage.setItem("user_avatar_cache", currentAvatar);
-    }
-  }, [currentAvatar]);
-  const finalAvatar =
-    currentAvatar || sessionStorage.getItem("user_avatar_cache") || avatar;
-  console.log(user);
   useEffect(() => {
     console.log(avatar);
 
-    if (user && user.useravatar !== null) {
+    if (user && user.useravatar !== "null") {
       setuserRavatar(user.useravatar);
     } else {
       setuserRavatar(avatar); // return to default avatar
@@ -50,11 +40,10 @@ function Testheader({ onNavClick, Router, user, isVisible, setIsVisible }) {
       <ul className="user">
         <li>
           {/* If any user has logged in  */}
-          {console.log(user)}
           {user ? (
             // if this user has set his avatar then use his, otherwise use default
             <img
-              src={finalAvatar}
+              src={userRavatar}
               alt=""
               onClick={() => {
                 setshowpro(!showpro);

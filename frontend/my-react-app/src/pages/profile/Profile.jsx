@@ -10,6 +10,7 @@ import "../profile/profile.css";
 import Router from "../../router/Router";
 import avatar from "../../assets/Avatar.svg";
 import logo from "../../assets/logo.svg";
+import headback from "../../assets/headback.svg";
 function Profile() {
   const { id } = useParams();
   const location = useLocation();
@@ -52,6 +53,8 @@ function Profile() {
           onClick={() => navigate("/home")}
         />
         <ul className="userhead">
+          {/* <img src={headback} alt="" className="headback" /> */}
+          <div className="headback"></div>
           <li className="ava">
             <img src={finalAvatar} alt="" />
           </li>

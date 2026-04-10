@@ -1,4 +1,6 @@
 import "./manageAccount.css";
+import { apiUserinfo, apiCreateAcc } from "../../../api";
+
 import {
   useLocation,
   Outlet,
@@ -6,37 +8,50 @@ import {
   useParams,
   useNavigate,
 } from "react-router-dom";
-import { useState } from "react";
-import { PlusOutlined } from "@ant-design/icons";
+
+import close from "../../../assets/close.svg";
+import { useEffect, useState } from "react";
+import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import {
   Button,
-  Cascader,
-  Checkbox,
-  ColorPicker,
   DatePicker,
   Form,
-  Input,
-  InputNumber,
-  Mentions,
-  Radio,
-  Rate,
-  Select,
-  Slider,
-  Switch,
-  TreeSelect,
   Upload,
-  Flex,
   Space,
   Table,
   Tag,
+  Input,
+  message,
 } from "antd";
 
 function ManageAccount() {
   const location = useLocation();
   console.log(location);
+  const [form] = Form.useForm();
   const [componentDisabled, setComponentDisabled] = useState(false);
-  const { RangePicker } = DatePicker;
-  const { TextArea } = Input;
+  const [showcrea, setshowcrea] = useState(false);
+  const [data, setdata] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState();
+  const handleChange = (info) => {
+    if (info.file.status === "uploading") {
+      setLoading(true);
+      return;
+    }
+    if (info.file.status === "done") {
+      // Get this url from response in real world.
+      getBase64(info.file.originFileObj, (url) => {
+        setLoading(false);
+        setImageUrl(url);
+      });
+    }
+  };
+  const uploadButton = (
+    <button style={{ border: 0, background: "none" }} type="button">
+      {loading ? <LoadingOutlined /> : <PlusOutlined />}
+      <div style={{ marginTop: 8 }}>Upload</div>
+    </button>
+  );
   const normFile = (e) => {
     if (Array.isArray(e)) {
       return e;
@@ -45,39 +60,52 @@ function ManageAccount() {
   };
   const columns = [
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text) => <a>{text}</a>,
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
+      render: (text) => <span>{text}</span>,
     },
     {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
+      title: "Password",
+      dataIndex: "password",
+      key: "password",
+      render: (text) => (
+        <Input.Password
+          value={text}
+          readOnly
+          variant={false}
+          style={{ width: 150 }}
+        />
+      ),
     },
     {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
+      title: "Role",
+      dataIndex: "role",
+      key: "role",
     },
     {
-      title: "Tags",
-      key: "tags",
-      dataIndex: "tags",
-      render: (_, { tags }) => (
-        <Flex gap="small" align="center" wrap>
-          {tags.map((tag) => {
-            let color = tag.length > 5 ? "geekblue" : "green";
-            if (tag === "kawaii") {
-              color = "volcano";
-            }
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
-        </Flex>
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Phone",
+      dataIndex: "phone",
+      key: "phone",
+    },
+    {
+      title: "Date of birth",
+      dataIndex: "dob",
+      key: "dob",
+    },
+    {
+      title: "Activity",
+      key: "status",
+      dataIndex: "status",
+      render: (_, { status }) => (
+        <Tag color="green" key={status}>
+          {String(status).toUpperCase()}
+        </Tag>
       ),
     },
     {
@@ -85,139 +113,209 @@ function ManageAccount() {
       key: "action",
       render: (_, record) => (
         <Space size="medium">
-          <a>Invite {record.name}</a>
+          <a>Change {record.name}</a>
           <a>Delete</a>
         </Space>
       ),
     },
   ];
-  const data = [
-    {
-      key: "1",
-      name: "John Brown",
-      age: 32,
-      address: "New York No. 1 Lake Park",
-      tags: ["nice", "developer"],
-    },
-    {
-      key: "2",
-      name: "Jim Green",
-      age: 42,
-      address: "London No. 1 Lake Park",
-      tags: ["kawaii"],
-    },
-    {
-      key: "3",
-      name: "Joe Black",
-      age: 32,
-      address: "Sydney No. 1 Lake Park",
-      tags: ["cool", "teacher"],
-    },
-  ];
+  // get info
+  const refresh = () => {
+    try {
+      apiUserinfo({})
+        .then((res) => {
+          if (res.userdata) {
+            console.log(res);
+            const user = res.userdata.map((item) => ({
+              username: item.username,
+              password: item.password,
+              role: item.role,
+              email: item.email,
+              phone: item.phone == undefined ? "None" : item.phone,
+              status: item.activitystatus == "" ? "None" : item.activitystatus,
+              dob: item.dob == "" ? "None" : item.dob,
+            }));
+            setdata(user);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.error("network:", error);
+    }
+  };
+
+  useEffect(() => {
+    refresh();
+  }, []);
+  const createAccount = () => {
+    setshowcrea(!showcrea);
+  };
+  const onFinish = async (values) => {
+    const formData = new FormData();
+    formData.append("username", values.username);
+    formData.append("password", values.password);
+    formData.append("email", values.email);
+    formData.append("phone", values.phone);
+    formData.append("age", values.age ? values.age.format("YYYY-MM-DD") : "");
+    if (values.avatar && values.avatar.length > 0) {
+      const fileBody = values.avatar[0].originFileObj;
+      formData.append("avatar", fileBody);
+    }
+
+    try {
+      const res = await apiCreateAcc(formData);
+      if (res.status == "success") {
+        message.open({
+          type: "success",
+          content: res.message,
+        });
+        form.resetFields();
+        setshowcrea(false);
+        refresh();
+      } else if (res.status === "fail") {
+        message.open({
+          type: "error",
+          content: res.message,
+        });
+        form.resetFields();
+        return Promise.reject(new Error(res.message));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const onFinishFailed = (errorInfo) => {
+    console.log("Failed:", errorInfo);
+  };
 
   return (
     <div className="ma">
-      <Table columns={columns} dataSource={data} />
-      {/* <Form
-        labelCol={{ span: 4 }}
-        wrapperCol={{ span: 14 }}
-        layout="horizontal"
-        disabled={componentDisabled}
-        style={{ maxWidth: 600 }}
-      >
-        <Form.Item label="Checkbox" name="disabled" valuePropName="checked">
-          <Checkbox>Checkbox</Checkbox>
-        </Form.Item>
-        <Form.Item label="Radio">
-          <Radio.Group>
-            <Radio value="apple"> Apple </Radio>
-            <Radio value="pear"> Pear </Radio>
-          </Radio.Group>
-        </Form.Item>
-        <Form.Item label="Input">
-          <Input />
-        </Form.Item>
-        <Form.Item label="Select">
-          <Select value={""} options={[{ label: "Demo", value: "demo" }]} />
-        </Form.Item>
-        <Form.Item label="TreeSelect">
-          <TreeSelect
-            treeData={[
-              {
-                title: "Light",
-                value: "light",
-                children: [{ title: "Bamboo", value: "bamboo" }],
-              },
-            ]}
-          />
-        </Form.Item>
-        <Form.Item label="Cascader">
-          <Cascader
-            options={[
-              {
-                value: "zhejiang",
-                label: "Zhejiang",
-                children: [
-                  {
-                    value: "hangzhou",
-                    label: "Hangzhou",
-                  },
-                ],
-              },
-            ]}
-          />
-        </Form.Item>
-        <Form.Item label="DatePicker">
-          <DatePicker />
-        </Form.Item>
-        <Form.Item label="RangePicker">
-          <RangePicker />
-        </Form.Item>
-        <Form.Item label="InputNumber">
-          <InputNumber />
-        </Form.Item>
-        <Form.Item label="TextArea">
-          <TextArea rows={4} />
-        </Form.Item>
-        <Form.Item label="Switch" valuePropName="checked">
-          <Switch />
-        </Form.Item>
-        <Form.Item
-          label="Upload"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
+      <div className="formhead">
+        <li>
+          <span>Username: </span>
+          <input type="text" placeholder="Username" />
+          <button>Search</button>
+        </li>
+        <span
+          className="create"
+          onClick={() => {
+            createAccount();
+          }}
         >
-          <Upload action="/upload.do" listType="picture-card">
-            <button
-              style={{
-                color: "inherit",
-                cursor: "inherit",
-                border: 0,
-                background: "none",
-              }}
-              type="button"
+          Create
+        </span>
+      </div>
+      <Table columns={columns} dataSource={data} rowKey="username" />
+      {showcrea ? (
+        <div className="createForm">
+          <img
+            src={close}
+            alt=""
+            className="close"
+            onClick={() => {
+              setshowcrea(false);
+            }}
+          />
+          <div className="creForm">
+            <span className="title">Create Account</span>
+            <Form
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 13 }}
+              layout="horizontal"
+              disabled={componentDisabled}
+              style={{ maxWidth: 600 }}
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+              form={form}
             >
-              <PlusOutlined />
-              <div style={{ marginTop: 8 }}>Upload</div>
-            </button>
-          </Upload>
-        </Form.Item>
-        <Form.Item label="Button">
-          <Button>Button</Button>
-        </Form.Item>
-        <Form.Item label="Slider">
-          <Slider />
-        </Form.Item>
-        <Form.Item label="ColorPicker">
-          <ColorPicker />
-        </Form.Item>
-        <Form.Item label="Rate">
-          <Rate />
-        </Form.Item>
-        <Form.Item label="Mentions">
-          <Mentions defaultValue="@afc163" />
-        </Form.Item>
-      </Form> */}
+              {/* <Form.Item label="Radio">
+                <Radio.Group>
+                  <Radio value="apple"> Apple </Radio>
+                  <Radio value="pear"> Pear </Radio>
+                </Radio.Group>
+              </Form.Item> */}
+              <Form.Item
+                label="Username"
+                name="username"
+                rules={[{ required: true, message: "Please input username!" }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: "Please input password!" }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[{ required: true, message: "Please input email!" }]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                label="Phone"
+                name="phone"
+                rules={[
+                  { required: true, message: "Please input phone number!" },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+
+              <Form.Item
+                label="Age"
+                name="age"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select your date of birth",
+                  },
+                ]}
+              >
+                <DatePicker />
+              </Form.Item>
+
+              <Form.Item
+                label="Avatar"
+                name="avatar"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+              >
+                <Upload
+                  name="avatar"
+                  listType="picture-circle"
+                  className="avatar-uploader"
+                  maxCount={1}
+                  beforeUpload={() => false}
+                  // onChange={handleChange}
+                >
+                  {imageUrl ? (
+                    <img
+                      draggable={false}
+                      src={imageUrl}
+                      alt="avatar"
+                      style={{ width: "100%" }}
+                    />
+                  ) : (
+                    uploadButton
+                  )}
+                </Upload>
+              </Form.Item>
+              <Form.Item label={null} className="crebut">
+                <Button htmlType="submit">Create</Button>
+              </Form.Item>
+            </Form>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 }
