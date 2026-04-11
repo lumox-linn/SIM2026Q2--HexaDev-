@@ -67,6 +67,7 @@ class AuthLoginCotroller:
             'user_id':    account['user_id'],
             'username':   account['username'],
             'email':      account.get('email', None),
+            'dob':        account.get('dob', None),
             'redirectTo': ROLE_ROUTES.get(account['role'], '/login'),
             'avatar_url': get_avatar_url(account['role']),
         }

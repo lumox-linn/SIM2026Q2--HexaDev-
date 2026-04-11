@@ -136,3 +136,25 @@ class UserAccount:
         row = cursor.fetchone()
         cursor.close()
         return row['profile_picture'] if row else None
+
+    @staticmethod
+    def updateEmail(user_id: int, email: str) -> None:
+        """Update email for a user account."""
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "UPDATE useraccount SET email = %s WHERE user_id = %s",
+            (email, user_id)
+        )
+        mysql.connection.commit()
+        cursor.close()
+
+    @staticmethod
+    def updateDob(user_id: int, dob: str) -> None:
+        """Update date of birth for a user account."""
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "UPDATE useraccount SET dob = %s WHERE user_id = %s",
+            (dob, user_id)
+        )
+        mysql.connection.commit()
+        cursor.close()
