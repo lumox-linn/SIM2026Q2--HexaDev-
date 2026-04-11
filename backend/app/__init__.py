@@ -22,8 +22,6 @@ def create_app():
     app.config['MYSQL_PASSWORD']    = os.getenv('MYSQL_PASSWORD', '')
     app.config['MYSQL_DB']          = os.getenv('MYSQL_DB', 'csit314')
     app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
-    # Max upload size: 5MB
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
     CORS(app, origins=[os.getenv('FRONTEND_URL', 'http://localhost:5173')],
@@ -31,12 +29,14 @@ def create_app():
 
     mysql.init_app(app)
 
-    # Auth routes: login, logout, register, admin create account
     from app.routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
-    # Profile routes: upload avatar
     from app.routes.profile_routes import profile_bp
     app.register_blueprint(profile_bp, url_prefix='/api/profile')
+
+    # Temporary setup route — DELETE after running once on Railway
+    from app.routes.setup_routes import setup_bp
+    app.register_blueprint(setup_bp, url_prefix='/api')
 
     return app
