@@ -6,19 +6,16 @@ setup_bp = Blueprint('setup', __name__)
 
 @setup_bp.route('/setup', methods=['GET'])
 def setup():
-    """
-    Temporary endpoint — DELETE after running once!
-    Uses direct MySQLdb connection to avoid MagicMock issue.
-    """
+    """Temporary endpoint — DELETE after running once!"""
     try:
-        import pymysql as MySQLdb
+        import pymysql
         from werkzeug.security import generate_password_hash
 
-        conn = MySQLdb.connect(
+        conn = pymysql.connect(
             host=os.getenv('MYSQL_HOST', 'localhost'),
             user=os.getenv('MYSQL_USER', 'root'),
             password=os.getenv('MYSQL_PASSWORD', ''),
-            db=os.getenv('MYSQL_DB', 'railway'),
+            database=os.getenv('MYSQL_DB', 'railway'),
             port=int(os.getenv('MYSQL_PORT', 3306)),
         )
         cursor = conn.cursor()
@@ -33,6 +30,8 @@ def setup():
               `role`            ENUM('admin','fund_raiser','donee','platform_manager') NOT NULL,
               `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
               `profile_picture` VARCHAR(255) DEFAULT NULL,
+              `email`           VARCHAR(100) DEFAULT NULL,
+              `dob`             DATE         DEFAULT NULL,
               PRIMARY KEY (`user_id`),
               UNIQUE KEY `username` (`username`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -55,6 +54,17 @@ def setup():
                 ON DELETE CASCADE ON UPDATE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
+
+        # Add email and dob columns if they don't exist
+        try:
+            cursor.execute("ALTER TABLE `useraccount` ADD COLUMN `email` VARCHAR(100) DEFAULT NULL")
+        except Exception:
+            pass  # Column already exists
+
+        try:
+            cursor.execute("ALTER TABLE `useraccount` ADD COLUMN `dob` DATE DEFAULT NULL")
+        except Exception:
+            pass  # Column already exists
 
         conn.commit()
 
@@ -83,8 +93,8 @@ def setup():
         conn.close()
 
         return jsonify({
-            'status':   'success',
-            'message':  f'Tables created! {inserted} accounts seeded.',
+            'status':  'success',
+            'message': f'Tables ready! email and dob columns added. {inserted} accounts seeded.',
             'accounts': [
                 {'username': 'admin01',     'password': 'admin123',  'role': 'admin'},
                 {'username': 'fr01',        'password': 'fr123',     'role': 'fund_raiser'},
