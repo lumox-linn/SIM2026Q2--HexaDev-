@@ -11,13 +11,13 @@ def setup():
     Uses direct MySQLdb connection to avoid MagicMock issue.
     """
     try:
-        import MySQLdb
+        import pymysql as MySQLdb
         from werkzeug.security import generate_password_hash
 
         conn = MySQLdb.connect(
             host=os.getenv('MYSQL_HOST', 'localhost'),
             user=os.getenv('MYSQL_USER', 'root'),
-            passwd=os.getenv('MYSQL_PASSWORD', ''),
+            password=os.getenv('MYSQL_PASSWORD', ''),
             db=os.getenv('MYSQL_DB', 'railway'),
             port=int(os.getenv('MYSQL_PORT', 3306)),
         )
