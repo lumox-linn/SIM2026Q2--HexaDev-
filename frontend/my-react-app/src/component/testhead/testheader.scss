@@ -1,46 +1,55 @@
 .testhead {
   width: 100%;
-  height: 60px;
+  height: 70px;
   padding-left: 80px;
   display: flex;
   align-items: center;
-  //   justify-content: space-between;
   z-index: 2;
-  // overflow: hidden;
   position: fixed;
-  background-color: white;
-  // padding: 0 20px;
-
+  // color: white;
   box-shadow: 0 10px 15px -20px rgba(0, 0, 0, 0.5);
-  //   img {
-  //     z-index: 100;
-  //   }
+
   .logo {
     height: 50px;
     position: absolute;
     left: 5%;
     top: 50%;
-
     transition: transform 0.3s;
     transform: translate(-50%, -50%);
     z-index: 100;
+
     &:hover {
       transform: translate(-50%, -50%) scale(1.1);
       cursor: pointer;
     }
   }
   .user {
-    border-left: 1px dotted grey;
+    border-left: 1px dotted rgb(203, 200, 200);
     width: 120px;
     height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
+    > li {
+      width: 70px;
+      height: 50px;
+      background-color: rgb(255, 255, 255);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50px;
+    }
     // right: 0;
     img {
-      width: 45px;
+      width: 40px;
+
+      &:hover {
+        width: 45px;
+        cursor: pointer;
+      }
     }
+
     a {
       color: black;
     }

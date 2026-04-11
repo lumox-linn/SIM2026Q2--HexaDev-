@@ -13,7 +13,7 @@ function Navfull({
           Search
         </li>
         <li>
-          <Link href="/activities">Activities</Link>
+          <a href="/activities">Activities</a>
         </li>
         {RouterConfig.filter((item) => item.nav?.title).map((item, idx) => (
           <li key={idx}>

@@ -1,12 +1,11 @@
 .testhead {
   width: 100%;
-  height: 60px;
+  height: 70px;
   padding-left: 80px;
   display: flex;
   align-items: center;
   z-index: 2;
   position: fixed;
-  background-color: white;
   box-shadow: 0 10px 15px -20px rgba(0, 0, 0, 0.5);
 }
 
@@ -26,7 +25,7 @@
 }
 
 .testhead .user {
-  border-left: 1px dotted grey;
+  border-left: 1px dotted #cbc8c8;
   width: 120px;
   height: 50px;
   display: flex;
@@ -35,8 +34,23 @@
   position: relative;
 }
 
+.testhead .user > li {
+  width: 70px;
+  height: 50px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50px;
+}
+
 .testhead .user img {
+  width: 40px;
+}
+
+.testhead .user img:hover {
   width: 45px;
+  cursor: pointer;
 }
 
 .testhead .user a {

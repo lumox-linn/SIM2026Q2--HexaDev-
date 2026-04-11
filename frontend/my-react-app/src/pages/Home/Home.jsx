@@ -1,8 +1,9 @@
 import Header from "../../component/head/header";
 import "../Home/home.css";
 import Testheader from "../../component/testhead/testheaed";
+
 import Footer from "../../component/footer/footer";
-import homeimg from "../../assets/homeimg.jpg";
+import homebackground from "../../assets/homebackground.jpeg";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 function Home(props) {
@@ -53,35 +54,46 @@ function Home(props) {
         setIsVisible={setIsVisible}
       ></Header> */}
       <div className="body">
-        {/* <img src={homeimg} alt="" className="background" /> */}
+        <img src={homebackground} alt="" className="background" />
         <div id="homecontent">
-          <span className="cn">Company name</span>
-          _________________________________________________________________________________________________
-          SCIT School of Computing and Information Technology Faculty of
-          Engineering & Information Sciences SIM Session 2, 2026 Subject Outline
-          CSIT314 Software Development Methodologies Subject Organisation
-          Subject Coordinator/Lecturer: Dr. Yudi Zhang Email: yudi@uow.edu.au
-          Credit Points: 6 credit points Duration: 1 session Lecture Times &
-          Location: Refer to SIMConnect The University uses the eLearning system
-          Moodle to support all coursework subjects. Students should check the
-          subject's Moodle site regularly as important information, including
-          details of unavoidable changes in assessment requirements will be
-          posted from time to time http://www.uow.edu.au/student/. Any
-          information posted to the web site is deemed to have been notified to
-          all students. In extraordinary circumstances the provisions stipulated
-          in this Subject Outline may require amendment after the Subject
-          Outline has been distributed. All students enrolled in the subject
-          must be notified and have the opportunity to provide feedback in
-          relation to the proposed amendment, prior to the amendment being
-          finalised. Data on student performance and engagement (such as Moodle
-          and University Library usage, task marks, use of SOLS) will be
-          available to the Subject Coordinator to assist in analysing student
-          engagement, and to identify and recommend support to students who may
-          be at risk of failure. If you have questions about the kinds of data
-          the University uses, how we collect it, and how we protect your
-          privacy in the use of this data, please refer to
-          http://www.uow.edu.au/dvca/bala/analytics/index.html School of
-          Computing and Information Technology University of Wollongong
+          <div className="hometitle">
+            <span className="cn">Company name</span>
+            <h1>blablablablablabla</h1>
+          </div>
+          <div className="adbox">
+            {" "}
+            _________________________________________
+            ________________________________________________________ SCIT School
+            unavoidable changes in assessment requirements will be posted from
+            time to time http://www.uow.edu.au/student/. Any information posted
+            to the web site is deemed to have been notified to all students. In
+            extraordinary circumstances the provisions stipulated in this
+            Subject Outline may require amendment after the Subject Outline has
+            been distributed. All students enrolled in the subject must be
+            notified and have the opportunity to provide feedback in relation to
+            the proposed amendment, prior to the amendment being finalised. Data
+            on student performance and engagement (such as Moodle and University
+            Library
+          </div>
+          _________________________________________
+          ________________________________________________________ SCIT School
+          unavoidable changes in assessment requirements will be posted from
+          time to time http://www.uow.edu.au/student/. Any information posted to
+          the web site is deemed to have been notified to all students. In
+          extraordinary circumstances the provisions stipulated in this Subject
+          Outline may require amendment after the Subject Outline has been
+          distributed. All students enrolled in the subject must be notified and
+          have the opportunity to provide feedback in relation to the proposed
+          amendment, prior to the amendment being finalised. Data on student
+          performance and engagement (such as Moodle and University Library
+          usage, task marks, use of SOLS) will be available to the Subject
+          Coordinator to assist in analysing student engagement, and to identify
+          and recommend support to students who may be at risk of failure. If
+          you have questions about the kinds of data the University uses, how we
+          collect it, and how we protect your privacy in the use of this data,
+          please refer to http://www.uow.edu.au/dvca/bala/analytics/index.html
+          School of Computing and Information Technology University of
+          Wollongong
           ____________________________________________________________________________________________________
           SIM-2026-S2, Subject Outline, CSIT314: Software Development
           Methodologies Page 2 of 9 Copyright SCIT, University of Wollongong,
