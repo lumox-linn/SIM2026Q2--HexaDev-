@@ -3,7 +3,7 @@ import newRequest from "../utils/request";
 export function apiLogin(data) {
   console.log(data);
   return newRequest({
-    url: "/login/",
+    url: "/api/auth/login",
     method: "post",
     data: data,
   });
@@ -11,14 +11,14 @@ export function apiLogin(data) {
 export function apiRegister(data) {
   console.log(data);
   return newRequest({
-    url: "/register/",
+    url: "/api/auth/register",
     method: "post",
     data: data,
   });
 }
 export function apiSendCode(data) {
   return newRequest({
-    url: "/send_code/",
+    url: "/api/auth/send_code",
     method: "post",
     data: data,
   });
@@ -26,7 +26,7 @@ export function apiSendCode(data) {
 export function apiLogout(data) {
   // console.log(data);
   return newRequest({
-    url: "/logout/",
+    url: "/api/auth/logout",
     method: "post",
     data: data,
   });
@@ -34,14 +34,14 @@ export function apiLogout(data) {
 export function apiUserinfo(data) {
   // console.log(data);
   return newRequest({
-    url: "/userInfo/",
+    url: "/api/auth/me",
     method: "post",
   });
 }
 export function apiCreateAcc(data) {
   console.log(data);
   return newRequest({
-    url: "/createAcc/",
+    url: "/api/auth/accounts",
     method: "post",
     data: data,
   });
