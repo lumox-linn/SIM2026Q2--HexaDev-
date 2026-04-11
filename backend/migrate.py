@@ -1,0 +1,79 @@
+"""
+One-time migration script for Railway.
+Run this once to create tables and seed data.
+Usage: python migrate.py
+"""
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+import MySQLdb
+
+conn = MySQLdb.connect(
+    host=os.getenv('MYSQL_HOST'),
+    user=os.getenv('MYSQL_USER'),
+    passwd=os.getenv('MYSQL_PASSWORD'),
+    db=os.getenv('MYSQL_DB', 'railway'),
+    port=int(os.getenv('MYSQL_PORT', 3306)),
+    ssl={'ca': None}
+)
+
+cursor = conn.cursor()
+
+print("Creating tables...")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS `useraccount` (
+  `user_id`       INT(8)       NOT NULL AUTO_INCREMENT,
+  `username`      VARCHAR(50)  NOT NULL,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `isActive`      TINYINT(1)   NOT NULL DEFAULT 1,
+  `role`          ENUM('admin','fund_raiser','donee','platform_manager') NOT NULL,
+  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `profile_picture` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS `usersession` (
+  `session_id`  INT(8)      NOT NULL AUTO_INCREMENT,
+  `user_id`     INT(8)      NOT NULL,
+  `token`       VARCHAR(64) NOT NULL,
+  `login_time`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `logout_time` DATETIME    DEFAULT NULL,
+  `expires_at`  DATETIME    NOT NULL,
+  `status`      ENUM('active','expired') NOT NULL DEFAULT 'active',
+  PRIMARY KEY (`session_id`),
+  UNIQUE KEY `token` (`token`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `fk_session_user`
+    FOREIGN KEY (`user_id`) REFERENCES `useraccount` (`user_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+""")
+
+conn.commit()
+print("Tables created!")
+
+# Seed demo accounts
+from werkzeug.security import generate_password_hash
+
+users = [
+    ('admin01',     generate_password_hash('admin123'),   1, 'admin'),
+    ('fr01',        generate_password_hash('fr123'),      1, 'fund_raiser'),
+    ('donee01',     generate_password_hash('donee123'),   1, 'donee'),
+    ('pm01',        generate_password_hash('pm123'),      1, 'platform_manager'),
+    ('suspended01', generate_password_hash('test123'),    0, 'donee'),
+]
+
+cursor.executemany(
+    "INSERT IGNORE INTO useraccount (username, password_hash, isActive, role) VALUES (%s, %s, %s, %s)",
+    users
+)
+conn.commit()
+print(f"Seeded {cursor.rowcount} demo accounts!")
+cursor.close()
+conn.close()
+print("Done! Database is ready.")
