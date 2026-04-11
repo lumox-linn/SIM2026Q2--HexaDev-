@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from app import mysql
+import os
 
 setup_bp = Blueprint('setup', __name__)
 
@@ -7,14 +7,23 @@ setup_bp = Blueprint('setup', __name__)
 @setup_bp.route('/setup', methods=['GET'])
 def setup():
     """
-    Temporary endpoint to create tables and seed demo accounts.
-    Visit: https://your-backend.railway.app/setup
-    DELETE THIS FILE after running once!
+    Temporary endpoint — DELETE after running once!
+    Uses direct MySQLdb connection to avoid MagicMock issue.
     """
     try:
-        cursor = mysql.connection.cursor()
+        import MySQLdb
+        from werkzeug.security import generate_password_hash
 
-        # Create useraccount table
+        conn = MySQLdb.connect(
+            host=os.getenv('MYSQL_HOST', 'localhost'),
+            user=os.getenv('MYSQL_USER', 'root'),
+            passwd=os.getenv('MYSQL_PASSWORD', ''),
+            db=os.getenv('MYSQL_DB', 'railway'),
+            port=int(os.getenv('MYSQL_PORT', 3306)),
+        )
+        cursor = conn.cursor()
+
+        # Create tables
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS `useraccount` (
               `user_id`         INT(8)       NOT NULL AUTO_INCREMENT,
@@ -29,7 +38,6 @@ def setup():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
 
-        # Create usersession table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS `usersession` (
               `session_id`  INT(8)      NOT NULL AUTO_INCREMENT,
@@ -48,11 +56,9 @@ def setup():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
 
-        mysql.connection.commit()
+        conn.commit()
 
-        # Seed demo accounts
-        from werkzeug.security import generate_password_hash
-
+        # Seed accounts
         users = [
             ('admin01',     generate_password_hash('admin123'),   1, 'admin'),
             ('fr01',        generate_password_hash('fr123'),      1, 'fund_raiser'),
@@ -61,17 +67,24 @@ def setup():
             ('suspended01', generate_password_hash('test123'),    0, 'donee'),
         ]
 
-        cursor.executemany(
-            "INSERT IGNORE INTO useraccount (username, password_hash, isActive, role) VALUES (%s, %s, %s, %s)",
-            users
-        )
-        mysql.connection.commit()
-        seeded = cursor.rowcount
+        inserted = 0
+        for user in users:
+            try:
+                cursor.execute(
+                    "INSERT IGNORE INTO useraccount (username, password_hash, isActive, role) VALUES (%s, %s, %s, %s)",
+                    user
+                )
+                inserted += cursor.rowcount
+            except Exception:
+                pass
+
+        conn.commit()
         cursor.close()
+        conn.close()
 
         return jsonify({
-            'status':  'success',
-            'message': f'Tables created and {seeded} demo accounts seeded!',
+            'status':   'success',
+            'message':  f'Tables created! {inserted} accounts seeded.',
             'accounts': [
                 {'username': 'admin01',     'password': 'admin123',  'role': 'admin'},
                 {'username': 'fr01',        'password': 'fr123',     'role': 'fund_raiser'},
