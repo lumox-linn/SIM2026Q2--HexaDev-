@@ -1,7 +1,6 @@
 import Header from "../../component/head/header";
 import "../Home/home.css";
 import Testheader from "../../component/testhead/testheaed";
-
 import Footer from "../../component/footer/footer";
 import homebackground from "../../assets/homebackground.jpeg";
 import { useEffect, useState } from "react";
@@ -13,13 +12,14 @@ function Home(props) {
   // controll the state of header
   const [isVisible, setIsVisible] = useState(false);
   const closeMenu = () => setActiveMenu(null);
+
   useEffect(() => {
     const updateUserFromStorage = () => {
       const savedData = localStorage.getItem("userData");
       if (savedData) {
         setUser(JSON.parse(savedData));
       } else {
-        setUser(null); // 如果被删了，这里同步设为 null
+        setUser(null);
       }
     };
     updateUserFromStorage();

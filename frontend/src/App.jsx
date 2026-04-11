@@ -2,6 +2,8 @@ import RouterView from "./router/RouterView";
 import Router from "./router/Router";
 import "./App.css";
 import React, { Suspense, useEffect, useRef } from "react";
+import chicken from "./assets/chicken.svg";
+import { useState } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 function AppContent() {
   return (
