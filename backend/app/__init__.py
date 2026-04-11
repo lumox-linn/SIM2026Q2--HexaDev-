@@ -2,6 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+import pymysql
+pymysql.install_as_MySQLdb()
 
 load_dotenv()
 
@@ -20,7 +22,7 @@ def create_app():
     app.config['MYSQL_HOST']         = os.getenv('MYSQL_HOST', 'localhost')
     app.config['MYSQL_USER']         = os.getenv('MYSQL_USER', 'root')
     app.config['MYSQL_PASSWORD']     = os.getenv('MYSQL_PASSWORD', '')
-    app.config['MYSQL_DB']           = os.getenv('MYSQL_DB', 'csit314')
+    app.config['MYSQL_DB']           = os.getenv('MYSQL_DB', 'railway')
     app.config['MYSQL_CURSORCLASS']  = 'DictCursor'
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
@@ -34,7 +36,7 @@ def create_app():
     from app.routes.profile_routes import profile_bp
     app.register_blueprint(profile_bp, url_prefix='/api/profile')
 
-    # Temporary setup route — DELETE after running once
+    # Temporary setup route — DELETE after login works
     from app.routes.setup_routes import setup_bp
     app.register_blueprint(setup_bp, url_prefix='/api')
 
