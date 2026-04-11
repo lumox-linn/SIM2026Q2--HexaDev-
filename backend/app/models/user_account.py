@@ -109,3 +109,30 @@ class UserAccount:
         )
         mysql.connection.commit()
         cursor.close()
+
+    @staticmethod
+    def updateProfilePicture(user_id: int, filename: str) -> None:
+        """
+        Store the uploaded image filename for a user.
+        Only the filename is stored (e.g. 'a1b2c3.jpg') — NOT the full path.
+        The full URL is built by avatar_utils.get_avatar_url() on each request.
+        """
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "UPDATE useraccount SET profile_picture = %s WHERE user_id = %s",
+            (filename, user_id)
+        )
+        mysql.connection.commit()
+        cursor.close()
+
+    @staticmethod
+    def getProfilePicture(user_id: int):
+        """Return just the profile_picture filename for a user, or None."""
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "SELECT profile_picture FROM useraccount WHERE user_id = %s",
+            (user_id,)
+        )
+        row = cursor.fetchone()
+        cursor.close()
+        return row['profile_picture'] if row else None

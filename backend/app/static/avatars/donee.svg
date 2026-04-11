@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#FAECE7"/>
+  <circle cx="50" cy="38" r="18" fill="#993C1D"/>
+  <ellipse cx="50" cy="82" rx="28" ry="20" fill="#993C1D"/>
+  <text x="50" y="44" font-family="Arial,sans-serif" font-size="16"
+        font-weight="bold" fill="#FAECE7" text-anchor="middle"
+        dominant-baseline="central">DN</text>
+</svg>
