@@ -16,16 +16,16 @@ except Exception:
 def create_app():
     app = Flask(__name__)
 
-    app.config['SECRET_KEY']        = os.getenv('SECRET_KEY', 'dev-secret')
-    app.config['MYSQL_HOST']        = os.getenv('MYSQL_HOST', 'localhost')
-    app.config['MYSQL_USER']        = os.getenv('MYSQL_USER', 'root')
-    app.config['MYSQL_PASSWORD']    = os.getenv('MYSQL_PASSWORD', '')
-    app.config['MYSQL_DB']          = os.getenv('MYSQL_DB', 'csit314')
-    app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+    app.config['SECRET_KEY']         = os.getenv('SECRET_KEY', 'dev-secret')
+    app.config['MYSQL_HOST']         = os.getenv('MYSQL_HOST', 'localhost')
+    app.config['MYSQL_USER']         = os.getenv('MYSQL_USER', 'root')
+    app.config['MYSQL_PASSWORD']     = os.getenv('MYSQL_PASSWORD', '')
+    app.config['MYSQL_DB']           = os.getenv('MYSQL_DB', 'csit314')
+    app.config['MYSQL_CURSORCLASS']  = 'DictCursor'
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
-    CORS(app, origins=[os.getenv('FRONTEND_URL', 'http://localhost:5173')],
-         supports_credentials=True)
+    # Allow all origins — update to specific frontend URL after deployment
+    CORS(app, origins='*', supports_credentials=False)
 
     mysql.init_app(app)
 
@@ -34,9 +34,5 @@ def create_app():
 
     from app.routes.profile_routes import profile_bp
     app.register_blueprint(profile_bp, url_prefix='/api/profile')
-
-    # Temporary setup route — DELETE after running once on Railway
-    from app.routes.setup_routes import setup_bp
-    app.register_blueprint(setup_bp, url_prefix='/api')
 
     return app
