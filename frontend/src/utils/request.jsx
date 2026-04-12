@@ -2,7 +2,7 @@ import axios from "axios";
 import cookie from "js-cookie";
 
 const request = axios.create({
-  baseURL: "import.meta.env.VITE_API_URL || "http://localhost:5000"",
+  baseURL: "/api",
   timeout: 20000,
   timeoutErrorMessage: "request timeout",
 });
