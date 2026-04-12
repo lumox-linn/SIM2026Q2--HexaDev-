@@ -120,35 +120,35 @@ function ManageAccount() {
     },
   ];
   // get info
-  const refresh = () => {
-    try {
-      apiUserinfo({})
-        .then((res) => {
-          if (res.userdata) {
-            console.log(res);
-            const user = res.userdata.map((item) => ({
-              username: item.username,
-              password: item.password,
-              role: item.role,
-              email: item.email,
-              phone: item.phone == undefined ? "None" : item.phone,
-              status: item.activitystatus == "" ? "None" : item.activitystatus,
-              dob: item.dob == "" ? "None" : item.dob,
-            }));
-            setdata(user);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    } catch (error) {
-      console.error("network:", error);
-    }
-  };
+  // const refresh = () => {
+  //   try {
+  //     apiUserinfo({})
+  //       .then((res) => {
+  //         if (res.userdata) {
+  //           console.log(res);
+  //           const user = res.userdata.map((item) => ({
+  //             username: item.username,
+  //             password: item.password,
+  //             role: item.role,
+  //             email: item.email,
+  //             phone: item.phone == undefined ? "None" : item.phone,
+  //             status: item.activitystatus == "" ? "None" : item.activitystatus,
+  //             dob: item.dob == "" ? "None" : item.dob,
+  //           }));
+  //           setdata(user);
+  //         }
+  //       })
+  //       .catch((err) => {
+  //         console.log(err);
+  //       });
+  //   } catch (error) {
+  //     console.error("network:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    refresh();
-  }, []);
+  // useEffect(() => {
+  //   refresh();
+  // }, []);
   const createAccount = () => {
     setshowcrea(!showcrea);
   };
@@ -207,7 +207,7 @@ function ManageAccount() {
           Create
         </span>
       </div>
-      <Table columns={columns} dataSource={data} rowKey="username" />
+      {/* <Table columns={columns} dataSource={data} rowKey="username" />
       {showcrea ? (
         <div className="createForm">
           <img
@@ -237,7 +237,7 @@ function ManageAccount() {
                   <Radio value="pear"> Pear </Radio>
                 </Radio.Group>
               </Form.Item> */}
-              <Form.Item
+      {/* <Form.Item
                 label="Username"
                 name="username"
                 rules={[{ required: true, message: "Please input username!" }]}
@@ -266,9 +266,9 @@ function ManageAccount() {
                 ]}
               >
                 <Input />
-              </Form.Item>
+              </Form.Item> */}
 
-              <Form.Item
+      {/* <Form.Item
                 label="Age"
                 name="age"
                 rules={[
@@ -309,13 +309,13 @@ function ManageAccount() {
               </Form.Item>
               <Form.Item label={null} className="crebut">
                 <Button htmlType="submit">Create</Button>
-              </Form.Item>
-            </Form>
+              </Form.Item> */}
+      {/* </Form>
           </div>
         </div>
       ) : (
         ""
-      )}
+      )} */}
     </div>
   );
 }
