@@ -72,7 +72,7 @@ class TestLoginRoleRedirects:
     def test_admin_redirect(self, mock_find, _, __):
         mock_find.return_value = make_account(role='admin')
         ok, d = AuthLoginCotroller.login('admin01', 'pass')
-        assert ok is True and d['redirectTo'] == '/admin/dashboard'
+        assert ok is True and d['redirectTo'] == '/home'
         assert d['role_label'] == 'User Admin'
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
@@ -81,7 +81,7 @@ class TestLoginRoleRedirects:
     def test_fund_raiser_redirect(self, mock_find, _, __):
         mock_find.return_value = make_account(role='fund_raiser')
         ok, d = AuthLoginCotroller.login('fr01', 'pass')
-        assert ok is True and d['redirectTo'] == '/fr/dashboard'
+        assert ok is True and d['redirectTo'] == '/home'
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
     @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
@@ -89,7 +89,7 @@ class TestLoginRoleRedirects:
     def test_donee_redirect(self, mock_find, _, __):
         mock_find.return_value = make_account(role='donee')
         ok, d = AuthLoginCotroller.login('donee01', 'pass')
-        assert ok is True and d['redirectTo'] == '/donee/dashboard'
+        assert ok is True and d['redirectTo'] == '/home'
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
     @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
@@ -97,7 +97,7 @@ class TestLoginRoleRedirects:
     def test_platform_manager_redirect(self, mock_find, _, __):
         mock_find.return_value = make_account(role='platform_manager')
         ok, d = AuthLoginCotroller.login('pm01', 'pass')
-        assert ok is True and d['redirectTo'] == '/pm/dashboard'
+        assert ok is True and d['redirectTo'] == '/home'
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
     @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
