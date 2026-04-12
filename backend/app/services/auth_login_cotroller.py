@@ -2,10 +2,10 @@ from app.models.user_account import UserAccount
 from app.models.user_session import UserSession
 
 ROLE_ROUTES = {
-    'admin':            '/admin/dashboard',
-    'fund_raiser':      '/fr/dashboard',
-    'donee':            '/donee/dashboard',
-    'platform_manager': '/pm/dashboard',
+    'admin':            '/home',
+    'fund_raiser':      '/home',
+    'donee':            '/home',
+    'platform_manager': '/home',
 }
 
 ROLE_LABELS = {
@@ -68,6 +68,6 @@ class AuthLoginCotroller:
             'username':   account['username'],
             'email':      account.get('email', None),
             'dob':        account.get('dob', None),
-            'redirectTo': ROLE_ROUTES.get(account['role'], '/login'),
+            'redirectTo': ROLE_ROUTES.get(account['role'], '/home'),
             'avatar_url': get_avatar_url(account['role']),
         }
