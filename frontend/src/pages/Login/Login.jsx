@@ -54,7 +54,7 @@ function Login() {
               // role_label: res.role_label,
               userid: res.user_id,
               username: res.username,
-              useravatar: res.useravatar,
+              useravatar: res.avatar_url,
               email: res.email,
               loginstatus: res.loginstatus,
             }),
