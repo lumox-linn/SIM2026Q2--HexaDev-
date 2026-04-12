@@ -36,8 +36,4 @@ def create_app():
     from app.routes.profile_routes import profile_bp
     app.register_blueprint(profile_bp, url_prefix='/api/profile')
 
-    # Temporary setup route — DELETE after running once
-    from app.routes.setup_routes import setup_bp
-    app.register_blueprint(setup_bp, url_prefix='/api')
-
     return app
