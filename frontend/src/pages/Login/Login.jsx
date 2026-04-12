@@ -4,6 +4,7 @@ import { Button, Checkbox, Form, Input, message, Select } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import "../Login/login.css";
 import { apiLogin, apiRegister, apiSendCode } from "../../api";
+import cookie from "js-cookie";
 
 function Login() {
   const [form] = Form.useForm();
@@ -45,20 +46,29 @@ function Login() {
       if (!register) {
         const res = await apiLogin(values);
         if (res.status == "success") {
+          localStorage.setItem("token", res.token);
           localStorage.setItem(
             "userData",
-            JSON.stringify(res.userdata),
-            // avatarstatus,
+            JSON.stringify({
+              role: res.role,
+              // role_label: res.role_label,
+              userid: res.user_id,
+              username: res.username,
+              useravatar: res.useravatar,
+              email: res.email,
+              loginstatus: res.loginstatus,
+            }),
           );
+
           window.dispatchEvent(new Event("storage"));
           message.open({
             type: "success",
-            content: res.message,
+            content: "Login success",
           });
           setTimeout(() => {
-            navigate("/home", {
+            navigate(res.redirectTo, {
               state: {
-                userdata: res.userdata,
+                userdata: localStorage.getItem("userData"),
                 fromLogin: true,
               },
             });
@@ -67,7 +77,7 @@ function Login() {
           if (res.reason) {
             message.open({
               type: "error",
-              content: res.message,
+              content: "Login failed",
             });
           } else {
             setshow(true);
@@ -83,14 +93,16 @@ function Login() {
         if (reg.status == "success") {
           message.open({
             type: "success",
-            content: reg.message,
+            content: "Registration successful",
           });
           setTimeout(() => {
             setregister(false);
             navigate("/login");
           }, 1000);
         } else if (reg.status === "fail") {
-          return Promise.reject(new Error(reg.message || "Register failed"));
+          return Promise.reject(
+            new Error(reg.message || "Registration failed"),
+          );
         }
         form.resetFields();
       }
@@ -200,8 +212,12 @@ function Login() {
                     value: "Platform Manager",
                   },
                   {
-                    label: <span>User</span>,
-                    value: "User",
+                    label: <span>Donee</span>,
+                    value: "Donee",
+                  },
+                  {
+                    label: <span>Fund Raiser</span>,
+                    value: "Fund Raiser",
                   },
                 ]}
               />

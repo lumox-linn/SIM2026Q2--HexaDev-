@@ -34,7 +34,7 @@ function Profile() {
       setlink([{ to: "ManageAccount", label: "User Management" }]);
     } else if (userdata.role === "Platform manager") {
       setlink([{ to: "ManageActivities", label: "Activity Management" }]);
-    } else if (userdata.role === "User") {
+    } else if (userdata.role === "Donee" || userdata.role === "Fund Raiser") {
       setlink([
         { to: "personalinfo", label: "Personal Info" },
         { to: "ActivityStatus", label: "Activity Status" },

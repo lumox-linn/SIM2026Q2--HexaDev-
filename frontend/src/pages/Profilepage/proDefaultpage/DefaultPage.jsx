@@ -4,7 +4,7 @@ function DefaultPage() {
   const location = useLocation();
   const user = location.state?.userdata;
   console.log(user.role);
-  return user.role == "User" ? (
+  return user.role == "Donee" ? (
     <div className="dp">
       <li>
         <span>Become a Donee</span>

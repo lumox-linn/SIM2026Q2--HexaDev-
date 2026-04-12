@@ -8,8 +8,9 @@ const request = axios.create({
 });
 request.interceptors.request.use(
   (config) => {
-    if (cookie.get("token")) {
-      config.headers.authorization = cookie.get("token");
+    const token = localStorage.getItem("token") || cookie.get("token");
+    if (token) {
+      config.headers.authorization = token;
     }
     return config;
   },
