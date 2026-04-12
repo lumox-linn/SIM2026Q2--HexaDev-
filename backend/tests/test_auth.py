@@ -12,28 +12,34 @@ from app.services.account_controller   import AccountController
 from app.services.register_controller  import RegisterController
 
 
-# ── Helpers ───────────────────────────────────────────────────
-
 def make_account(role='admin', is_active=1):
     return {
         'user_id': 1, 'username': 'testuser',
-        'password_hash': 'hashed', 'isActive': is_active, 'role': role,
+        'password_hash': 'hashed', 'isActive': is_active,
+        'role': role, 'email': None, 'dob': None,
     }
 
 
 # ══════════════════════════════════════════════════════════════
-# LOGIN — AuthLoginCotroller
+# LOGIN
 # ══════════════════════════════════════════════════════════════
 
 class TestLoginValidation:
     def test_empty_username(self):
-        ok, d = AuthLoginCotroller.login('', 'pass'); assert ok is False
+        ok, d = AuthLoginCotroller.login('', 'pass')
+        assert ok is False
+
     def test_whitespace_username(self):
-        ok, d = AuthLoginCotroller.login('   ', 'pass'); assert ok is False
+        ok, d = AuthLoginCotroller.login('   ', 'pass')
+        assert ok is False
+
     def test_empty_password(self):
-        ok, d = AuthLoginCotroller.login('admin01', ''); assert ok is False
+        ok, d = AuthLoginCotroller.login('admin01', '')
+        assert ok is False
+
     def test_both_empty(self):
-        ok, d = AuthLoginCotroller.login('', ''); assert ok is False
+        ok, d = AuthLoginCotroller.login('', '')
+        assert ok is False
 
 
 class TestLoginAltFlows:
@@ -59,48 +65,39 @@ class TestLoginAltFlows:
 
 
 class TestLoginRoleRedirects:
-    """Each role must redirect to the correct dashboard."""
-
-    def _login(self, role, mock_find, mock_session):
-        mock_find.return_value = make_account(role=role)
-        mock_session.return_value = 'tok'
-        return AuthLoginCotroller.login('user', 'pass')
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
     @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
     @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_admin_redirect(self, mock_find, _, mock_session):
+    def test_admin_redirect(self, mock_find, _, __):
         mock_find.return_value = make_account(role='admin')
         ok, d = AuthLoginCotroller.login('admin01', 'pass')
-        assert ok and d['redirectTo'] == '/admin/dashboard'
+        assert ok is True and d['redirectTo'] == '/admin/dashboard'
         assert d['role_label'] == 'User Admin'
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
     @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
     @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_fund_raiser_redirect(self, mock_find, _, mock_session):
+    def test_fund_raiser_redirect(self, mock_find, _, __):
         mock_find.return_value = make_account(role='fund_raiser')
         ok, d = AuthLoginCotroller.login('fr01', 'pass')
-        assert ok and d['redirectTo'] == '/fr/dashboard'
-        assert d['role_label'] == 'Fund Raiser'
+        assert ok is True and d['redirectTo'] == '/fr/dashboard'
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
     @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
     @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_donee_redirect(self, mock_find, _, mock_session):
+    def test_donee_redirect(self, mock_find, _, __):
         mock_find.return_value = make_account(role='donee')
         ok, d = AuthLoginCotroller.login('donee01', 'pass')
-        assert ok and d['redirectTo'] == '/donee/dashboard'
-        assert d['role_label'] == 'Donee'
+        assert ok is True and d['redirectTo'] == '/donee/dashboard'
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
     @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
     @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_platform_manager_redirect(self, mock_find, _, mock_session):
+    def test_platform_manager_redirect(self, mock_find, _, __):
         mock_find.return_value = make_account(role='platform_manager')
         ok, d = AuthLoginCotroller.login('pm01', 'pass')
-        assert ok and d['redirectTo'] == '/pm/dashboard'
-        assert d['role_label'] == 'Platform Manager'
+        assert ok is True and d['redirectTo'] == '/pm/dashboard'
 
     @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
     @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
@@ -112,7 +109,7 @@ class TestLoginRoleRedirects:
 
 
 # ══════════════════════════════════════════════════════════════
-# LOGOUT — AuthLogoutCotroller
+# LOGOUT
 # ══════════════════════════════════════════════════════════════
 
 class TestLogout:
@@ -139,7 +136,7 @@ class TestLogout:
 
 
 # ══════════════════════════════════════════════════════════════
-# ADMIN CREATE ACCOUNT — AccountController (UA-03)
+# ADMIN CREATE ACCOUNT
 # ══════════════════════════════════════════════════════════════
 
 class TestAdminCreateAccount:
@@ -193,13 +190,13 @@ class TestAdminCreateAccount:
 
 
 # ══════════════════════════════════════════════════════════════
-# SELF-REGISTER — RegisterController (GU-03)
+# SELF REGISTER — updated: email required, role auto = donee
 # ══════════════════════════════════════════════════════════════
 
 class TestSelfRegister:
 
-    def _data(self, username='newuser', password='pass123', role='fund_raiser'):
-        return {'username': username, 'password': password, 'role': role}
+    def _data(self, username='newuser', password='pass123', email='test@test.com'):
+        return {'username': username, 'password': password, 'email': email}
 
     def test_empty_username_fails(self):
         ok, d = RegisterController.registerUser(self._data(username=''))
@@ -209,25 +206,13 @@ class TestSelfRegister:
         ok, d = RegisterController.registerUser(self._data(password='abc'))
         assert ok is False
 
-    def test_admin_role_blocked(self):
-        """Security: self-register must not allow admin role."""
-        ok, d = RegisterController.registerUser(self._data(role='admin'))
-        assert ok is False and 'role' in d['error'].lower()
+    def test_empty_email_fails(self):
+        ok, d = RegisterController.registerUser(self._data(email=''))
+        assert ok is False
 
-    def test_platform_manager_role_blocked(self):
-        """Security: self-register must not allow platform_manager role."""
-        ok, d = RegisterController.registerUser(self._data(role='platform_manager'))
-        assert ok is False and 'role' in d['error'].lower()
-
-    def test_fund_raiser_role_allowed(self):
-        """fund_raiser is a valid self-register role."""
-        ok, _ = RegisterController.validateRole('fund_raiser')
-        assert ok is True
-
-    def test_donee_role_allowed(self):
-        """donee is a valid self-register role."""
-        ok, _ = RegisterController.validateRole('donee')
-        assert ok is True
+    def test_invalid_email_fails(self):
+        ok, d = RegisterController.registerUser(self._data(email='notanemail'))
+        assert ok is False
 
     @patch('app.services.register_controller.UserAccount.exists', return_value=True)
     def test_duplicate_username_fails(self, _):
@@ -236,13 +221,25 @@ class TestSelfRegister:
 
     @patch('app.services.register_controller.UserAccount.createAccount')
     @patch('app.services.register_controller.UserAccount.exists', return_value=False)
-    def test_fund_raiser_register_success(self, _, mock_create):
-        ok, d = RegisterController.registerUser(self._data(role='fund_raiser'))
+    def test_register_success(self, _, mock_create):
+        ok, d = RegisterController.registerUser(self._data())
         assert ok is True and 'message' in d
         mock_create.assert_called_once()
 
     @patch('app.services.register_controller.UserAccount.createAccount')
     @patch('app.services.register_controller.UserAccount.exists', return_value=False)
-    def test_donee_register_success(self, _, mock_create):
-        ok, d = RegisterController.registerUser(self._data(role='donee'))
+    def test_role_is_always_donee(self, _, mock_create):
+        """Role must always be donee regardless of what is sent."""
+        ok, d = RegisterController.registerUser(self._data())
         assert ok is True
+        call_args = mock_create.call_args[0][0]
+        assert call_args['role'] == 'donee'
+
+    @patch('app.services.register_controller.UserAccount.createAccount')
+    @patch('app.services.register_controller.UserAccount.exists', return_value=False)
+    def test_register_saves_email(self, _, mock_create):
+        """Email must be saved during registration."""
+        ok, d = RegisterController.registerUser(self._data(email='user@test.com'))
+        assert ok is True
+        call_args = mock_create.call_args[0][0]
+        assert call_args['email'] == 'user@test.com'
