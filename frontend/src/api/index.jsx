@@ -11,7 +11,7 @@ export function apiLogin(data) {
 export function apiRegister(data) {
   console.log(data);
   return newRequest({
-    url: "/register/",
+    url: "/api/auth/register/",
     method: "post",
     data: data,
   });
@@ -26,7 +26,7 @@ export function apiSendCode(data) {
 export function apiLogout(data) {
   // console.log(data);
   return newRequest({
-    url: "/logout/",
+    url: "/api/auth/logout/",
     method: "post",
     data: data,
   });
