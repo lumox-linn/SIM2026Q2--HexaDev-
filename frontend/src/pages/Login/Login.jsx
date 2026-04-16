@@ -41,74 +41,73 @@ function Login() {
       console.error("network:", err);
     }
   };
+
   const onFinish = async (values) => {
-    try {
-      if (!register) {
-        const res = await apiLogin(values);
-        if (res.status == "success") {
-          localStorage.setItem("token", res.token);
-          localStorage.setItem(
-            "userData",
-            JSON.stringify({
-              role: res.role,
-              // role_label: res.role_label,
-              userid: res.user_id,
-              username: res.username,
-              useravatar: res.avatar_url,
-              email: res.email,
-              loginstatus: res.loginstatus,
-            }),
-          );
-
-          window.dispatchEvent(new Event("storage"));
-          message.open({
-            type: "success",
-            content: "Login success",
+  try {
+    if (!register) {
+      const res = await apiLogin(values);
+      if (res.status == "success") {
+        localStorage.setItem("token", res.token);
+        localStorage.setItem(
+          "userData",
+          JSON.stringify({
+            role: res.role,
+            userid: res.user_id,
+            username: res.username,
+            useravatar: res.avatar_url,
+            email: res.email,
+            loginstatus: res.loginstatus,
+          }),
+        );
+        window.dispatchEvent(new Event("storage"));
+        message.open({
+          type: "success",
+          content: "Login success",
+        });
+        setTimeout(() => {
+          navigate(res.redirectTo, {
+            state: {
+              userdata: localStorage.getItem("userData"),
+              fromLogin: true,
+            },
           });
-          setTimeout(() => {
-            navigate(res.redirectTo, {
-              state: {
-                userdata: localStorage.getItem("userData"),
-                fromLogin: true,
-              },
-            });
-          }, 1000);
-        } else if (res.status === "fail") {
-            message.open({
-              type: "error",
-              content: res.error || "Login failed",
-            });
-            setshow(true);
-            return Promise.reject(new Error(res.error || "Login failed"));
-          }
-
-          return Promise.reject(new Error(res.message || "Login failed"));
-        }
-        form.resetFields();
-      } else {
-        // register
-        const reg = await apiRegister(values);
-
-        if (reg.status == "success") {
-          message.open({
-            type: "success",
-            content: "Registration successful",
-          });
-          setTimeout(() => {
-            setregister(false);
-            navigate("/login");
-          }, 1000);
-        } else if (reg.status === "fail") {
-          return Promise.reject(
-            new Error(reg.message || "Registration failed"),
-          );
-        }
-        form.resetFields();
+        }, 1000);
+      } else if (res.status === "fail") {
+        message.open({
+          type: "error",
+          content: res.error || "Login failed",
+        });
+        setshow(true);
       }
-    } catch (err) {
-      console.log(err);
+      form.resetFields();
+    } else {
+      const reg = await apiRegister(values);
+      if (reg.status == "success") {
+        message.open({
+          type: "success",
+          content: "Registration successful",
+        });
+        setTimeout(() => {
+          setregister(false);
+          navigate("/login");
+        }, 1000);
+      } else if (reg.status === "fail") {
+        message.open({
+          type: "error",
+          content: reg.error || "Registration failed",
+        });
+      }
+      form.resetFields();
     }
-  };
+  } catch (err) {
+    console.log(err);
+    message.open({
+      type: "error",
+      content: "Something went wrong. Please try again.",
+    });
+  }
+};
+
   useEffect(() => {
     let interval = null;
     if (codeable && time > 0) {
