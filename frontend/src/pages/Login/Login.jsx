@@ -74,13 +74,12 @@ function Login() {
             });
           }, 1000);
         } else if (res.status === "fail") {
-          if (res.reason) {
             message.open({
               type: "error",
-              content: "Login failed",
+              content: res.error || "Login failed",
             });
-          } else {
             setshow(true);
+            return Promise.reject(new Error(res.error || "Login failed"));
           }
 
           return Promise.reject(new Error(res.message || "Login failed"));
