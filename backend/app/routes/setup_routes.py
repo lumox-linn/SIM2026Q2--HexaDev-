@@ -15,12 +15,13 @@ def setup():
             host=os.getenv('MYSQL_HOST', 'localhost'),
             user=os.getenv('MYSQL_USER', 'root'),
             password=os.getenv('MYSQL_PASSWORD', ''),
-            database=os.getenv('MYSQL_DB', 'railway'),
+            database=os.getenv('MYSQL_DB', 'csit314'),
             port=int(os.getenv('MYSQL_PORT', 3306)),
+            ssl_disabled=True,
         )
         cursor = conn.cursor()
 
-        # Create tables
+        # Create useraccount table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS `useraccount` (
               `user_id`         INT(8)       NOT NULL AUTO_INCREMENT,
@@ -32,11 +33,13 @@ def setup():
               `profile_picture` VARCHAR(255) DEFAULT NULL,
               `email`           VARCHAR(100) DEFAULT NULL,
               `dob`             DATE         DEFAULT NULL,
+              `phone`           VARCHAR(20)  DEFAULT NULL,
               PRIMARY KEY (`user_id`),
               UNIQUE KEY `username` (`username`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
 
+        # Create usersession table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS `usersession` (
               `session_id`  INT(8)      NOT NULL AUTO_INCREMENT,
@@ -55,33 +58,29 @@ def setup():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
 
-        # Add email and dob columns if they don't exist
-        try:
-            cursor.execute("ALTER TABLE `useraccount` ADD COLUMN `email` VARCHAR(100) DEFAULT NULL")
-        except Exception:
-            pass  # Column already exists
-
-        try:
-            cursor.execute("ALTER TABLE `useraccount` ADD COLUMN `dob` DATE DEFAULT NULL")
-        except Exception:
-            pass  # Column already exists
-
         conn.commit()
 
-        # Seed accounts
+        # Add phone column if not exists
+        try:
+            cursor.execute("ALTER TABLE `useraccount` ADD COLUMN `phone` VARCHAR(20) DEFAULT NULL")
+            conn.commit()
+        except Exception:
+            pass
+
+        # Seed demo accounts
         users = [
-            ('admin01',     generate_password_hash('admin123'),   1, 'admin'),
-            ('fr01',        generate_password_hash('fr123'),      1, 'fund_raiser'),
-            ('donee01',     generate_password_hash('donee123'),   1, 'donee'),
-            ('pm01',        generate_password_hash('pm123'),      1, 'platform_manager'),
-            ('suspended01', generate_password_hash('test123'),    0, 'donee'),
+            ('admin01',     generate_password_hash('admin123'),   1, 'admin',            'admin@test.com'),
+            ('fr01',        generate_password_hash('fr123'),      1, 'fund_raiser',       'fr@test.com'),
+            ('donee01',     generate_password_hash('donee123'),   1, 'donee',             'donee@test.com'),
+            ('pm01',        generate_password_hash('pm123'),      1, 'platform_manager',  'pm@test.com'),
+            ('suspended01', generate_password_hash('test123'),    0, 'donee',             'suspended@test.com'),
         ]
 
         inserted = 0
         for user in users:
             try:
                 cursor.execute(
-                    "INSERT IGNORE INTO useraccount (username, password_hash, isActive, role) VALUES (%s, %s, %s, %s)",
+                    "INSERT IGNORE INTO useraccount (username, password_hash, isActive, role, email) VALUES (%s, %s, %s, %s, %s)",
                     user
                 )
                 inserted += cursor.rowcount
@@ -94,7 +93,7 @@ def setup():
 
         return jsonify({
             'status':  'success',
-            'message': f'Tables ready! email and dob columns added. {inserted} accounts seeded.',
+            'message': f'Tables created! {inserted} accounts seeded.',
             'accounts': [
                 {'username': 'admin01',     'password': 'admin123',  'role': 'admin'},
                 {'username': 'fr01',        'password': 'fr123',     'role': 'fund_raiser'},
