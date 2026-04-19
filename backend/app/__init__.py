@@ -27,14 +27,12 @@ def create_app():
     app.config['MYSQL_CURSORCLASS']  = 'DictCursor'
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
-    # SSL for Aiven cloud database
     if os.getenv('MYSQL_SSL', 'false').lower() == 'true':
         app.config['MYSQL_SSL'] = {
             'ca': os.getenv('MYSQL_SSL_CA', 'certs/ca.pem')
         }
 
     CORS(app, origins='*', supports_credentials=False)
-
     mysql.init_app(app)
 
     # Sprint 1 routes
@@ -47,5 +45,8 @@ def create_app():
     # Sprint 2 routes
     from app.routes.account_management_routes import account_management_bp
     app.register_blueprint(account_management_bp, url_prefix='/api/accounts')
+
+    from app.routes.profile_management_routes import profile_management_bp
+    app.register_blueprint(profile_management_bp, url_prefix='/api/profiles')
 
     return app
