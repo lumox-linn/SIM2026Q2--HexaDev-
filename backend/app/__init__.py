@@ -37,12 +37,15 @@ def create_app():
 
     mysql.init_app(app)
 
+    # Sprint 1 routes
     from app.routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
     from app.routes.profile_routes import profile_bp
     app.register_blueprint(profile_bp, url_prefix='/api/profile')
 
-
+    # Sprint 2 routes
+    from app.routes.account_management_routes import account_management_bp
+    app.register_blueprint(account_management_bp, url_prefix='/api/accounts')
 
     return app
