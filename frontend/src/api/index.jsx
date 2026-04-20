@@ -118,12 +118,6 @@ export function apiActivateAccount(id) {
 export function apiGetAllProfiles() {
   return newRequest({ url: '/api/profiles/', method: 'get' })
 }
-export function apiCreateProfile(data) {
-  return newRequest({ url: '/api/profiles/', method: 'post', data })
-}
-export function apiSuspendProfile(id) {
-  return newRequest({ url: `/api/profiles/${id}/suspend`, method: 'put' })
-}
 export function apiActivateProfile(id) {
   return newRequest({ url: `/api/profiles/${id}/activate`, method: 'put' })
 }
