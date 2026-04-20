@@ -49,8 +49,4 @@ def create_app():
     from app.routes.profile_management_routes import profile_management_bp
     app.register_blueprint(profile_management_bp, url_prefix='/api/profiles')
 
-    # Temporary setup route
-    from app.routes.setup_routes import setup_bp
-    app.register_blueprint(setup_bp, url_prefix='/api')
-
     return app
