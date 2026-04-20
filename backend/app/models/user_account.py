@@ -1,30 +1,20 @@
-"""
-app/models/user_account.py — Entity Layer
-==========================================
-Updated for Sprint 2 — now links to userprofile table via profile_id FK.
-
-useraccount now has:
-  - role (ENUM) — kept for backward compatibility
-  - profile_id (FK) — links to userprofile table
-"""
 from app import mysql
 from werkzeug.security import check_password_hash
 
 
 class UserAccount:
-
-    # ── Sprint 1 methods ─────────────────────────────────────
+    """
+    Entity — maps to useraccount table.
+    Sprint 1 + Sprint 2 methods.
+    Note: userprofile JOIN queries are disabled until migration runs on Aiven.
+    """
 
     @staticmethod
     def findByUsername(username: str):
-        """
-        Find account by username.
-        Returns account row dict or None.
-        """
+        """Returns useraccount row dict or None."""
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "SELECT * FROM useraccount WHERE username = %s",
-            (username,)
+            "SELECT * FROM useraccount WHERE username = %s", (username,)
         )
         account = cursor.fetchone()
         cursor.close()
@@ -32,22 +22,18 @@ class UserAccount:
 
     @staticmethod
     def verifyPassword(password: str, password_hash: str) -> bool:
-        """Verify plain password against stored hash."""
         return check_password_hash(password_hash, password)
 
     @staticmethod
     def isActive(account) -> bool:
-        """Returns True if isActive = 1."""
         return bool(account['isActive'])
 
     @staticmethod
     def hasRole(account, role: str) -> bool:
-        """Returns True if account role matches given role."""
-        return account.get('role') == role or account.get('profile_name') == role
+        return account['role'] == role
 
     @staticmethod
     def logout(accountId: str) -> None:
-        """Expire all active sessions for this user_id."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             """UPDATE usersession
@@ -60,7 +46,6 @@ class UserAccount:
 
     @staticmethod
     def exists(username: str) -> bool:
-        """Check if a username already exists."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "SELECT user_id FROM useraccount WHERE username = %s", (username,)
@@ -71,22 +56,12 @@ class UserAccount:
 
     @staticmethod
     def createAccount(data: dict) -> None:
-        """
-        Insert a new useraccount row.
-        Now also sets profile_id from userprofile table.
-        """
         from werkzeug.security import generate_password_hash
-        from app.models.user_profile import UserProfile
-
-        # Get profile_id from profile_name
-        profile = UserProfile.findByName(data['role'])
-        profile_id = profile['profile_id'] if profile else None
-
         cursor = mysql.connection.cursor()
         cursor.execute(
             """INSERT INTO useraccount
-               (username, password_hash, isActive, role, email, phone, dob, profile_id)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+               (username, password_hash, isActive, role, email, phone, dob)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
             (
                 data['username'],
                 generate_password_hash(data['password']),
@@ -95,7 +70,6 @@ class UserAccount:
                 data.get('email', None),
                 data.get('phone', None),
                 data.get('dob', None),
-                profile_id,
             )
         )
         mysql.connection.commit()
@@ -103,7 +77,6 @@ class UserAccount:
 
     @staticmethod
     def updateProfilePicture(user_id: int, filename: str) -> None:
-        """Store uploaded image filename for a user."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "UPDATE useraccount SET profile_picture = %s WHERE user_id = %s",
@@ -114,7 +87,6 @@ class UserAccount:
 
     @staticmethod
     def getProfilePicture(user_id: int):
-        """Return profile_picture filename for a user, or None."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "SELECT profile_picture FROM useraccount WHERE user_id = %s",
@@ -126,7 +98,6 @@ class UserAccount:
 
     @staticmethod
     def updateEmail(user_id: int, email: str) -> None:
-        """Update email for a user account."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "UPDATE useraccount SET email = %s WHERE user_id = %s",
@@ -137,7 +108,6 @@ class UserAccount:
 
     @staticmethod
     def updateDob(user_id: int, dob: str) -> None:
-        """Update date of birth for a user account."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "UPDATE useraccount SET dob = %s WHERE user_id = %s",
@@ -146,23 +116,13 @@ class UserAccount:
         mysql.connection.commit()
         cursor.close()
 
-    # ── Sprint 2 methods ─────────────────────────────────────
-
     @staticmethod
     def findById(user_id: int):
-        """
-        Find account by user_id — joins with userprofile.
-        Never returns password_hash.
-        """
         cursor = mysql.connection.cursor()
         cursor.execute(
-            """SELECT ua.user_id, ua.username, ua.isActive, ua.role,
-                      ua.email, ua.phone, ua.dob, ua.profile_picture,
-                      ua.created_at, ua.profile_id,
-                      up.profile_name, up.status as profile_status
-               FROM useraccount ua
-               LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-               WHERE ua.user_id = %s""",
+            """SELECT user_id, username, isActive, role,
+                      email, phone, dob, profile_picture, created_at
+               FROM useraccount WHERE user_id = %s""",
             (user_id,)
         )
         account = cursor.fetchone()
@@ -171,33 +131,20 @@ class UserAccount:
 
     @staticmethod
     def getAll(role: str = None):
-        """
-        Get all accounts — joins with userprofile.
-        Never returns password_hash.
-        Optionally filter by role.
-        """
         cursor = mysql.connection.cursor()
         if role:
             cursor.execute(
-                """SELECT ua.user_id, ua.username, ua.isActive, ua.role,
-                          ua.email, ua.phone, ua.dob, ua.profile_picture,
-                          ua.created_at, ua.profile_id,
-                          up.profile_name, up.status as profile_status
-                   FROM useraccount ua
-                   LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-                   WHERE ua.role = %s
-                   ORDER BY ua.created_at DESC""",
+                """SELECT user_id, username, isActive, role,
+                          email, phone, dob, profile_picture, created_at
+                   FROM useraccount WHERE role = %s
+                   ORDER BY created_at DESC""",
                 (role,)
             )
         else:
             cursor.execute(
-                """SELECT ua.user_id, ua.username, ua.isActive, ua.role,
-                          ua.email, ua.phone, ua.dob, ua.profile_picture,
-                          ua.created_at, ua.profile_id,
-                          up.profile_name, up.status as profile_status
-                   FROM useraccount ua
-                   LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-                   ORDER BY ua.created_at DESC"""
+                """SELECT user_id, username, isActive, role,
+                          email, phone, dob, profile_picture, created_at
+                   FROM useraccount ORDER BY created_at DESC"""
             )
         accounts = cursor.fetchall()
         cursor.close()
@@ -205,34 +152,22 @@ class UserAccount:
 
     @staticmethod
     def updateAccount(user_id: int, data: dict) -> None:
-        """Update user account fields."""
         from werkzeug.security import generate_password_hash
-        from app.models.user_profile import UserProfile
-
         fields = []
         values = []
 
         if 'email' in data and data['email'] is not None:
             fields.append('email = %s')
             values.append(data['email'])
-
         if 'phone' in data and data['phone'] is not None:
             fields.append('phone = %s')
             values.append(data['phone'])
-
         if 'dob' in data and data['dob'] is not None:
             fields.append('dob = %s')
             values.append(data['dob'])
-
         if 'role' in data and data['role'] is not None:
             fields.append('role = %s')
             values.append(data['role'])
-            # Also update profile_id
-            profile = UserProfile.findByName(data['role'])
-            if profile:
-                fields.append('profile_id = %s')
-                values.append(profile['profile_id'])
-
         if 'password' in data and data['password']:
             fields.append('password_hash = %s')
             values.append(generate_password_hash(data['password']))
@@ -251,56 +186,45 @@ class UserAccount:
 
     @staticmethod
     def suspendAccount(user_id: int) -> None:
-        """Set isActive = 0 for a user account."""
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "UPDATE useraccount SET isActive = 0 WHERE user_id = %s",
-            (user_id,)
+            "UPDATE useraccount SET isActive = 0 WHERE user_id = %s", (user_id,)
         )
         mysql.connection.commit()
         cursor.close()
 
     @staticmethod
     def activateAccount(user_id: int) -> None:
-        """Set isActive = 1 for a suspended user account."""
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "UPDATE useraccount SET isActive = 1 WHERE user_id = %s",
-            (user_id,)
+            "UPDATE useraccount SET isActive = 1 WHERE user_id = %s", (user_id,)
         )
         mysql.connection.commit()
         cursor.close()
 
     @staticmethod
     def searchAccounts(query: dict):
-        """Search accounts by username and/or role."""
         conditions = []
         values = []
 
         if query.get('username'):
-            conditions.append('ua.username LIKE %s')
+            conditions.append('username LIKE %s')
             values.append(f"%{query['username']}%")
-
         if query.get('role'):
-            conditions.append('ua.role = %s')
+            conditions.append('role = %s')
             values.append(query['role'])
-
         if query.get('isActive') is not None:
-            conditions.append('ua.isActive = %s')
+            conditions.append('isActive = %s')
             values.append(query['isActive'])
 
         where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
 
         cursor = mysql.connection.cursor()
         cursor.execute(
-            f"""SELECT ua.user_id, ua.username, ua.isActive, ua.role,
-                       ua.email, ua.phone, ua.dob, ua.profile_picture,
-                       ua.created_at, ua.profile_id,
-                       up.profile_name, up.status as profile_status
-                FROM useraccount ua
-                LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-                {where}
-                ORDER BY ua.created_at DESC""",
+            f"""SELECT user_id, username, isActive, role,
+                       email, phone, dob, profile_picture, created_at
+                FROM useraccount {where}
+                ORDER BY created_at DESC""",
             tuple(values)
         )
         accounts = cursor.fetchall()
