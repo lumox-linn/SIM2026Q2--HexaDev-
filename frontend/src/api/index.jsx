@@ -3,7 +3,7 @@ import newRequest from "../utils/request";
 export function apiLogin(data) {
   console.log(data);
   return newRequest({
-    url: "/login/",
+    url: "/api/auth/login",
     method: "post",
     data: data,
   });
