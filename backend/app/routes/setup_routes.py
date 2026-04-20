@@ -34,6 +34,7 @@ def setup():
               `email`           VARCHAR(100) DEFAULT NULL,
               `dob`             DATE         DEFAULT NULL,
               `phone`           VARCHAR(20)  DEFAULT NULL,
+              `profile_id`      INT(8)       DEFAULT NULL,
               PRIMARY KEY (`user_id`),
               UNIQUE KEY `username` (`username`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -58,29 +59,61 @@ def setup():
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
 
+        # Create userprofile table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS `userprofile` (
+              `profile_id`   INT(8)       NOT NULL AUTO_INCREMENT,
+              `profile_name` VARCHAR(50)  NOT NULL,
+              `status`       ENUM('active','suspended') NOT NULL DEFAULT 'active',
+              `description`  VARCHAR(255) DEFAULT NULL,
+              `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`profile_id`),
+              UNIQUE KEY `profile_name` (`profile_name`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
         conn.commit()
 
-        # Add phone column if not exists
-        try:
-            cursor.execute("ALTER TABLE `useraccount` ADD COLUMN `phone` VARCHAR(20) DEFAULT NULL")
-            conn.commit()
-        except Exception:
-            pass
+        # Insert default profiles
+        profiles = [
+            ('admin',            'active', 'System administrator'),
+            ('fund_raiser',      'active', 'Creates and manages fundraising campaigns'),
+            ('donee',            'active', 'Browses and saves fundraising activities'),
+            ('platform_manager', 'active', 'Manages categories and generates reports'),
+        ]
+        for profile in profiles:
+            try:
+                cursor.execute(
+                    "INSERT IGNORE INTO userprofile (profile_name, status, description) VALUES (%s, %s, %s)",
+                    profile
+                )
+            except Exception:
+                pass
+
+        conn.commit()
+
+        # Update useraccount profile_id FK
+        cursor.execute("""
+            UPDATE useraccount ua
+            JOIN userprofile up ON ua.role = up.profile_name
+            SET ua.profile_id = up.profile_id
+        """)
+        conn.commit()
 
         # Seed demo accounts
         users = [
-            ('admin01',     generate_password_hash('admin123'),   1, 'admin',            'admin@test.com'),
-            ('fr01',        generate_password_hash('fr123'),      1, 'fund_raiser',       'fr@test.com'),
-            ('donee01',     generate_password_hash('donee123'),   1, 'donee',             'donee@test.com'),
-            ('pm01',        generate_password_hash('pm123'),      1, 'platform_manager',  'pm@test.com'),
-            ('suspended01', generate_password_hash('test123'),    0, 'donee',             'suspended@test.com'),
+            ('admin01',     generate_password_hash('admin123'),   1, 'admin'),
+            ('fr01',        generate_password_hash('fr123'),      1, 'fund_raiser'),
+            ('donee01',     generate_password_hash('donee123'),   1, 'donee'),
+            ('pm01',        generate_password_hash('pm123'),      1, 'platform_manager'),
+            ('suspended01', generate_password_hash('test123'),    0, 'donee'),
         ]
 
         inserted = 0
         for user in users:
             try:
                 cursor.execute(
-                    "INSERT IGNORE INTO useraccount (username, password_hash, isActive, role, email) VALUES (%s, %s, %s, %s, %s)",
+                    "INSERT IGNORE INTO useraccount (username, password_hash, isActive, role) VALUES (%s, %s, %s, %s)",
                     user
                 )
                 inserted += cursor.rowcount
@@ -88,12 +121,21 @@ def setup():
                 pass
 
         conn.commit()
+
+        # Update profile_id for newly inserted accounts
+        cursor.execute("""
+            UPDATE useraccount ua
+            JOIN userprofile up ON ua.role = up.profile_name
+            SET ua.profile_id = up.profile_id
+            WHERE ua.profile_id IS NULL
+        """)
+        conn.commit()
         cursor.close()
         conn.close()
 
         return jsonify({
             'status':  'success',
-            'message': f'Tables created! {inserted} accounts seeded.',
+            'message': f'All tables created! {inserted} accounts seeded.',
             'accounts': [
                 {'username': 'admin01',     'password': 'admin123',  'role': 'admin'},
                 {'username': 'fr01',        'password': 'fr123',     'role': 'fund_raiser'},
