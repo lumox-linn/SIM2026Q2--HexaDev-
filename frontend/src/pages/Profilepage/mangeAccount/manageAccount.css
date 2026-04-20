@@ -9,11 +9,19 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  margin-bottom: 10px;
 }
 
 .ma .formhead li {
   margin-left: 20px;
   padding: 0 10px;
+}
+
+.ma .formhead li .inpWarning {
+  position: absolute;
+  top: 65px;
+  left: 258px;
+  color: red;
 }
 
 .ma .formhead li input {
@@ -23,6 +31,7 @@
   border: 0.5px solid green;
   margin: 0 20px 0 10px;
   padding-left: 10px;
+  position: relative;
 }
 
 .ma .formhead li button {
@@ -30,26 +39,39 @@
   height: 25px;
   border-radius: 10px;
   border: 0.5px solid #5c7634;
-  background-color: #acc28c;
-  color: white;
+  background-color: rgba(163, 208, 221, 0.2);
+  color: #297393;
   cursor: pointer;
+}
+
+.ma .formhead li button:hover {
+  cursor: pointer;
+  color: white;
+  background-color: rgba(48, 96, 149, 0.5);
 }
 
 .ma .formhead .create {
   position: absolute;
   right: 90px;
   width: 70px;
-  height: 30px;
   text-align: center;
-  line-height: 30px;
+  line-height: 25px;
   border: 0.5px solid #5c7634;
+  background-color: rgba(163, 208, 221, 0.2);
+  height: 25px;
+  color: #297393;
   border-radius: 10px;
 }
 
 .ma .formhead .create:hover {
   cursor: pointer;
   color: white;
-  background-color: #acc28c;
+  background-color: rgba(48, 96, 149, 0.5);
+}
+
+.ma .ant-table-thead .ant-table-cell {
+  background-color: #297393;
+  color: white;
 }
 
 .ma .createForm {
@@ -79,7 +101,7 @@
 
 .ma .createForm .creForm {
   width: 600px;
-  height: 670px;
+  height: 620px;
   background-color: white;
 }
 
@@ -93,19 +115,8 @@
   margin: 20px 0;
 }
 
-.ma .createForm .creForm .ant-btn {
-  width: 200px;
-  border: 1px solid #4a8b8b;
-  background-color: #5cb6b6;
-  color: white;
-}
-
-.ma .createForm .creForm .ant-btn:hover {
-  background-color: #4d9a9a;
-}
-
 .ma .createForm .creForm .crebut {
-  margin-top: -20px;
+  margin-top: -10px;
 }
 
 .ma .createForm .creForm .ant-row {

@@ -1,16 +1,10 @@
 import "./manageAccount.css";
-import { apiUserinfo, apiCreateAcc } from "../../../api";
+import { apiUserinfo, apiCreateAcc, apiUpdateAcc } from "../../../api";
 
-import {
-  useLocation,
-  Outlet,
-  Link,
-  useParams,
-  useNavigate,
-} from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import close from "../../../assets/close.svg";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -26,13 +20,16 @@ import {
 
 function ManageAccount() {
   const location = useLocation();
-  console.log(location);
   const [form] = Form.useForm();
   const [componentDisabled, setComponentDisabled] = useState(false);
   const [showcrea, setshowcrea] = useState(false);
   const [data, setdata] = useState([]);
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState();
+  const [inpValue, setinpvalue] = useState("");
+  const [inpWarningVisi, setinpWarningVisi] = useState(false);
+  const [setting, setsetting] = useState("");
+
   const handleChange = (info) => {
     if (info.file.status === "uploading") {
       setLoading(true);
@@ -58,6 +55,7 @@ function ManageAccount() {
     }
     return e?.fileList;
   };
+  const [updateValue, setupdateValue] = useState({});
   const columns = [
     {
       title: "Username",
@@ -93,13 +91,9 @@ function ManageAccount() {
       dataIndex: "phone",
       key: "phone",
     },
+
     {
-      title: "Date of birth",
-      dataIndex: "dob",
-      key: "dob",
-    },
-    {
-      title: "Activity",
+      title: "Stutus",
       key: "status",
       dataIndex: "status",
       render: (_, { status }) => (
@@ -113,42 +107,83 @@ function ManageAccount() {
       key: "action",
       render: (_, record) => (
         <Space size="medium">
-          <a>Change {record.name}</a>
-          <a>Delete</a>
+          <a
+            onClick={() => {
+              setshowcrea(true);
+              setsetting("update");
+              setupdateValue(record);
+            }}
+          >
+            Update {record.name}
+          </a>
+          <a onClick={() => console.log("当前行数据：", record)}>Delete</a>
         </Space>
       ),
     },
   ];
+  // update user account
+  useEffect(() => {
+    if (setting === "update" && updateValue && showcrea) {
+      // when update the value automatically appear
+      form.setFieldsValue({
+        username: updateValue.username,
+        password: updateValue.password,
+        email: updateValue.email,
+        phone: updateValue.phone,
+        avatar: updateValue.avatar,
+      });
+      if (updateValue.avatar && updateValue.avatar !== "None") {
+        setImageUrl(updateValue.avatar);
+        form.setFieldsValue({
+          avatar: [
+            {
+              uid: "-1",
+              name: "image.png",
+              status: "done",
+              url: updateValue.avatar,
+            },
+          ],
+        });
+      } else {
+        setImageUrl(null);
+        form.setFieldsValue({ avatar: [] });
+      }
+    } else if (setting === "create") {
+      form.resetFields(); // clear the value
+      setImageUrl(null);
+    }
+  }, [updateValue, setting, showcrea, form]);
   // get info
-  // const refresh = () => {
-  //   try {
-  //     apiUserinfo({})
-  //       .then((res) => {
-  //         if (res.userdata) {
-  //           console.log(res);
-  //           const user = res.userdata.map((item) => ({
-  //             username: item.username,
-  //             password: item.password,
-  //             role: item.role,
-  //             email: item.email,
-  //             phone: item.phone == undefined ? "None" : item.phone,
-  //             status: item.activitystatus == "" ? "None" : item.activitystatus,
-  //             dob: item.dob == "" ? "None" : item.dob,
-  //           }));
-  //           setdata(user);
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.log(err);
-  //       });
-  //   } catch (error) {
-  //     console.error("network:", error);
-  //   }
-  // };
+  const refresh = () => {
+    try {
+      apiUserinfo({})
+        .then((res) => {
+          if (res.userdata) {
+            const user = res.userdata.map((item) => ({
+              username: item.username,
+              password: item.password,
+              role: item.role,
+              email: item.email,
+              phone: item.phone == undefined ? "None" : item.phone,
+              status: item.loginstatus,
+              dob: item.dob == "" ? "None" : item.dob,
+              avatar: item.useravatar,
+            }));
+            setdata(user);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.error("network:", error);
+    }
+  };
 
-  // useEffect(() => {
-  //   refresh();
-  // }, []);
+  useEffect(() => {
+    refresh();
+  }, []);
+  // show creating account page
   const createAccount = () => {
     setshowcrea(!showcrea);
   };
@@ -158,29 +193,27 @@ function ManageAccount() {
     formData.append("password", values.password);
     formData.append("email", values.email);
     formData.append("phone", values.phone);
-    formData.append("age", values.age ? values.age.format("YYYY-MM-DD") : "");
+
     if (values.avatar && values.avatar.length > 0) {
       const fileBody = values.avatar[0].originFileObj;
       formData.append("avatar", fileBody);
     }
 
     try {
-      const res = await apiCreateAcc(formData);
-      if (res.status == "success") {
-        message.open({
-          type: "success",
-          content: res.message,
-        });
+      let res;
+      if (setting === "create") {
+        res = await apiCreateAcc(formData);
+      } else {
+        res = await apiUpdateAcc(formData);
+      }
+      if (res.status === "success") {
+        message.success(res.message);
         form.resetFields();
         setshowcrea(false);
+        setImageUrl(null);
         refresh();
-      } else if (res.status === "fail") {
-        message.open({
-          type: "error",
-          content: res.message,
-        });
-        form.resetFields();
-        return Promise.reject(new Error(res.message));
+      } else {
+        message.error(res.message);
       }
     } catch (error) {
       console.log(error);
@@ -189,25 +222,97 @@ function ManageAccount() {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
+  const searchAccount = (e) => {
+    setinpvalue(e.target.value);
+    // when input value changed,set warning to invisible
+    if (e.target.value !== "") {
+      setinpWarningVisi(false);
+    } else {
+      // if the input value is empty, refresh data
+      refresh();
+    }
+  };
+
+  const searchBut = () => {
+    // if the input has value
+    if (inpValue !== "") {
+      try {
+        apiUserinfo({ username: inpValue })
+          .then((res) => {
+            if (res.userdata) {
+              console.log(res);
+              const user = res.userdata.map((item) => ({
+                username: item.username,
+                password: item.password,
+                role: item.role,
+                email: item.email,
+                phone: item.phone == undefined ? "None" : item.phone,
+                status:
+                  item.activitystatus == "" ? "None" : item.activitystatus,
+                dob: item.dob == "" ? "None" : item.dob,
+              }));
+              setdata(user);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } catch (error) {
+        console.error("network:", error);
+      }
+    } else {
+      // if the input value is empty
+      setinpWarningVisi(true);
+    }
+  };
 
   return (
     <div className="ma">
       <div className="formhead">
         <li>
           <span>Username: </span>
-          <input type="text" placeholder="Username" />
-          <button>Search</button>
+
+          <input
+            type="text"
+            placeholder="Username"
+            onChange={(e) => {
+              searchAccount(e);
+            }}
+          />
+          {inpWarningVisi ? (
+            <span className="inpWarning">
+              Please enter a username to search
+            </span>
+          ) : (
+            ""
+          )}
+
+          <button
+            onClick={() => {
+              searchBut();
+            }}
+          >
+            Search
+          </button>
         </li>
         <span
           className="create"
           onClick={() => {
             createAccount();
+            setsetting("create");
           }}
         >
           Create
         </span>
       </div>
-      {/* <Table columns={columns} dataSource={data} rowKey="username" />
+      <Table
+        columns={columns}
+        dataSource={data}
+        rowKey="username"
+        // rowClassName={(record, index) => {
+        //   return index === 0 ? "first-row-black" : "";
+        // }}
+      />
       {showcrea ? (
         <div className="createForm">
           <img
@@ -216,10 +321,14 @@ function ManageAccount() {
             className="close"
             onClick={() => {
               setshowcrea(false);
+              form.resetFields();
             }}
           />
           <div className="creForm">
-            <span className="title">Create Account</span>
+            <span className="title">
+              {setting === "create" ? "Create Account" : "Update Account"}
+            </span>
+
             <Form
               labelCol={{ span: 6 }}
               wrapperCol={{ span: 13 }}
@@ -231,13 +340,7 @@ function ManageAccount() {
               autoComplete="off"
               form={form}
             >
-              {/* <Form.Item label="Radio">
-                <Radio.Group>
-                  <Radio value="apple"> Apple </Radio>
-                  <Radio value="pear"> Pear </Radio>
-                </Radio.Group>
-              </Form.Item> */}
-      {/* <Form.Item
+              <Form.Item
                 label="Username"
                 name="username"
                 rules={[{ required: true, message: "Please input username!" }]}
@@ -266,19 +369,6 @@ function ManageAccount() {
                 ]}
               >
                 <Input />
-              </Form.Item> */}
-
-      {/* <Form.Item
-                label="Age"
-                name="age"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select your date of birth",
-                  },
-                ]}
-              >
-                <DatePicker />
               </Form.Item>
 
               <Form.Item
@@ -307,15 +397,18 @@ function ManageAccount() {
                   )}
                 </Upload>
               </Form.Item>
+
               <Form.Item label={null} className="crebut">
-                <Button htmlType="submit">Create</Button>
-              </Form.Item> */}
-      {/* </Form>
+                <Button htmlType="submit">
+                  {setting === "create" ? "Create" : "Update"}
+                </Button>
+              </Form.Item>
+            </Form>
           </div>
         </div>
       ) : (
         ""
-      )} */}
+      )}
     </div>
   );
 }

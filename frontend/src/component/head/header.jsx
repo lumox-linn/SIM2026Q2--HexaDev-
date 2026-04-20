@@ -1,5 +1,5 @@
 import "../head/header.css";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo.png";
 
 import Navigationr from "../navigationr/Navigationr";
 import Navigationl from "../navigationl/navigationl";

@@ -92,22 +92,3 @@
 .login .loginbox .css-dev-only-do-not-override-ch9ese {
   max-width: 400px;
 }
-
-.login .set {
-  width: 250px;
-  height: 30px;
-  margin-left: auto;
-  margin-top: -10px;
-}
-
-.login .set:hover {
-  cursor: pointer;
-}
-
-.login .set span {
-  margin-right: 10px;
-}
-
-.login .set span:hover {
-  text-decoration: underline;
-}

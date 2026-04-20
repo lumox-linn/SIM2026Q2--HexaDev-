@@ -1,5 +1,5 @@
 import "../testhead/testheader.css";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo.png";
 import Navfull from "../navfull/navfull";
 import avatar from "../../assets/Avatar.svg";
 import ProfileBar from "../profiebar/profillebar";
@@ -8,13 +8,12 @@ import Navigationl from "../navigationl/navigationl";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 function Testheader({ onNavClick, Router, user, isVisible, setIsVisible }) {
+  console.log(user);
   const location = useLocation();
   const [showpro, setshowpro] = useState(false);
   const [userRavatar, setuserRavatar] = useState(avatar);
 
   useEffect(() => {
-    console.log(avatar);
-
     if (user && user.useravatar !== "null") {
       setuserRavatar(user.useravatar);
     } else {
@@ -50,9 +49,7 @@ function Testheader({ onNavClick, Router, user, isVisible, setIsVisible }) {
               }}
             />
           ) : (
-            <a href="/login" onClick={() => clear}>
-              Login
-            </a>
+            <a href="/login">Login</a>
           )}
         </li>
         {showpro ? (

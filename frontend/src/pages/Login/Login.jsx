@@ -41,10 +41,8 @@ function Login() {
       console.error("network:", err);
     }
   };
-
   const onFinish = async (values) => {
-  try {
-    if (!register) {
+    try {
       const res = await apiLogin(values);
       if (res.status == "success") {
         localStorage.setItem("token", res.token);
@@ -52,13 +50,18 @@ function Login() {
           "userData",
           JSON.stringify({
             role: res.role,
-            userid: res.user_id,
+            // role_label: res.role_label,
+            userid: res.userid,
             username: res.username,
             useravatar: res.avatar_url,
             email: res.email,
             loginstatus: res.loginstatus,
+            phone: res.phone,
+            dob: res.dob,
+            activity: res.avtivity,
           }),
         );
+
         window.dispatchEvent(new Event("storage"));
         message.open({
           type: "success",
@@ -73,41 +76,22 @@ function Login() {
           });
         }, 1000);
       } else if (res.status === "fail") {
-        message.open({
-          type: "error",
-          content: res.error || "Login failed",
-        });
-        setshow(true);
-      }
-      form.resetFields();
-    } else {
-      const reg = await apiRegister(values);
-      if (reg.status == "success") {
-        message.open({
-          type: "success",
-          content: "Registration successful",
-        });
-        setTimeout(() => {
-          setregister(false);
-          navigate("/login");
-        }, 1000);
-      } else if (reg.status === "fail") {
-        message.open({
-          type: "error",
-          content: reg.error || "Registration failed",
-        });
-      }
-      form.resetFields();
-    }
-  } catch (err) {
-    console.log(err);
-    message.open({
-      type: "error",
-      content: "Something went wrong. Please try again.",
-    });
-  }
-};
+        if (res.reason) {
+          message.open({
+            type: "error",
+            content: "Wrong identity",
+          });
+        } else {
+          setshow(true);
+        }
 
+        return Promise.reject(new Error(res.message || "Login failed"));
+      }
+      form.resetFields();
+    } catch (err) {
+      console.log(err);
+    }
+  };
   useEffect(() => {
     let interval = null;
     if (codeable && time > 0) {
@@ -140,189 +124,85 @@ function Login() {
   return (
     <div className="login">
       <div className="loginbox">
-        {register == true ? (
-          <ArrowLeftOutlined
-            onClick={() => {
-              setregister(false);
-            }}
-          />
-        ) : (
-          <ArrowLeftOutlined
-            onClick={() => {
-              navigate("/home");
-            }}
-          />
-        )}
+        <ArrowLeftOutlined
+          onClick={() => {
+            navigate("/home");
+          }}
+        />
 
-        <span className="companyname">CompanyName</span>
-        {register == false ? (
-          <Form
-            form={form}
-            name="basic"
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 20 }}
-            style={{ maxWidth: 600, width: "100%" }}
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
-            onValuesChange={onValuesChange}
+        <span className="companyname">HopeLink</span>
+
+        <Form
+          form={form}
+          name="basic"
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 20 }}
+          style={{ maxWidth: 600, width: "100%" }}
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+          onValuesChange={onValuesChange}
+        >
+          <Form.Item
+            label="Username"
+            name="username"
+            rules={[{ required: true, message: "Please input your username!" }]}
           >
-            <Form.Item
-              label="Username"
-              name="username"
-              rules={[
-                { required: true, message: "Please input your username!" },
-              ]}
-            >
-              <Input className="username" placeholder="username" />
-            </Form.Item>
+            <Input className="username" placeholder="username" />
+          </Form.Item>
 
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[
-                { required: true, message: "Please input your password!" },
-              ]}
-            >
-              <Input.Password className="password" placeholder="Password" />
-            </Form.Item>
-            {show == true ? (
-              <li className="wrongpass">Username or password wrong</li>
-            ) : (
-              <li></li>
-            )}
-            <Form.Item
-              name="Identity"
-              rules={[{ required: true, message: "Please select a identity" }]}
-              label="Identity"
-            >
-              <Select
-                style={{ width: 200 }}
-                onChange={handleChange}
-                rules={[{ required: true, message: "Province is required" }]}
-                placeholder="Choose your identity"
-                options={[
-                  { label: <span>Admin</span>, value: "Admin" },
-
-                  {
-                    label: <span>Platform manager</span>,
-                    value: "Platform Manager",
-                  },
-                  {
-                    label: <span>Donee</span>,
-                    value: "Donee",
-                  },
-                  {
-                    label: <span>Fund Raiser</span>,
-                    value: "Fund Raiser",
-                  },
-                ]}
-              />
-            </Form.Item>
-
-            <Form.Item name="remember" valuePropName="checked" label={null}>
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
-
-            <Form.Item label={null}>
-              <Button htmlType="submit" color="cyan" variant="filled">
-                Login
-              </Button>
-            </Form.Item>
-            <li className="set">
-              <span
-                onClick={() => {
-                  setregister(true);
-                  setshow(false);
-                }}
-              >
-                Create account
-              </span>
-              <span>Forget password</span>
-            </li>
-          </Form>
-        ) : (
-          <Form
-            name="basic"
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 20 }}
-            style={{ maxWidth: 600, width: "100%" }}
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[{ required: true, message: "Please input your password!" }]}
           >
-            <Form.Item
-              label="Username"
-              name="regusername"
-              rules={[
-                { required: true, message: "Please input your username!" },
-              ]}
-            >
-              <Input className="regusername" placeholder="Username" />
-            </Form.Item>
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[{ required: true, message: "Please input your email!" }]}
-            >
-              <Input
-                className="email"
-                placeholder="Email"
-                classNames="emailinp"
-              />
-            </Form.Item>
-            <Form.Item
-              label="Varification code"
-              name="code"
-              rules={[
-                { required: true, message: "Please input varification code!" },
-              ]}
-            >
-              <Input className="code" placeholder="Code" />
-            </Form.Item>
+            <Input.Password className="password" placeholder="Password" />
+          </Form.Item>
+          {show == true ? (
+            <li className="wrongpass">Username or password wrong</li>
+          ) : (
+            <li></li>
+          )}
+          <Form.Item
+            name="Identity"
+            rules={[{ required: true, message: "Please select a identity" }]}
+            label="Identity"
+          >
+            <Select
+              style={{ width: 200 }}
+              onChange={handleChange}
+              rules={[{ required: true, message: "Province is required" }]}
+              placeholder="Choose your identity"
+              options={[
+                { label: <span>Admin</span>, value: "Admin" },
 
-            <Button
-              type="dashed"
-              color="cyan"
-              variant="filled"
-              id="send"
-              disabled={codeable}
-              onClick={() => {
-                handleSendCode();
-              }}
-            >
-              {codeable ? `${time}s` : "Send code"}
+                {
+                  label: <span>Platform manager</span>,
+                  value: "Platform Manager",
+                },
+                {
+                  label: <span>Donee</span>,
+                  value: "Donee",
+                },
+                {
+                  label: <span>Fund Raiser</span>,
+                  value: "Fund Raiser",
+                },
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item name="remember" valuePropName="checked" label={null}>
+            <Checkbox>Remember me</Checkbox>
+          </Form.Item>
+
+          <Form.Item label={null}>
+            <Button htmlType="submit" color="cyan" variant="filled">
+              Login
             </Button>
-
-            <Form.Item
-              label="Password"
-              name="regpassword"
-              className="regpass"
-              rules={[
-                { required: true, message: "Please input your password!" },
-              ]}
-            >
-              <Input.Password className="regpassword" placeholder="Password" />
-            </Form.Item>
-
-            <Form.Item name="remember" valuePropName="checked" label={null}>
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
-
-            <Form.Item label={null}>
-              <Button
-                type="dashed"
-                color="cyan"
-                variant="filled"
-                htmlType="submit"
-              >
-                Register
-              </Button>
-            </Form.Item>
-          </Form>
-        )}
+          </Form.Item>
+        </Form>
       </div>
     </div>
   );

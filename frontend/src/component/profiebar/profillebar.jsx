@@ -4,26 +4,18 @@ import { useNavigate } from "react-router-dom";
 import arrow from "../../assets/arrow.svg";
 import { apiLogout } from "../../api";
 function ProfileBar({ user, userRavatar }) {
-  console.log(user, userRavatar);
-  const navigate = useNavigate();
-
-  // if avatar is in the state, store into the sessionstorage
-  // if (currentAvatar) {
-  //   sessionStorage.setItem("user_avatar_cache", currentAvatar);
-  // }
-
   console.log(user);
+  const navigate = useNavigate();
   const logout = async (userid) => {
     console.log(userid);
     try {
-      const res = await apiLogout(userid);
+      const res = await apiLogout({ userid: userid });
       if (res.userdata.loginstatus == false) {
         sessionStorage.setItem(
           "login_status",
           JSON.stringify(res.userdata.loginstatus),
         );
       }
-      console.log(res);
     } catch (error) {}
   };
   if (!user) return null;
@@ -45,13 +37,15 @@ function ProfileBar({ user, userRavatar }) {
             })
           }
         >
-          Profile
+          Manage your account
         </li>
-        <li>history</li>
+        <li>Saved</li>
         <li
           onClick={() => {
             logout(user.userid);
+            // remove the localstorage
             localStorage.removeItem("userData");
+
             window.dispatchEvent(new Event("storage"));
 
             navigate("/home");

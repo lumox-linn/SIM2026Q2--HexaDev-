@@ -2,7 +2,7 @@ import { Route, Routes, useRoutes } from "react-router-dom";
 import React from "react";
 import Router from "./Router";
 function RouterView() {
-  console.log(Router);
+  // console.log(Router);
   const element = useRoutes(Router);
 
   return element;

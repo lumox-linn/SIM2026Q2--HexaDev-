@@ -7,10 +7,8 @@ import {
   useNavigate,
 } from "react-router-dom";
 import "../profile/profile.css";
-import Router from "../../router/Router";
 import avatar from "../../assets/Avatar.svg";
-import logo from "../../assets/logo.svg";
-import headback from "../../assets/headback.svg";
+import logo from "../../assets/logo.png";
 function Profile() {
   const { id } = useParams();
   const location = useLocation();
@@ -31,12 +29,15 @@ function Profile() {
   useEffect(() => {
     if (!userdata) return;
     if (userdata.role === "Admin") {
-      setlink([{ to: "ManageAccount", label: "User Management" }]);
+      setlink([
+        { to: "ManageAccount", label: "Account Management" },
+        { to: "ManageProfile", label: "Profile Management" },
+      ]);
     } else if (userdata.role === "Platform manager") {
       setlink([{ to: "ManageActivities", label: "Activity Management" }]);
     } else if (userdata.role === "Donee" || userdata.role === "Fund Raiser") {
       setlink([
-        { to: "personalinfo", label: "Personal Info" },
+        { to: "personalinfo", label: "Profile" },
         { to: "ActivityStatus", label: "Activity Status" },
       ]);
     }
@@ -54,7 +55,7 @@ function Profile() {
         />
         <ul className="userhead">
           {/* <img src={headback} alt="" className="headback" /> */}
-          <div className="headback"></div>
+          {/* <div className="headback"></div> */}
           <li className="ava">
             <img src={finalAvatar} alt="" />
           </li>

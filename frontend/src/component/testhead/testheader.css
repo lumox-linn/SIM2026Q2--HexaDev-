@@ -4,22 +4,24 @@
   padding-left: 80px;
   display: flex;
   align-items: center;
+  background-color: white;
   z-index: 2;
   position: fixed;
   box-shadow: 0 10px 15px -20px rgba(0, 0, 0, 0.5);
 }
 
-.testhead .logo {
-  height: 50px;
+.testhead > .logo {
+  height: 170px;
+  margin-left: 20px;
   position: absolute;
-  left: 5%;
-  top: 50%;
+  left: 7%;
+  top: 40px;
   transition: transform 0.3s;
   transform: translate(-50%, -50%);
   z-index: 100;
 }
 
-.testhead .logo:hover {
+.testhead > .logo:hover {
   transform: translate(-50%, -50%) scale(1.1);
   cursor: pointer;
 }

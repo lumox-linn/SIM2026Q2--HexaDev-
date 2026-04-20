@@ -77,20 +77,4 @@
       max-width: 400px;
     }
   }
-
-  .set {
-    width: 250px;
-    height: 30px;
-    margin-left: auto;
-    margin-top: -10px;
-    &:hover {
-      cursor: pointer;
-    }
-    span {
-      margin-right: 10px;
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
 }

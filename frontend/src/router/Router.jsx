@@ -32,6 +32,9 @@ const ActivityStatus = lazy(
 const DefaultPage = lazy(
   () => import("../pages/Profilepage/proDefaultpage/DefaultPage"),
 );
+const ManageProfile = lazy(
+  () => import("../pages/Profilepage/profileManage/profileManage"),
+);
 
 const Router = [
   {
@@ -61,8 +64,13 @@ const Router = [
 
       {
         path: "personalinfo",
-        stuff: { title: "User Personal Info" },
+        stuff: { title: "UserPersonal Info" },
         element: <Personalinfo />,
+      },
+      {
+        path: "ManageProfile",
+        stuff: { title: "Profile management" },
+        element: <ManageProfile />,
       },
       {
         path: "myactivities",
