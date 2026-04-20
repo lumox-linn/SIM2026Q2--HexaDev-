@@ -3,7 +3,7 @@ import "../Home/home.css";
 import Testheader from "../../component/testhead/testheaed";
 import Footer from "../../component/footer/footer";
 import homebackground from "../../assets/homebackground.jpeg";
-import cat from "../../assets/cat2.jpg";
+//import cat from "../../assets/cat2.jpg";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 function Home(props) {
