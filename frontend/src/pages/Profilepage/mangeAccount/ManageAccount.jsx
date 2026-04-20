@@ -1,6 +1,6 @@
 import "./manageAccount.css";
 import {
-  apiUserinfo,
+  apiGetAllAccounts,
   apiCreateAcc,
   apiUpdateAcc,
   apiSuspendUser,

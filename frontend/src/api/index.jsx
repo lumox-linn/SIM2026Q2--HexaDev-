@@ -1,5 +1,9 @@
 import newRequest from "../utils/request";
 
+export function apiGetAllAccounts(params) {
+  return newRequest({ url: '/api/accounts/', method: 'get', params })
+}
+
 export function apiLogin(data) {
   console.log(data);
   return newRequest({
