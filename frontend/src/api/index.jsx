@@ -113,6 +113,9 @@ export function apiSuspendAccount(id) {
 export function apiActivateAccount(id) {
   return newRequest({ url: `/api/accounts/${id}/activate`, method: 'put' })
 }
+export function apiSearchAccounts(params) {
+  return newRequest({ url: '/api/accounts/', method: 'get', params })
+}
 
 // Profile management
 export function apiGetAllProfiles() {
