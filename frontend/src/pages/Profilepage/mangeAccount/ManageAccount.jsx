@@ -185,7 +185,7 @@ function ManageAccount() {
   // get info
   const refresh = () => {
     try {
-      apiUserinfo({})
+      apiGetAllAccounts({})
         .then((res) => {
           if (res.userdata) {
             const user = res.userdata.map((item) => ({
