@@ -1,8 +1,13 @@
 import "./manageAccount.css";
-import { apiUserinfo, apiCreateAcc, apiUpdateAcc } from "../../../api";
+import {
+  apiUserinfo,
+  apiCreateAcc,
+  apiUpdateAcc,
+  apiSuspendUser,
+} from "../../../api";
 
 import { useLocation } from "react-router-dom";
-
+import dayjs from "dayjs";
 import close from "../../../assets/close.svg";
 import { use, useEffect, useState } from "react";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
@@ -16,6 +21,7 @@ import {
   Tag,
   Input,
   message,
+  Modal,
 } from "antd";
 
 function ManageAccount() {
@@ -29,7 +35,8 @@ function ManageAccount() {
   const [inpValue, setinpvalue] = useState("");
   const [inpWarningVisi, setinpWarningVisi] = useState(false);
   const [setting, setsetting] = useState("");
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState("");
   const handleChange = (info) => {
     if (info.file.status === "uploading") {
       setLoading(true);
@@ -108,6 +115,16 @@ function ManageAccount() {
       ),
     },
     {
+      title: "Access",
+      key: "access",
+      dataIndex: "access",
+      render: (_, { access }) => (
+        <Tag color="green" key={access}>
+          {String(access).toUpperCase()}
+        </Tag>
+      ),
+    },
+    {
       title: "Action",
       key: "action",
       render: (_, record) => (
@@ -121,7 +138,7 @@ function ManageAccount() {
           >
             Update {record.name}
           </a>
-          <a onClick={() => console.log("current：", record)}>Suspend</a>
+          <a onClick={() => showModal(record.username)}>Suspend</a>
         </Space>
       ),
     },
@@ -136,6 +153,10 @@ function ManageAccount() {
         email: updateValue.email,
         phone: updateValue.phone,
         avatar: updateValue.avatar,
+        dob:
+          updateValue.dob && updateValue.dob !== "None"
+            ? dayjs(updateValue.dob)
+            : null,
       });
       if (updateValue.avatar && updateValue.avatar !== "None") {
         setImageUrl(updateValue.avatar);
@@ -173,6 +194,7 @@ function ManageAccount() {
               status: item.loginstatus,
               dob: item.dob == "" ? "None" : item.dob,
               avatar: item.useravatar,
+              access: item.access,
             }));
             setdata(user);
           }
@@ -192,12 +214,41 @@ function ManageAccount() {
   const createAccount = () => {
     setshowcrea(!showcrea);
   };
+
+  const showModal = (username) => {
+    setSelectedUser(username);
+    setIsModalOpen(true);
+  };
+  const handleOk = () => {
+    setIsModalOpen(false);
+    console.log(selectedUser);
+    try {
+      apiSuspendUser({ user: selectedUser })
+        .then((res) => {
+          if (res.status == "success") {
+            message.success(res.message);
+            refresh();
+          }
+        })
+        .catch((err) => {
+          message.error(err.message);
+        });
+    } catch (error) {
+      console.error("network:", error);
+    }
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
   const onFinish = async (values) => {
     const formData = new FormData();
     formData.append("username", values.username);
     formData.append("password", values.password);
     formData.append("email", values.email);
     formData.append("phone", values.phone);
+    if (values.dob) {
+      formData.append("dob", values.dob.format("YYYY-MM-DD"));
+    }
 
     if (values.avatar && values.avatar.length > 0) {
       const fileBody = values.avatar[0].originFileObj;
@@ -376,6 +427,17 @@ function ManageAccount() {
               >
                 <Input />
               </Form.Item>
+              {setting === "update" ? (
+                <Form.Item
+                  label="Dob"
+                  name="dob"
+                  rules={[{ required: true, message: "Please select!" }]}
+                >
+                  <DatePicker />
+                </Form.Item>
+              ) : (
+                ""
+              )}
 
               <Form.Item
                 label="Avatar"
@@ -415,6 +477,17 @@ function ManageAccount() {
       ) : (
         ""
       )}
+      <Modal
+        title="Suspension Confirmation"
+        closable={{ "aria-label": "Custom Close Button" }}
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        okText="Suspend"
+        okType="danger"
+      >
+        <p>Are you sure you want to suspend this account?</p>
+      </Modal>
     </div>
   );
 }

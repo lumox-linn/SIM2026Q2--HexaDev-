@@ -38,7 +38,7 @@ function profileManage() {
           }
         })
         .catch((err) => {
-          message.error(res.message);
+          message.error(err.message);
         });
     } catch (error) {
       console.error("network:", error);

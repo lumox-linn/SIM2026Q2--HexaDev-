@@ -86,3 +86,10 @@ export function apiSuspendProfile(data) {
     data: data,
   });
 }
+export function apiSuspendUser(data) {
+  return newRequest({
+    url: "/suspendUser/",
+    method: "post",
+    data: data,
+  });
+}

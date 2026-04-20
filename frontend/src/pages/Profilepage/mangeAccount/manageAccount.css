@@ -103,6 +103,7 @@
   width: 600px;
   height: 620px;
   background-color: white;
+  padding-top: 10px;
 }
 
 .ma .createForm .creForm .title {
@@ -120,7 +121,7 @@
 }
 
 .ma .createForm .creForm .ant-row {
-  margin: 40px 0;
+  margin: 35px 0;
 }
 
 .ma .createForm .creForm .ant-col {
