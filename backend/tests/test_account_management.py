@@ -34,6 +34,9 @@ def make_account(
         'phone':         phone,
         'dob':           dob,
         'profile_picture': None,
+        'profile_id':      1,
+        'profile_name':    role,
+        'profile_status':  'active',
         'created_at':    '2026-01-01 00:00:00',
     }
 
@@ -297,3 +300,155 @@ class TestGetAllAccounts:
         assert ok is True
         for account in d['accounts']:
             assert account['role'] == 'admin'
+
+
+# ══════════════════════════════════════════════════════════════
+# UA-01 to UA-05 — PROFILE MANAGEMENT
+# ══════════════════════════════════════════════════════════════
+
+from app.services.profile_management_controller import ProfileManagementController
+
+
+def make_profile(profile_id=1, profile_name='donee', status='active'):
+    """Helper — creates a fake profile dict like a real DB row."""
+    return {
+        'profile_id':   profile_id,
+        'profile_name': profile_name,
+        'status':       status,
+        'description':  f'{profile_name} role',
+        'created_at':   '2026-01-01 00:00:00',
+    }
+
+
+class TestCreateProfile:
+
+    def test_empty_name_fails(self):
+        """Profile name is required."""
+        ok, d = ProfileManagementController.createProfile({'profile_name': ''})
+        assert ok is False
+        assert 'error' in d
+
+    def test_short_name_fails(self):
+        """Profile name must be at least 3 characters."""
+        ok, d = ProfileManagementController.createProfile({'profile_name': 'ab'})
+        assert ok is False
+
+    @patch('app.services.profile_management_controller.UserProfile.exists',
+           return_value=True)
+    def test_duplicate_name_fails(self, _):
+        """Duplicate profile name should be rejected."""
+        ok, d = ProfileManagementController.createProfile({'profile_name': 'donee'})
+        assert ok is False
+        assert 'exists' in d['error'].lower()
+
+    @patch('app.services.profile_management_controller.UserProfile.createProfile')
+    @patch('app.services.profile_management_controller.UserProfile.exists',
+           return_value=False)
+    def test_create_success(self, _, mock_create):
+        """Valid profile name creates successfully."""
+        ok, d = ProfileManagementController.createProfile({
+            'profile_name': 'moderator',
+            'description':  'Moderates content'
+        })
+        assert ok is True
+        assert d['status'] == 'success'
+        mock_create.assert_called_once()
+
+
+class TestViewProfile:
+
+    @patch('app.services.profile_management_controller.UserProfile.findById',
+           return_value=None)
+    def test_view_not_found(self, _):
+        """Returns fail if profile not found."""
+        ok, d = ProfileManagementController.viewProfile(999)
+        assert ok is False
+
+    @patch('app.services.profile_management_controller.UserProfile.findById')
+    def test_view_success(self, mock_find):
+        """Returns profile data if found."""
+        mock_find.return_value = make_profile()
+        ok, d = ProfileManagementController.viewProfile(1)
+        assert ok is True
+        assert d['status'] == 'success'
+        assert d['profile']['profile_name'] == 'donee'
+
+
+class TestUpdateProfile:
+
+    @patch('app.services.profile_management_controller.UserProfile.findById',
+           return_value=None)
+    def test_update_not_found(self, _):
+        """Returns fail if profile not found."""
+        ok, d = ProfileManagementController.updateProfile(999, {'description': 'test'})
+        assert ok is False
+
+    @patch('app.services.profile_management_controller.UserProfile.updateProfile')
+    @patch('app.services.profile_management_controller.UserProfile.findById')
+    def test_update_success(self, mock_find, mock_update):
+        """Updates profile successfully."""
+        mock_find.return_value = make_profile()
+        ok, d = ProfileManagementController.updateProfile(1, {'description': 'updated'})
+        assert ok is True
+        assert d['status'] == 'success'
+        mock_update.assert_called_once()
+
+
+class TestSuspendProfile:
+
+    @patch('app.services.profile_management_controller.UserProfile.findById',
+           return_value=None)
+    def test_suspend_not_found(self, _):
+        """Returns fail if profile not found."""
+        ok, d = ProfileManagementController.suspendProfile(999)
+        assert ok is False
+
+    @patch('app.services.profile_management_controller.UserProfile.findById')
+    def test_suspend_already_suspended(self, mock_find):
+        """Returns fail if profile already suspended."""
+        mock_find.return_value = make_profile(status='suspended')
+        ok, d = ProfileManagementController.suspendProfile(1)
+        assert ok is False
+        assert 'already' in d['error'].lower()
+
+    @patch('app.services.profile_management_controller.UserProfile.findById')
+    def test_cannot_suspend_admin(self, mock_find):
+        """Cannot suspend admin profile."""
+        mock_find.return_value = make_profile(profile_name='admin')
+        ok, d = ProfileManagementController.suspendProfile(1)
+        assert ok is False
+        assert 'cannot' in d['error'].lower()
+
+    @patch('app.services.profile_management_controller.UserProfile.suspendProfile')
+    @patch('app.services.profile_management_controller.UserProfile.findById')
+    def test_suspend_success(self, mock_find, mock_suspend):
+        """Suspends profile and all associated accounts."""
+        mock_find.return_value = make_profile(profile_name='donee')
+        ok, d = ProfileManagementController.suspendProfile(1)
+        assert ok is True
+        assert d['status'] == 'success'
+        mock_suspend.assert_called_once_with(1)
+
+
+class TestSearchProfile:
+
+    def test_empty_query_fails(self):
+        """Search query is required."""
+        ok, d = ProfileManagementController.searchProfile('')
+        assert ok is False
+
+    @patch('app.services.profile_management_controller.UserProfile.searchProfiles',
+           return_value=[])
+    def test_no_results(self, _):
+        """Returns fail if no profiles match."""
+        ok, d = ProfileManagementController.searchProfile('nobody')
+        assert ok is False
+
+    @patch('app.services.profile_management_controller.UserProfile.searchProfiles')
+    def test_search_success(self, mock_search):
+        """Returns matching profiles."""
+        mock_search.return_value = [make_profile(profile_name='donee')]
+        ok, d = ProfileManagementController.searchProfile('donee')
+        assert ok is True
+        assert len(d['profiles']) == 1
+        assert d['profiles'][0]['profile_name'] == 'donee'

@@ -16,7 +16,7 @@ def make_account(role='admin', is_active=1):
     return {
         'user_id': 1, 'username': 'testuser',
         'password_hash': 'hashed', 'isActive': is_active,
-        'role': role, 'email': None, 'dob': None,
+        'role': role, 'email': None, 'dob': None, 'profile_name': role, 'profile_status': 'active', 'profile_id': 1,
     }
 
 
