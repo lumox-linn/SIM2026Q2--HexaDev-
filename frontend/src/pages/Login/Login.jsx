@@ -51,7 +51,7 @@ function Login() {
           JSON.stringify({
             role: res.role,
             // role_label: res.role_label,
-            userid: res.userid,
+            userid: res.user_id,
             username: res.username,
             useravatar: res.avatar_url,
             email: res.email,

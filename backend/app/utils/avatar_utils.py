@@ -80,6 +80,7 @@ def get_avatar_url(role: str, profile_picture: str = None) -> str:
     try:
         from flask import request as flask_request
         base_url = flask_request.host_url.rstrip('/')
+        base_url = base_url.replace('http://', 'https://')
     except RuntimeError:
         # Outside request context — unit tests
         base_url = ''
