@@ -135,6 +135,7 @@
 .pm .profileContent .card button:hover {
   background-color: palegoldenrod;
   color: white;
+  cursor: pointer;
 }
 
 .pm .profileContent .card .status {

@@ -91,6 +91,11 @@ function ManageAccount() {
       dataIndex: "phone",
       key: "phone",
     },
+    {
+      title: "Dob",
+      dataIndex: "dob",
+      key: "dob",
+    },
 
     {
       title: "Stutus",
@@ -116,7 +121,7 @@ function ManageAccount() {
           >
             Update {record.name}
           </a>
-          <a onClick={() => console.log("当前行数据：", record)}>Delete</a>
+          <a onClick={() => console.log("current：", record)}>Suspend</a>
         </Space>
       ),
     },
@@ -246,6 +251,7 @@ function ManageAccount() {
                 password: item.password,
                 role: item.role,
                 email: item.email,
+                dob: item.dob,
                 phone: item.phone == undefined ? "None" : item.phone,
                 status:
                   item.activitystatus == "" ? "None" : item.activitystatus,
