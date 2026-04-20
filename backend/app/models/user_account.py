@@ -18,15 +18,12 @@ class UserAccount:
     @staticmethod
     def findByUsername(username: str):
         """
-        Find account by username — joins with userprofile to get profile info.
-        Returns account with profile_name and profile status.
+        Find account by username.
+        Returns account row dict or None.
         """
         cursor = mysql.connection.cursor()
         cursor.execute(
-            """SELECT ua.*, up.profile_name, up.status as profile_status
-               FROM useraccount ua
-               LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-               WHERE ua.username = %s""",
+            "SELECT * FROM useraccount WHERE username = %s",
             (username,)
         )
         account = cursor.fetchone()
