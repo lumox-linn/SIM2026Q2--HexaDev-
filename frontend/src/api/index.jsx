@@ -1,8 +1,5 @@
 import newRequest from "../utils/request";
 
-export function apiGetAllAccounts(params) {
-  return newRequest({ url: '/api/accounts/', method: 'get', params })
-}
 
 export function apiLogin(data) {
   console.log(data);
@@ -96,4 +93,37 @@ export function apiSuspendUser(data) {
     method: "post",
     data: data,
   });
+}
+
+
+
+// Account management
+export function apiGetAllAccounts(params) {
+  return newRequest({ url: '/api/accounts/', method: 'get', params })
+}
+export function apiGetAccount(id) {
+  return newRequest({ url: `/api/accounts/${id}`, method: 'get' })
+}
+export function apiUpdateAccount(id, data) {
+  return newRequest({ url: `/api/accounts/${id}`, method: 'put', data })
+}
+export function apiSuspendAccount(id) {
+  return newRequest({ url: `/api/accounts/${id}/suspend`, method: 'put' })
+}
+export function apiActivateAccount(id) {
+  return newRequest({ url: `/api/accounts/${id}/activate`, method: 'put' })
+}
+
+// Profile management
+export function apiGetAllProfiles() {
+  return newRequest({ url: '/api/profiles/', method: 'get' })
+}
+export function apiCreateProfile(data) {
+  return newRequest({ url: '/api/profiles/', method: 'post', data })
+}
+export function apiSuspendProfile(id) {
+  return newRequest({ url: `/api/profiles/${id}/suspend`, method: 'put' })
+}
+export function apiActivateProfile(id) {
+  return newRequest({ url: `/api/profiles/${id}/activate`, method: 'put' })
 }
