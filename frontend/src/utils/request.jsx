@@ -10,7 +10,7 @@ request.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token") || cookie.get("token");
     if (token) {
-      config.headers.authorization = token;
+      config.headers.authorization = `Bearer ${token}`;
     }
     return config;
   },
