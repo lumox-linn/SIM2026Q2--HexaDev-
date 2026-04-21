@@ -6,6 +6,7 @@ import {
   apiSuspendAccount,
   apiActivateAccount,
   apiSearchAccounts,
+  apiSuspendUser
 } from "../../../api";
 
 import { useLocation } from "react-router-dom";
@@ -187,8 +188,8 @@ function ManageAccount() {
     try {
       apiGetAllAccounts({})
         .then((res) => {
-          if (res.userdata) {
-            const user = res.userdata.map((item) => ({
+          if (res.accounts) {
+            const user = res.accounts.map((item) => ({
               username: item.username,
               password: item.password,
               role: item.role,
@@ -226,7 +227,7 @@ function ManageAccount() {
     setIsModalOpen(false);
     console.log(selectedUser);
     try {
-      apiSuspendUser({ user: selectedUser })
+      apiSuspendAccount({ user: selectedUser })
         .then((res) => {
           if (res.status == "success") {
             message.success(res.message);
@@ -296,11 +297,11 @@ function ManageAccount() {
     // if the input has value
     if (inpValue !== "") {
       try {
-        apiUserinfo({ username: inpValue })
+        apiGetAllAccounts({ username: inpValue })
           .then((res) => {
-            if (res.userdata) {
+            if (res.accounts) {
               console.log(res);
-              const user = res.userdata.map((item) => ({
+              const user = res.accounts.map((item) => ({
                 username: item.username,
                 password: item.password,
                 role: item.role,
