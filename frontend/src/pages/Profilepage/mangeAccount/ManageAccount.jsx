@@ -139,10 +139,10 @@ function ManageAccount() {
       updateForm.setFieldsValue({
         email: updateValue.email,
         phone: updateValue.phone,
-        role:  updateValue.role,
-        dob:   updateValue.dob && updateValue.dob !== "None"
-                 ? dayjs(updateValue.dob)
-                 : null,
+        role: updateValue.role,
+        dob: updateValue.dob && updateValue.dob !== "None"
+          ? dayjs(updateValue.dob)
+          : null,
       });
     } else if (setting === "create") {
       createForm.resetFields();
@@ -157,14 +157,14 @@ function ManageAccount() {
           if (res.accounts) {
             console.log(res);
             const user = res.accounts.map((item) => ({
-              user_id:  item.user_id,
+              user_id: item.user_id,
               username: item.username,
-              role:     item.role,
-              email:    item.email,
-              phone:    item.phone || "—",
-              dob:      item.dob || "—",
-              status:   item.login_status,
-              access:   item.access,
+              role: item.role,
+              email: item.email,
+              phone: item.phone || "—",
+              dob: item.dob || "—",
+              status: item.login_status,
+              access: item.access,
               isActive: item.isActive,
             }));
             setdata(user);
@@ -235,10 +235,10 @@ function ManageAccount() {
       const res = await apiCreateAcc({
         username: values.username,
         password: values.password,
-        email:    values.email,
-        phone:    values.phone,
-        role:     values.role,
-        dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+        email: values.email,
+        phone: values.phone,
+        role: values.role,
+        dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
       });
       if (res.status === "success") {
         message.success(res.message);
@@ -255,12 +255,14 @@ function ManageAccount() {
 
   // ← CHANGE 4: separate onFinish for UPDATE
   const onFinishUpdate = async (values) => {
+    console.log("Update values:", values);                    // ← add
+    console.log("Update user_id:", updateValue.user_id);
     try {
       const res = await apiUpdateAcc(updateValue.user_id, {
-        email:    values.email || null,
-        phone:    values.phone || null,
-        role:     values.role || null,
-        dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+        email: values.email || null,
+        phone: values.phone || null,
+        role: values.role || null,
+        dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
         password: values.password || undefined,
       });
       if (res.status === "success") {
@@ -300,14 +302,14 @@ function ManageAccount() {
           .then((res) => {
             if (res.accounts) {
               const user = res.accounts.map((item) => ({
-                user_id:  item.user_id,
+                user_id: item.user_id,
                 username: item.username,
-                role:     item.role,
-                email:    item.email,
-                phone:    item.phone || "—",
-                dob:      item.dob || "—",
-                status:   item.login_status,
-                access:   item.access,
+                role: item.role,
+                email: item.email,
+                phone: item.phone || "—",
+                dob: item.dob || "—",
+                status: item.login_status,
+                access: item.access,
                 isActive: item.isActive,
               }));
               setdata(user);
