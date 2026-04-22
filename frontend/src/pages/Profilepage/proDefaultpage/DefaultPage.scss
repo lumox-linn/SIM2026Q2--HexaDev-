@@ -1,0 +1,59 @@
+.dp {
+  width: 100%;
+  height: 100%;
+  li {
+    span {
+      margin-right: 40px;
+      &:hover {
+        cursor: pointer;
+        color: green;
+      }
+    }
+  }
+}
+.body {
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  .p {
+    width: 100%;
+    height: 100%;
+
+    .head {
+      text-align: center;
+      font-size: 24px;
+      line-height: 50px;
+      width: 100%;
+      height: 50px;
+      color: white;
+      background-color: #786c6c;
+    }
+    .b {
+      width: 100%;
+      height: 100%;
+      background-color: white;
+      input {
+        background-color: #d9d9d9;
+        width: 700px;
+        height: 40px;
+        margin: 10px 0;
+        margin-left: 90px;
+        border: 1px solid;
+      }
+      .w {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        display: flex;
+        flex-wrap: wrap;
+        div {
+          width: 200px;
+          height: 200px;
+          background-color: #d9d9d9;
+          margin: 0 20px;
+        }
+      }
+    }
+  }
+}

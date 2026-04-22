@@ -1,0 +1,14 @@
+html,
+body,
+#root {
+  width: 100%;
+  /* min-height: 100vh; 至少占满一屏高度 */
+  height: 100%;
+}
+* {
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+  list-style: none;
+  box-sizing: border-box;
+}

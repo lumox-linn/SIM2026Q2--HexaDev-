@@ -1,0 +1,219 @@
+.pm {
+  width: 100%;
+  height: 100%;
+  padding-left: 10px;
+  .pmhead {
+    width: 100%;
+    height: 140px;
+    // background-color: aliceblue;
+    // position: fixed;
+    // margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    // align-items: flex-start;
+
+    padding-right: 20px;
+    .title {
+      // position: absolute;
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      color: rgb(124, 98, 86);
+    }
+    li {
+      margin-top: 40px;
+      width: 100%;
+      height: 40px;
+      position: relative;
+      .inpWarning {
+        position: absolute;
+        bottom: -15px;
+        color: red;
+        left: 0;
+      }
+      input {
+        width: 200px;
+        height: 30px;
+
+        // margin-left: 20px;
+        border: 1px solid rgb(129, 185, 207);
+        border-radius: 10px;
+        padding-left: 10px;
+
+        &::placeholder {
+          color: rgb(28, 80, 102);
+        }
+      }
+
+      button {
+        width: 70px;
+        height: 30px;
+        margin: 0 10px;
+        border: none;
+        background-color: rgb(97, 155, 180);
+        color: white;
+        border-radius: 20px;
+        &:hover {
+          cursor: pointer;
+          background-color: rgb(54, 144, 182);
+        }
+      }
+      .creaPro {
+        width: 130px;
+        position: absolute;
+        right: 10px;
+      }
+    }
+    // position: relative;
+  }
+  .profileContent {
+    margin-top: 10px;
+    width: 100%;
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+    gap: 10px;
+
+    .card {
+      padding: 20px;
+      width: 540px;
+      height: 200px;
+      border-radius: 10px;
+      border: 0.5px solid rgba(191, 164, 128, 0.5);
+      background-color: white;
+      transition: all 0.4s ease;
+      display: flex;
+      flex-direction: column;
+      // justify-content: flex-start;
+      color: rgb(112, 109, 109);
+      gap: 15px;
+      .first {
+        width: 100%;
+        height: 50px;
+        display: flex;
+        flex-direction: row;
+
+        align-items: center;
+      }
+      .role {
+        color: rgb(70, 69, 69);
+      }
+      .img {
+        width: 50px;
+        height: 50px;
+        background-color: lavender;
+        border-radius: 10px;
+        text-align: center;
+        line-height: 50px;
+        display: inline-block;
+        margin-right: 10px;
+        color: rgb(100, 98, 98);
+      }
+
+      button {
+        width: 80px;
+        height: 30px;
+        background-color: white;
+        border: 1px solid rgb(193, 189, 189);
+        border-radius: 5px;
+        margin-right: 10px;
+        font-size: 12px;
+        &:hover {
+          background-color: palegoldenrod;
+          color: white;
+          cursor: pointer;
+        }
+      }
+      .status {
+        color: black;
+        background-color: rgb(218, 234, 247);
+        border-radius: 20px;
+        margin-left: 10px;
+        display: inline-block;
+        width: 70px;
+        height: 20px;
+        font-size: 14px;
+        text-align: center;
+        line-height: 20px;
+        color: #706d6d;
+      }
+      .active {
+        color: black;
+        background-color: rgb(205, 241, 205);
+        border-radius: 20px;
+        margin-left: 10px;
+        display: inline-block;
+        width: 70px;
+        height: 20px;
+        font-size: 14px;
+        text-align: center;
+        line-height: 20px;
+        color: #706d6d;
+      }
+      .disabled {
+        color: black;
+        background-color: rgb(229, 162, 162);
+        border-radius: 20px;
+        margin-left: 10px;
+        display: inline-block;
+        width: 70px;
+        height: 20px;
+        font-size: 14px;
+        text-align: center;
+        line-height: 20px;
+        color: white;
+      }
+    }
+
+    .createPro {
+      box-sizing: border-box;
+      width: 800px;
+      height: auto;
+      border-radius: 10px;
+      background-color: white;
+      border: 1px solid rgba(209, 183, 149, 0.5);
+
+      margin-left: auto;
+      margin-right: auto;
+      grid-column: 1 / -1;
+      overflow: hidden;
+      opacity: 0;
+      max-height: 0;
+      transform: translateY(-20px);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      > i {
+        font-size: 24px;
+        position: absolute;
+        right: 15px;
+        top: 10px;
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+    .createPro.show {
+      grid-column: 1 / -1;
+      opacity: 1;
+      max-height: 500px;
+      transform: translateY(0);
+      pointer-events: auto;
+      margin-bottom: 20px;
+    }
+    .createCard {
+      > li {
+        width: 100%;
+        height: 30px;
+        font-size: 20px;
+        color: rgb(85, 83, 116);
+        text-align: center;
+        margin-bottom: 20px;
+        margin-top: 20px;
+      }
+
+      .ant-btn {
+        background-color: rgb(97, 155, 180);
+      }
+    }
+  }
+}
