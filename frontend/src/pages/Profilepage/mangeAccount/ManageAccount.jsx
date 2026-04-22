@@ -29,8 +29,8 @@ import {
 
 function ManageAccount() {
   const location = useLocation();
-  const [createForm] = Form.useForm();  // ← CHANGE 1: separate form for create
-  const [updateForm] = Form.useForm();  // ← CHANGE 1: separate form for update
+  const [createForm] = Form.useForm();
+  const [updateForm] = Form.useForm();
   const [componentDisabled, setComponentDisabled] = useState(false);
   const [showcrea, setshowcrea] = useState(false);
   const [data, setdata] = useState([]);
@@ -133,16 +133,16 @@ function ManageAccount() {
     },
   ];
 
-  // ← CHANGE 2: auto fill UPDATE form when editing
+  // Auto fill update form
   useEffect(() => {
     if (setting === "update" && updateValue && showcrea) {
       updateForm.setFieldsValue({
         email: updateValue.email,
         phone: updateValue.phone,
-        role: updateValue.role,
-        dob: updateValue.dob && updateValue.dob !== "None"
-          ? dayjs(updateValue.dob)
-          : null,
+        role:  updateValue.role,
+        dob:   updateValue.dob && updateValue.dob !== "None"
+                 ? dayjs(updateValue.dob)
+                 : null,
       });
     } else if (setting === "create") {
       createForm.resetFields();
@@ -150,6 +150,7 @@ function ManageAccount() {
     }
   }, [updateValue, setting, showcrea, createForm, updateForm]);
 
+  // Get all accounts
   const refresh = () => {
     try {
       apiGetAllAccounts()
@@ -157,14 +158,14 @@ function ManageAccount() {
           if (res.accounts) {
             console.log(res);
             const user = res.accounts.map((item) => ({
-              user_id: item.user_id,
+              user_id:  item.user_id,
               username: item.username,
-              role: item.role,
-              email: item.email || null,    // ← null not "—"
-              phone: item.phone || null,    // ← null not "—"
-              dob: item.dob || null,      // ← null not "—"
-              status: item.login_status,
-              access: item.access,
+              role:     item.role,
+              email:    item.email || null,
+              phone:    item.phone || null,
+              dob:      item.dob || null,
+              status:   item.login_status,
+              access:   item.access,
               isActive: item.isActive,
             }));
             setdata(user);
@@ -229,42 +230,32 @@ function ManageAccount() {
     }
   };
 
-  // ← CHANGE 3: separate onFinish for CREATE
-  const onFinishCreate = async (values) => {
+  // One onFinish handles both create and update
+  const onFinish = async (values) => {
     try {
-      const res = await apiCreateAcc({
-        username: values.username,
-        password: values.password,
-        email: values.email,
-        phone: values.phone,
-        role: values.role,
-        dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
-      });
+      let res;
+      if (setting === "create") {
+        res = await apiCreateAcc({
+          username: values.username,
+          password: values.password,
+          email:    values.email || null,
+          phone:    values.phone || null,
+          role:     values.role,
+          dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+        });
+      } else {
+        res = await apiUpdateAcc(updateValue.user_id, {
+          email:    values.email && values.email !== '—' ? values.email : null,
+          phone:    values.phone && values.phone !== '—' ? values.phone : null,
+          role:     values.role || null,
+          dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+          password: values.password || undefined,
+        });
+      }
+
       if (res.status === "success") {
         message.success(res.message);
         createForm.resetFields();
-        setshowcrea(false);
-        refresh();
-      } else {
-        message.error(res.error || res.message || "Something went wrong");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // ← CHANGE 4: separate onFinish for UPDATE
-  const onFinishUpdate = async (values) => {
-    try {
-      const res = await apiUpdateAcc(updateValue.user_id, {
-        email: values.email && values.email !== '—' ? values.email : null,
-        phone: values.phone && values.phone !== '—' ? values.phone : null,
-        role: values.role || null,
-        dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
-        password: values.password || undefined,
-      });
-      if (res.status === "success") {
-        message.success(res.message);
         updateForm.resetFields();
         setshowcrea(false);
         setImageUrl(null);
@@ -300,14 +291,14 @@ function ManageAccount() {
           .then((res) => {
             if (res.accounts) {
               const user = res.accounts.map((item) => ({
-                user_id: item.user_id,
+                user_id:  item.user_id,
                 username: item.username,
-                role: item.role,
-                email: item.email,
-                phone: item.phone || "—",
-                dob: item.dob || "—",
-                status: item.login_status,
-                access: item.access,
+                role:     item.role,
+                email:    item.email || null,
+                phone:    item.phone || null,
+                dob:      item.dob || null,
+                status:   item.login_status,
+                access:   item.access,
                 isActive: item.isActive,
               }));
               setdata(user);
@@ -320,7 +311,6 @@ function ManageAccount() {
     } else {
       // if the input value is empty
       setinpWarningVisi(true);
-      refresh();
     }
   };
 
@@ -352,7 +342,7 @@ function ManageAccount() {
 
       <Table columns={columns} dataSource={data} rowKey="user_id" />
 
-      {/* ← CHANGE 5: CREATE FORM — all fields required */}
+      {/* CREATE FORM — all fields required */}
       {showcrea && setting === "create" ? (
         <div className="createForm">
           <img
@@ -372,7 +362,7 @@ function ManageAccount() {
               layout="horizontal"
               disabled={componentDisabled}
               style={{ maxWidth: 600 }}
-              onFinish={onFinishCreate}
+              onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
               form={createForm}
@@ -426,6 +416,25 @@ function ManageAccount() {
                 <DatePicker />
               </Form.Item>
 
+              <Form.Item
+                label="Avatar"
+                name="avatar"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+              >
+                <Upload
+                  name="avatar"
+                  listType="picture-circle"
+                  className="avatar-uploader"
+                  maxCount={1}
+                  beforeUpload={() => false}
+                >
+                  {imageUrl ? (
+                    <img draggable={false} src={imageUrl} alt="avatar" style={{ width: "100%" }} />
+                  ) : (uploadButton)}
+                </Upload>
+              </Form.Item>
+
               <Form.Item label={null} className="crebut">
                 <Button htmlType="submit">Create</Button>
               </Form.Item>
@@ -434,7 +443,7 @@ function ManageAccount() {
         </div>
       ) : null}
 
-      {/* ← CHANGE 6: UPDATE FORM — all fields optional */}
+      {/* UPDATE FORM — all fields optional */}
       {showcrea && setting === "update" ? (
         <div className="createForm">
           <img
@@ -453,15 +462,12 @@ function ManageAccount() {
               wrapperCol={{ span: 13 }}
               layout="horizontal"
               style={{ maxWidth: 600 }}
-              onFinish={onFinishUpdate}
+              onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
               form={updateForm}
             >
-              <Form.Item
-                label="Role"
-                name="role"
-              >
+              <Form.Item label="Role" name="role">
                 <Select placeholder="Select new role (optional)">
                   <Select.Option value="admin">Admin</Select.Option>
                   <Select.Option value="fund_raiser">Fund Raiser</Select.Option>
@@ -484,6 +490,25 @@ function ManageAccount() {
 
               <Form.Item label="New Password" name="password">
                 <Input.Password placeholder="Leave blank to keep current" />
+              </Form.Item>
+
+              <Form.Item
+                label="Avatar"
+                name="avatar"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+              >
+                <Upload
+                  name="avatar"
+                  listType="picture-circle"
+                  className="avatar-uploader"
+                  maxCount={1}
+                  beforeUpload={() => false}
+                >
+                  {imageUrl ? (
+                    <img draggable={false} src={imageUrl} alt="avatar" style={{ width: "100%" }} />
+                  ) : (uploadButton)}
+                </Upload>
               </Form.Item>
 
               <Form.Item label={null} className="crebut">
