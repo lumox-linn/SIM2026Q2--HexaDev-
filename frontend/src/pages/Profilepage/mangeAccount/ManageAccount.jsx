@@ -11,7 +11,7 @@ import {
 import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import close from "../../../assets/close.svg";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -29,7 +29,8 @@ import {
 
 function ManageAccount() {
   const location = useLocation();
-  const [form] = Form.useForm();
+  const [createForm] = Form.useForm();  // ← CHANGE 1: separate form for create
+  const [updateForm] = Form.useForm();  // ← CHANGE 1: separate form for update
   const [componentDisabled, setComponentDisabled] = useState(false);
   const [showcrea, setshowcrea] = useState(false);
   const [data, setdata] = useState([]);
@@ -39,33 +40,21 @@ function ManageAccount() {
   const [inpWarningVisi, setinpWarningVisi] = useState(false);
   const [setting, setsetting] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState("");
-  const handleChange = (info) => {
-    if (info.file.status === "uploading") {
-      setLoading(true);
-      return;
-    }
-    if (info.file.status === "done") {
-      // Get this url from response in real world.
-      getBase64(info.file.originFileObj, (url) => {
-        setLoading(false);
-        setImageUrl(url);
-      });
-    }
-  };
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [updateValue, setupdateValue] = useState({});
+
   const uploadButton = (
     <button style={{ border: 0, background: "none" }} type="button">
       {loading ? <LoadingOutlined /> : <PlusOutlined />}
       <div style={{ marginTop: 8 }}>Upload</div>
     </button>
   );
+
   const normFile = (e) => {
-    if (Array.isArray(e)) {
-      return e;
-    }
+    if (Array.isArray(e)) return e;
     return e?.fileList;
   };
-  const [updateValue, setupdateValue] = useState({});
+
   const columns = [
     {
       title: "Username",
@@ -73,7 +62,6 @@ function ManageAccount() {
       key: "username",
       render: (text) => <span>{text}</span>,
     },
-
     {
       title: "Role",
       dataIndex: "role",
@@ -83,25 +71,27 @@ function ManageAccount() {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      render: (text) => text || "—",
     },
     {
       title: "Phone",
       dataIndex: "phone",
       key: "phone",
+      render: (text) => text || "—",
     },
     {
       title: "Dob",
       dataIndex: "dob",
       key: "dob",
+      render: (text) => text || "—",
     },
-
     {
       title: "Status",
       key: "status",
       dataIndex: "status",
       render: (_, { status }) => (
-        <Tag color="green" key={status}>
-          {String(status).toUpperCase()}
+        <Tag color={status === "online" ? "blue" : "default"}>
+          {String(status || "offline").toUpperCase()}
         </Tag>
       ),
     },
@@ -110,8 +100,8 @@ function ManageAccount() {
       key: "access",
       dataIndex: "access",
       render: (_, { access }) => (
-        <Tag color="green" key={access}>
-          {String(access).toUpperCase()}
+        <Tag color={access === "active" ? "green" : "red"}>
+          {String(access || "active").toUpperCase()}
         </Tag>
       ),
     },
@@ -127,74 +117,60 @@ function ManageAccount() {
               setupdateValue(record);
             }}
           >
-            Update {record.name}
+            Update
           </a>
-          <a onClick={() => showModal(record.id)}>Suspend</a>
+          {record.access === "active" ? (
+            <a onClick={() => showModal(record)} style={{ color: "red" }}>
+              Suspend
+            </a>
+          ) : (
+            <a onClick={() => handleActivate(record)} style={{ color: "green" }}>
+              Activate
+            </a>
+          )}
         </Space>
       ),
     },
   ];
-  // update user account
+
+  // ← CHANGE 2: auto fill UPDATE form when editing
   useEffect(() => {
     if (setting === "update" && updateValue && showcrea) {
-      // when update the value automatically appear
-      form.setFieldsValue({
-        username: updateValue.username,
-        // password: updateValue.password,
+      updateForm.setFieldsValue({
         email: updateValue.email,
         phone: updateValue.phone,
-        avatar: updateValue.avatar,
-        dob:
-          updateValue.dob && updateValue.dob !== "None"
-            ? dayjs(updateValue.dob)
-            : null,
+        role:  updateValue.role,
+        dob:   updateValue.dob && updateValue.dob !== "None"
+                 ? dayjs(updateValue.dob)
+                 : null,
       });
-      if (updateValue.avatar && updateValue.avatar !== "None") {
-        setImageUrl(updateValue.avatar);
-        form.setFieldsValue({
-          avatar: [
-            {
-              uid: "-1",
-              name: "image.png",
-              status: "done",
-              url: updateValue.avatar,
-            },
-          ],
-        });
-      } else {
-        setImageUrl(null);
-        form.setFieldsValue({ avatar: [] });
-      }
     } else if (setting === "create") {
-      form.resetFields(); // clear the value
+      createForm.resetFields();
       setImageUrl(null);
     }
-  }, [updateValue, setting, showcrea, form]);
-  // get info
+  }, [updateValue, setting, showcrea, createForm, updateForm]);
+
   const refresh = () => {
     try {
-      apiGetAllAccounts({})
+      apiGetAllAccounts()
         .then((res) => {
           if (res.accounts) {
             console.log(res);
             const user = res.accounts.map((item) => ({
-              id: item.user_id,
+              user_id:  item.user_id,
               username: item.username,
-              password: item.password,
-              role: item.role,
-              email: item.email,
-              phone: item.phone == undefined ? "None" : item.phone,
-              status: item.login_status,
-              dob: item.dob == "" ? "None" : item.dob,
-              avatar: item.profile_picture,
-              access: item.access,
+              role:     item.role,
+              email:    item.email,
+              phone:    item.phone || "—",
+              dob:      item.dob || "—",
+              status:   item.login_status,
+              access:   item.access,
+              isActive: item.isActive,
             }));
             setdata(user);
           }
         })
-        .catch((err) => {
-          console.log(err);
-        });
+        .catch((err) => console.log(err));
     } catch (error) {
       console.error("network:", error);
     }
@@ -203,74 +179,108 @@ function ManageAccount() {
   useEffect(() => {
     refresh();
   }, []);
-  // show creating account page
+
   const createAccount = () => {
     setshowcrea(!showcrea);
   };
 
-  const showModal = (id) => {
-    setSelectedUser(id);
+  const showModal = (record) => {
+    setSelectedUser(record);
     setIsModalOpen(true);
   };
+
   const handleOk = () => {
     setIsModalOpen(false);
-    console.log(selectedUser);
+    if (!selectedUser) return;
     try {
-      apiSuspendAccount(selectedUser)
+      apiSuspendAccount(selectedUser.user_id)
         .then((res) => {
-          if (res.status == "success") {
+          if (res.status === "success") {
             message.success(res.message);
             refresh();
+          } else {
+            message.error(res.error || "Failed to suspend");
           }
         })
-        .catch((err) => {
-          message.error(err.message);
-        });
+        .catch(() => message.error("Network error"));
     } catch (error) {
       console.error("network:", error);
     }
   };
+
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-  const onFinish = async (values) => {
-    const formData = new FormData();
-    formData.append("username", values.username);
-    formData.append("password", values.password);
-    formData.append("email", values.email);
-    formData.append("phone", values.phone);
-    if (values.dob) {
-      formData.append("dob", values.dob.format("YYYY-MM-DD"));
-    }
 
-    if (values.avatar && values.avatar.length > 0) {
-      const fileBody = values.avatar[0].originFileObj;
-      formData.append("avatar", fileBody);
-    }
-
+  const handleActivate = (record) => {
     try {
-      let res;
-      if (setting === "create") {
-        res = await apiCreateAcc(formData);
-      } else {
-        res = await apiUpdateAcc(updateValue.id, formData);
-      }
+      apiActivateAccount(record.user_id)
+        .then((res) => {
+          if (res.status === "success") {
+            message.success(res.message);
+            refresh();
+          } else {
+            message.error(res.error || "Failed to activate");
+          }
+        })
+        .catch(() => message.error("Network error"));
+    } catch (error) {
+      console.error("network:", error);
+    }
+  };
+
+  // ← CHANGE 3: separate onFinish for CREATE
+  const onFinishCreate = async (values) => {
+    try {
+      const res = await apiCreateAcc({
+        username: values.username,
+        password: values.password,
+        email:    values.email,
+        phone:    values.phone,
+        role:     values.role,
+        dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+      });
       if (res.status === "success") {
         message.success(res.message);
-        form.resetFields();
+        createForm.resetFields();
         setshowcrea(false);
-        setImageUrl(null);
         refresh();
       } else {
-        message.error(res.message);
+        message.error(res.error || res.message || "Something went wrong");
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+  // ← CHANGE 4: separate onFinish for UPDATE
+  const onFinishUpdate = async (values) => {
+    try {
+      const res = await apiUpdateAcc(updateValue.user_id, {
+        email:    values.email || null,
+        phone:    values.phone || null,
+        role:     values.role || null,
+        dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+        password: values.password || undefined,
+      });
+      if (res.status === "success") {
+        message.success(res.message);
+        updateForm.resetFields();
+        setshowcrea(false);
+        setImageUrl(null);
+        refresh();
+      } else {
+        message.error(res.error || res.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
+
   const searchAccount = (e) => {
     setinpvalue(e.target.value);
     // when input value changed,set warning to invisible
@@ -290,29 +300,27 @@ function ManageAccount() {
           .then((res) => {
             if (res.accounts) {
               const user = res.accounts.map((item) => ({
-                id: item.user_id,
+                user_id:  item.user_id,
                 username: item.username,
-                password: item.password,
-                role: item.role,
-                email: item.email,
-                dob: item.dob,
-                phone: item.phone == undefined ? "None" : item.phone,
-                status: item.login_status,
-                access: item.access,
-                dob: item.dob == "" ? "None" : item.dob,
+                role:     item.role,
+                email:    item.email,
+                phone:    item.phone || "—",
+                dob:      item.dob || "—",
+                status:   item.login_status,
+                access:   item.access,
+                isActive: item.isActive,
               }));
               setdata(user);
             }
           })
-          .catch((err) => {
-            console.log(err);
-          });
+          .catch((err) => console.log(err));
       } catch (error) {
         console.error("network:", error);
       }
     } else {
       // if the input value is empty
       setinpWarningVisi(true);
+      refresh();
     }
   };
 
@@ -321,29 +329,15 @@ function ManageAccount() {
       <div className="formhead">
         <li>
           <span>Username: </span>
-
           <input
             type="text"
             placeholder="Username"
-            onChange={(e) => {
-              searchAccount(e);
-            }}
+            onChange={(e) => searchAccount(e)}
           />
           {inpWarningVisi ? (
-            <span className="inpWarning">
-              Please enter a username to search
-            </span>
-          ) : (
-            ""
-          )}
-
-          <button
-            onClick={() => {
-              searchBut();
-            }}
-          >
-            Search
-          </button>
+            <span className="inpWarning">Please enter a username to search</span>
+          ) : ("")}
+          <button onClick={() => searchBut()}>Search</button>
         </li>
         <span
           className="create"
@@ -355,15 +349,11 @@ function ManageAccount() {
           Create
         </span>
       </div>
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="username"
-        // rowClassName={(record, index) => {
-        //   return index === 0 ? "first-row-black" : "";
-        // }}
-      />
-      {showcrea ? (
+
+      <Table columns={columns} dataSource={data} rowKey="user_id" />
+
+      {/* ← CHANGE 5: CREATE FORM — all fields required */}
+      {showcrea && setting === "create" ? (
         <div className="createForm">
           <img
             src={close}
@@ -371,24 +361,21 @@ function ManageAccount() {
             className="close"
             onClick={() => {
               setshowcrea(false);
-              form.resetFields();
+              createForm.resetFields();
             }}
           />
           <div className="creForm">
-            <span className="title">
-              {setting === "create" ? "Create Account" : "Update Account"}
-            </span>
-
+            <span className="title">Create Account</span>
             <Form
               labelCol={{ span: 6 }}
               wrapperCol={{ span: 13 }}
               layout="horizontal"
               disabled={componentDisabled}
               style={{ maxWidth: 600 }}
-              onFinish={onFinish}
+              onFinish={onFinishCreate}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
-              form={form}
+              form={createForm}
             >
               <Form.Item
                 label="Username"
@@ -397,13 +384,28 @@ function ManageAccount() {
               >
                 <Input />
               </Form.Item>
+
               <Form.Item
                 label="Password"
                 name="password"
                 rules={[{ required: true, message: "Please input password!" }]}
               >
-                <Input />
+                <Input.Password />
               </Form.Item>
+
+              <Form.Item
+                label="Role"
+                name="role"
+                rules={[{ required: true, message: "Please select a role!" }]}
+              >
+                <Select placeholder="Select role">
+                  <Select.Option value="admin">Admin</Select.Option>
+                  <Select.Option value="fund_raiser">Fund Raiser</Select.Option>
+                  <Select.Option value="donee">Donee</Select.Option>
+                  <Select.Option value="platform_manager">Platform Manager</Select.Option>
+                </Select>
+              </Form.Item>
+
               <Form.Item
                 label="Email"
                 name="email"
@@ -411,65 +413,87 @@ function ManageAccount() {
               >
                 <Input />
               </Form.Item>
+
               <Form.Item
                 label="Phone"
                 name="phone"
-                rules={[
-                  { required: true, message: "Please input phone number!" },
-                ]}
+                rules={[{ required: true, message: "Please input phone!" }]}
               >
                 <Input />
               </Form.Item>
-              {setting === "update" ? (
-                <Form.Item
-                  label="Dob"
-                  name="dob"
-                  rules={[{ required: true, message: "Please select!" }]}
-                >
-                  <DatePicker />
-                </Form.Item>
-              ) : (
-                ""
-              )}
 
-              <Form.Item
-                label="Avatar"
-                name="avatar"
-                valuePropName="fileList"
-                getValueFromEvent={normFile}
-              >
-                <Upload
-                  name="avatar"
-                  listType="picture-circle"
-                  className="avatar-uploader"
-                  maxCount={1}
-                  beforeUpload={() => false}
-                  // onChange={handleChange}
-                >
-                  {imageUrl ? (
-                    <img
-                      draggable={false}
-                      src={imageUrl}
-                      alt="avatar"
-                      style={{ width: "100%" }}
-                    />
-                  ) : (
-                    uploadButton
-                  )}
-                </Upload>
+              <Form.Item label="Date of Birth" name="dob">
+                <DatePicker />
               </Form.Item>
 
               <Form.Item label={null} className="crebut">
-                <Button htmlType="submit">
-                  {setting === "create" ? "Create" : "Update"}
-                </Button>
+                <Button htmlType="submit">Create</Button>
               </Form.Item>
             </Form>
           </div>
         </div>
-      ) : (
-        ""
-      )}
+      ) : null}
+
+      {/* ← CHANGE 6: UPDATE FORM — all fields optional */}
+      {showcrea && setting === "update" ? (
+        <div className="createForm">
+          <img
+            src={close}
+            alt=""
+            className="close"
+            onClick={() => {
+              setshowcrea(false);
+              updateForm.resetFields();
+            }}
+          />
+          <div className="creForm">
+            <span className="title">Update Account — {updateValue.username}</span>
+            <Form
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 13 }}
+              layout="horizontal"
+              style={{ maxWidth: 600 }}
+              onFinish={onFinishUpdate}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+              form={updateForm}
+            >
+              <Form.Item
+                label="Role"
+                name="role"
+              >
+                <Select placeholder="Select new role (optional)">
+                  <Select.Option value="admin">Admin</Select.Option>
+                  <Select.Option value="fund_raiser">Fund Raiser</Select.Option>
+                  <Select.Option value="donee">Donee</Select.Option>
+                  <Select.Option value="platform_manager">Platform Manager</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label="Email" name="email">
+                <Input placeholder="Leave blank to keep current" />
+              </Form.Item>
+
+              <Form.Item label="Phone" name="phone">
+                <Input placeholder="Leave blank to keep current" />
+              </Form.Item>
+
+              <Form.Item label="Date of Birth" name="dob">
+                <DatePicker />
+              </Form.Item>
+
+              <Form.Item label="New Password" name="password">
+                <Input.Password placeholder="Leave blank to keep current" />
+              </Form.Item>
+
+              <Form.Item label={null} className="crebut">
+                <Button htmlType="submit">Update</Button>
+              </Form.Item>
+            </Form>
+          </div>
+        </div>
+      ) : null}
+
       <Modal
         title="Suspension Confirmation"
         closable={{ "aria-label": "Custom Close Button" }}
@@ -479,7 +503,7 @@ function ManageAccount() {
         okText="Suspend"
         okType="danger"
       >
-        <p>Are you sure you want to suspend this account?</p>
+        <p>Are you sure you want to suspend <b>{selectedUser?.username}</b>?</p>
       </Modal>
     </div>
   );
