@@ -160,9 +160,9 @@ function ManageAccount() {
               user_id: item.user_id,
               username: item.username,
               role: item.role,
-              email: item.email,
-              phone: item.phone || "—",
-              dob: item.dob || "—",
+              email: item.email || null,    // ← null not "—"
+              phone: item.phone || null,    // ← null not "—"
+              dob: item.dob || null,      // ← null not "—"
               status: item.login_status,
               access: item.access,
               isActive: item.isActive,
@@ -255,12 +255,10 @@ function ManageAccount() {
 
   // ← CHANGE 4: separate onFinish for UPDATE
   const onFinishUpdate = async (values) => {
-    console.log("Update values:", values);                    // ← add
-    console.log("Update user_id:", updateValue.user_id);
     try {
       const res = await apiUpdateAcc(updateValue.user_id, {
-        email: values.email || null,
-        phone: values.phone || null,
+        email: values.email && values.email !== '—' ? values.email : null,
+        phone: values.phone && values.phone !== '—' ? values.phone : null,
         role: values.role || null,
         dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
         password: values.password || undefined,
