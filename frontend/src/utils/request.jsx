@@ -1,5 +1,6 @@
 import axios from "axios";
 import cookie from "js-cookie";
+import { message } from "antd";
 
 const request = axios.create({
   baseURL: "https://sim2026q2-hexadev-production.up.railway.app",
@@ -28,11 +29,19 @@ request.interceptors.response.use(
     return config.data;
   },
   (err) => {
-    console.error("!!! the interceptor caught a network error:", err);
-    const msg = err.response?.data?.msg || "server error";
-    console.log(msg);
-    return Promise.reject(err);
-  },
+  console.error("!!! the interceptor caught a network error:", err);
+  if (err.response?.status === 401) {
+    message.error("Session expired. Please log in again.");
+    localStorage.clear();
+    window.location.href = "/login";
+  }
+  if (err.response && err.response.data) {
+    return err.response.data;
+  }
+  const msg = err.response?.data?.msg || "server error";
+  console.log(msg);
+  return Promise.reject(err);
+},
 );
 function newRequest(config) {
   const { url, method = "get", data = {}, params = {} } = config;
