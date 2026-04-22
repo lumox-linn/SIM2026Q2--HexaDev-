@@ -32,7 +32,7 @@ export function apiCreateAcc(data) {
 }
 
 export function apiUpdateAcc(id, data) {
-  return newRequest({ url: `/api/accounts/${id}`, method: "put", data });
+  return newRequest({ url: `/api/accounts/${id}`, method: "put", data: data });
 }
 
 export function apiSuspendAccount(id) {
@@ -48,29 +48,19 @@ export function apiSearchAccounts(params) {
   return newRequest({ url: "/api/accounts/", method: "get", params });
 }
 
-export function apiSuspendUser(data) {
-  // kept for backward compatibility — use apiSuspendAccount(id) instead
-  return newRequest({
-    url: `/api/accounts/${data.user}/suspend`,
-    method: "put",
-  });
-}
-
 // ── Profile Management ───────────────────────────────────────
-export function apiProfileinfo(params) {
-  return newRequest({ url: "/api/profiles/", method: "get", params });
-}
 
 export function apiGetAllProfiles(params) {
-  return newRequest({ url: "/api/profiles/", method: "get", params });
+  return newRequest({ url: "/api/profiles/", method: "get", params: params });
 }
 
 export function apiCreateProfile(data) {
-  return newRequest({ url: "/api/profiles/", method: "post", data });
+  return newRequest({ url: "/api/profiles/", method: "post", data: data });
 }
 
 export function apiEditProfile(id, data) {
-  return newRequest({ url: `/api/profiles/${id}`, method: "put", data });
+  console.log(id);
+  return newRequest({ url: `/api/profiles/${id}`, method: "put", data: data });
 }
 
 export function apiSuspendProfile(id) {
@@ -79,8 +69,4 @@ export function apiSuspendProfile(id) {
 
 export function apiActivateProfile(id) {
   return newRequest({ url: `/api/profiles/${id}/activate`, method: "put" });
-}
-
-export function apiUserinfo(params) {
-  return newRequest({ url: "/api/accounts/", method: "get", params });
 }

@@ -23,6 +23,7 @@ function profileManage() {
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
+
   const showModal = (id) => {
     setSelectedRole(id);
     setIsModalOpen(true);
@@ -58,7 +59,7 @@ function profileManage() {
               id: item.profile_id,
               role: item.profile_name,
               permission: item.permission,
-              createDate: item.created_at.slice(0, -3),
+              createDate: item.created_at,
               description: item.description,
               status: item.status,
             }));
@@ -97,7 +98,7 @@ function profileManage() {
               const profile = res.profiles.map((item) => ({
                 id: item.profile_id,
                 role: item.profile_name,
-                createDate: item.created_at.slice(0, -3),
+                createDate: item.created_at,
                 description: item.description,
                 status: item.status,
               }));
@@ -130,7 +131,6 @@ function profileManage() {
     const payload = {
       profile_name: values.role,
       description: values.description,
-      permission: values.permission,
     };
     console.log(values);
     try {
@@ -147,9 +147,11 @@ function profileManage() {
           })
           .catch((err) => {
             console.log(err);
+            const errorMsg = err.response?.data?.error || "Update failed";
+            message.error(errorMsg);
           });
       } else if (buttype == "edit") {
-        apiEditProfile(values)
+        apiEditProfile(selectedRole, payload)
           .then((res) => {
             if (res.status == "success") {
               message.success(res.message);
@@ -171,12 +173,13 @@ function profileManage() {
     console.log("Failed:", errorInfo);
   };
   const editPro = (item) => {
+    document.querySelector(".pmhead")?.scrollIntoView({ behavior: "smooth" });
     setbuttype("edit");
     setcreaVisi(true);
     setSelectedRole(item.id);
     form.setFieldsValue({
       role: item.role,
-      permission: item.permission,
+
       description: item.description,
     });
   };
@@ -292,7 +295,10 @@ function profileManage() {
                 <span className="role">{item.role}</span>
                 <div className={getStatusClass(item)}>{item.status}</div>
               </li>
-              <p>Creation date: {item.createDate}</p>
+              <p>
+                Creation date:{" "}
+                {item.createDate ? item.createDate.slice(0, -3) : "N/A"}
+              </p>
               <span>{item.description}</span>
 
               <li>

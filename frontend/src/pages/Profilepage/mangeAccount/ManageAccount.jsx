@@ -234,26 +234,27 @@ function ManageAccount() {
     setIsModalOpen(false);
   };
   const onFinish = async (values) => {
-    const formData = new FormData();
-    formData.append("username", values.username);
-    formData.append("password", values.password);
-    formData.append("email", values.email);
-    formData.append("phone", values.phone);
+    const payload = new FormData();
+    payload.append("username", values.username);
+    payload.append("password", values.password);
+    payload.append("email", values.email);
+    payload.append("phone", values.phone);
+
     if (values.dob) {
-      formData.append("dob", values.dob.format("YYYY-MM-DD"));
+      payload.append("dob", values.dob.format("YYYY-MM-DD"));
     }
 
     if (values.avatar && values.avatar.length > 0) {
       const fileBody = values.avatar[0].originFileObj;
-      formData.append("avatar", fileBody);
+      payload.append("avatar", fileBody);
     }
 
     try {
       let res;
       if (setting === "create") {
-        res = await apiCreateAcc(formData);
+        res = await apiCreateAcc(payload);
       } else {
-        res = await apiUpdateAcc(updateValue.id, formData);
+        res = await apiUpdateAcc(updateValue.id, payload);
       }
       if (res.status === "success") {
         message.success(res.message);
