@@ -418,6 +418,20 @@ function ManageAccount() {
               >
                 <Input />
               </Form.Item>
+
+              <Form.Item
+                label="Role"
+                name="role"
+                rules={[{ required: true, message: "Please select a role!" }]}
+              >
+                <Select placeholder="Select role">
+                  <Select.Option value="admin">Admin</Select.Option>
+                  <Select.Option value="fund_raiser">Fund Raiser</Select.Option>
+                  <Select.Option value="donee">Donee</Select.Option>
+                  <Select.Option value="platform_manager">Platform Manager</Select.Option>
+                </Select>
+              </Form.Item>
+              
               <Form.Item
                 label="Email"
                 name="email"
