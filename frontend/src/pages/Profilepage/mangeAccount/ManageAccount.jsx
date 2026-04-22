@@ -31,6 +31,7 @@ import {
 function ManageAccount() {
   const location = useLocation();
   const [form] = Form.useForm();
+  const [updateForm] = Form.useForm()
   const [componentDisabled, setComponentDisabled] = useState(false);
   const [showcrea, setshowcrea] = useState(false);
   const [data, setdata] = useState([]);
@@ -40,7 +41,7 @@ function ManageAccount() {
   const [inpWarningVisi, setinpWarningVisi] = useState(false);
   const [setting, setsetting] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
   const handleChange = (info) => {
     if (info.file.status === "uploading") {
       setLoading(true);
@@ -151,7 +152,7 @@ function ManageAccount() {
   useEffect(() => {
     if (setting === "update" && updateValue && showcrea) {
       // when update the value automatically appear
-      form.setFieldsValue({
+      updateForm.setFieldsValue({
         username: updateValue.username,
         password: updateValue.password,
         email: updateValue.email,
@@ -247,41 +248,53 @@ function ManageAccount() {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-  const onFinish = async (values) => {
-    console.log("Form values:", values); 
+  
+  const onFinishCreate = async (values) => {
     try {
-      let res;
-      if (setting === "create") {
-        res = await apiCreateAcc({
-          username: values.username,
-          password: values.password,
-          email:    values.email || null,
-          phone:    values.phone || null,
-          role:     values.role,
-          dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
-        });
-      } else {
-        res = await apiUpdateAcc(updateValue.user_id, {
-          email:    values.email || null,
-          phone:    values.phone || null,
-          role:     values.role || null,
-          dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
-          password: values.password || undefined,
-        });
-      }
+      const res = await apiCreateAcc({
+        username: values.username,
+        password: values.password,
+        email:    values.email,
+        phone:    values.phone,
+        role:     values.role,
+        dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+      });
       if (res.status === "success") {
         message.success(res.message);
-        form.resetFields();
+        createForm.resetFields();
         setshowcrea(false);
-        setImageUrl(null);
         refresh();
       } else {
-        message.error(res.message);
+        message.error(res.error || res.message || "Something went wrong");
       }
     } catch (error) {
       console.log(error);
     }
   };
+ 
+  // ← CHANGE 4: separate onFinish for UPDATE
+  const onFinishUpdate = async (values) => {
+    try {
+      const res = await apiUpdateAcc(updateValue.user_id, {
+        email:    values.email || null,
+        phone:    values.phone || null,
+        role:     values.role || null,
+        dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+        password: values.password || undefined,
+      });
+      if (res.status === "success") {
+        message.success(res.message);
+        updateForm.resetFields();
+        setshowcrea(false);
+        refresh();
+      } else {
+        message.error(res.error || res.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
@@ -431,7 +444,7 @@ function ManageAccount() {
                   <Select.Option value="platform_manager">Platform Manager</Select.Option>
                 </Select>
               </Form.Item>
-              
+
               <Form.Item
                 label="Email"
                 name="email"
