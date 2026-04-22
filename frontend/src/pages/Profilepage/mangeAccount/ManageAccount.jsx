@@ -6,7 +6,6 @@ import {
   apiSuspendAccount,
   apiActivateAccount,
   apiSearchAccounts,
-  apiSuspendUser,
 } from "../../../api";
 
 import { useLocation } from "react-router-dom";
@@ -128,7 +127,6 @@ function ManageAccount() {
               setupdateValue(record);
             }}
           >
-            {console.log(record)}
             Update {record.name}
           </a>
           <a onClick={() => showModal(record.id)}>Suspend</a>
@@ -255,7 +253,7 @@ function ManageAccount() {
       if (setting === "create") {
         res = await apiCreateAcc(formData);
       } else {
-        res = await apiUpdateAcc(formData);
+        res = await apiUpdateAcc(updateValue.id, formData);
       }
       if (res.status === "success") {
         message.success(res.message);
