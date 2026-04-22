@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useRef, useState } from "react";
 // import fahh from "../../../assets/fahh.mp3";
 import {
+  apiGetAllProfiles,
   apiProfileinfo,
   apiCreateProfile,
   apiEditProfile,
@@ -49,12 +50,13 @@ function profileManage() {
   };
   const refresh = () => {
     try {
-      apiProfileinfo({})
+      apiGetAllProfiles({})
         .then((res) => {
-          if (res.profiledata) {
-            const profile = res.profiledata.map((item) => ({
-              id: item.proid,
-              role: item.role,
+          console.log(res);
+          if (res.profiles) {
+            const profile = res.profiles.map((item) => ({
+              id: item.profile_id,
+              role: item.profile_name,
               permission: item.permission,
               description: item.description,
               status: item.status,
@@ -88,10 +90,10 @@ function profileManage() {
     if (inpValue !== "") {
       console.log(inpValue);
       try {
-        apiProfileinfo({ username: inpValue })
+        apiGetAllProfiles({ username: inpValue })
           .then((res) => {
-            if (res.profiledata) {
-              const profile = res.profiledata.map((item) => ({
+            if (res.profiles) {
+              const profile = res.profiles.map((item) => ({
                 id: item.proid,
                 role: item.role,
                 permission: item.permission,
@@ -203,7 +205,6 @@ function profileManage() {
           </button>
         </li>
       </div>
-
       <div className="profileContent">
         <div className={`createPro ${creaVisi ? "show" : ""}`}>
           <i onClick={() => setcreaVisi(false)}>X</i>
@@ -269,15 +270,16 @@ function profileManage() {
         {profileData.map((item) => {
           return (
             <div key={item.id} className="card">
+              {console.log(item)}
               <li className="first">
                 <div className="img">
-                  {item.role === "User Admin"
+                  {item.role === "admin"
                     ? "UA"
-                    : item.role === "Platform Manager"
+                    : item.role === "platform_manager"
                       ? "PM"
-                      : item.role === "Fund Raiser"
+                      : item.role === "fund_raiser"
                         ? "FR"
-                        : item.role === "Donee"
+                        : item.role === "donee"
                           ? "Donee"
                           : ""}
                 </div>
@@ -286,9 +288,7 @@ function profileManage() {
               </li>
 
               <span>{item.description}</span>
-              <li className="permission">
-                <div className="per">{item.permission}</div>
-              </li>
+
               <li>
                 <button onClick={() => editPro(item)}>Edit</button>
                 <button onClick={() => showModal(item.role)}>Suspend</button>
