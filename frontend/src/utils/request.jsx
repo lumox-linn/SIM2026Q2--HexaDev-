@@ -9,6 +9,7 @@ const request = axios.create({
 request.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token") || cookie.get("token");
+    console.log("TOKEN BEING SENT:", token);
     if (token) {
       config.headers.authorization = `Bearer ${token}`;
     }
