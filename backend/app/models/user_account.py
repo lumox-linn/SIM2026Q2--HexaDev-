@@ -4,9 +4,13 @@ from werkzeug.security import check_password_hash
 
 class UserAccount:
     """
-    Entity — maps to useraccount table.
+    Entity — maps to useraccount table in csit314 database.
+    Sprint 1 + Sprint 2 methods.
     Includes login_status (online/offline) and access (active/suspended).
+    Uses GROUP BY ua.user_id to prevent duplicate rows from session JOIN.
     """
+
+    # ── Sprint 1 methods ─────────────────────────────────────
 
     @staticmethod
     def findByUsername(username: str):
@@ -121,7 +125,9 @@ class UserAccount:
         )
         mysql.connection.commit()
         cursor.close()
- # ── Sprint 2 methods ────────────────────────────────────
+
+    # ── Sprint 2 methods ─────────────────────────────────────
+
     @staticmethod
     def findById(user_id: int):
         cursor = mysql.connection.cursor()
@@ -130,7 +136,7 @@ class UserAccount:
                       ua.email, ua.phone, ua.dob, ua.profile_picture,
                       ua.created_at, ua.profile_id,
                       up.profile_name, up.status as profile_status,
-                      CASE WHEN s.session_id IS NOT NULL
+                      CASE WHEN MAX(s.session_id) IS NOT NULL
                            THEN 'online' ELSE 'offline'
                       END as login_status,
                       CASE WHEN ua.isActive = 1
@@ -140,7 +146,8 @@ class UserAccount:
                LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
                LEFT JOIN usersession s ON ua.user_id = s.user_id
                   AND s.status = 'active' AND s.expires_at > NOW()
-               WHERE ua.user_id = %s""",
+               WHERE ua.user_id = %s
+               GROUP BY ua.user_id""",
             (user_id,)
         )
         account = cursor.fetchone()
@@ -150,29 +157,33 @@ class UserAccount:
     @staticmethod
     def getAll(role: str = None):
         """
-        Get all accounts with login_status and access fields.
-        login_status = online/offline (from usersession)
-        access = active/suspended (from isActive)
+        Get all accounts with login_status and access.
+        GROUP BY ua.user_id prevents duplicate rows from session JOIN.
         """
         cursor = mysql.connection.cursor()
-        base_query = """SELECT ua.user_id, ua.username, ua.isActive, ua.role,
-                          ua.email, ua.phone, ua.dob, ua.profile_picture,
-                          ua.created_at, ua.profile_id,
-                          up.profile_name, up.status as profile_status,
-                          CASE WHEN s.session_id IS NOT NULL
-                               THEN 'online' ELSE 'offline'
-                          END as login_status,
-                          CASE WHEN ua.isActive = 1
-                               THEN 'active' ELSE 'suspended'
-                          END as access
-                   FROM useraccount ua
-                   LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-                   LEFT JOIN usersession s ON ua.user_id = s.user_id
-                      AND s.status = 'active' AND s.expires_at > NOW()"""
+        base = """SELECT ua.user_id, ua.username, ua.isActive, ua.role,
+                         ua.email, ua.phone, ua.dob, ua.profile_picture,
+                         ua.created_at, ua.profile_id,
+                         up.profile_name, up.status as profile_status,
+                         CASE WHEN MAX(s.session_id) IS NOT NULL
+                              THEN 'online' ELSE 'offline'
+                         END as login_status,
+                         CASE WHEN ua.isActive = 1
+                              THEN 'active' ELSE 'suspended'
+                         END as access
+                  FROM useraccount ua
+                  LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
+                  LEFT JOIN usersession s ON ua.user_id = s.user_id
+                     AND s.status = 'active' AND s.expires_at > NOW()"""
         if role:
-            cursor.execute(base_query + " WHERE ua.role = %s ORDER BY ua.created_at DESC", (role,))
+            cursor.execute(
+                base + " WHERE ua.role = %s GROUP BY ua.user_id ORDER BY ua.created_at DESC",
+                (role,)
+            )
         else:
-            cursor.execute(base_query + " ORDER BY ua.created_at DESC")
+            cursor.execute(
+                base + " GROUP BY ua.user_id ORDER BY ua.created_at DESC"
+            )
         accounts = cursor.fetchall()
         cursor.close()
         return accounts
@@ -216,14 +227,18 @@ class UserAccount:
     @staticmethod
     def suspendAccount(user_id: int) -> None:
         cursor = mysql.connection.cursor()
-        cursor.execute("UPDATE useraccount SET isActive = 0 WHERE user_id = %s", (user_id,))
+        cursor.execute(
+            "UPDATE useraccount SET isActive = 0 WHERE user_id = %s", (user_id,)
+        )
         mysql.connection.commit()
         cursor.close()
 
     @staticmethod
     def activateAccount(user_id: int) -> None:
         cursor = mysql.connection.cursor()
-        cursor.execute("UPDATE useraccount SET isActive = 1 WHERE user_id = %s", (user_id,))
+        cursor.execute(
+            "UPDATE useraccount SET isActive = 1 WHERE user_id = %s", (user_id,)
+        )
         mysql.connection.commit()
         cursor.close()
 
@@ -247,7 +262,7 @@ class UserAccount:
                        ua.email, ua.phone, ua.dob, ua.profile_picture,
                        ua.created_at, ua.profile_id,
                        up.profile_name, up.status as profile_status,
-                       CASE WHEN s.session_id IS NOT NULL
+                       CASE WHEN MAX(s.session_id) IS NOT NULL
                             THEN 'online' ELSE 'offline'
                        END as login_status,
                        CASE WHEN ua.isActive = 1
@@ -258,6 +273,7 @@ class UserAccount:
                 LEFT JOIN usersession s ON ua.user_id = s.user_id
                    AND s.status = 'active' AND s.expires_at > NOW()
                 {where}
+                GROUP BY ua.user_id
                 ORDER BY ua.created_at DESC""",
             tuple(values)
         )
