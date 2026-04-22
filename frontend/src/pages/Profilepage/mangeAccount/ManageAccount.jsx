@@ -198,7 +198,9 @@ function ManageAccount() {
               status: item.loginstatus,
               dob: item.dob == "" ? "None" : item.dob,
               avatar: item.useravatar,
-              access: item.access,
+              status: item.login_status,   // ← online/offline
+              access: item.access,         // ← active/suspended
+              isActive: item.isActive,
             }));
             setdata(user);
           }
@@ -370,9 +372,9 @@ function ManageAccount() {
         columns={columns}
         dataSource={data}
         rowKey="username"
-        // rowClassName={(record, index) => {
-        //   return index === 0 ? "first-row-black" : "";
-        // }}
+      // rowClassName={(record, index) => {
+      //   return index === 0 ? "first-row-black" : "";
+      // }}
       />
       {showcrea ? (
         <div className="createForm">
@@ -455,7 +457,7 @@ function ManageAccount() {
                   className="avatar-uploader"
                   maxCount={1}
                   beforeUpload={() => false}
-                  // onChange={handleChange}
+                // onChange={handleChange}
                 >
                   {imageUrl ? (
                     <img
