@@ -248,6 +248,7 @@ function ManageAccount() {
     setIsModalOpen(false);
   };
   const onFinish = async (values) => {
+    console.log("Form values:", values); 
     try {
       let res;
       if (setting === "create") {
