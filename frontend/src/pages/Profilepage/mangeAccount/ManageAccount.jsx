@@ -464,6 +464,32 @@ function ManageAccount() {
                 <DatePicker />
               </Form.Item>
 
+              <Form.Item
+                label="Avatar"
+                name="avatar"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+              >
+                <Upload
+                  name="avatar"
+                  listType="picture-circle"
+                  className="avatar-uploader"
+                  maxCount={1}
+                  beforeUpload={() => false}
+                >
+                  {imageUrl ? (
+                    <img
+                      draggable={false}
+                      src={imageUrl}
+                      alt="avatar"
+                      style={{ width: "100%" }}
+                    />
+                  ) : (
+                    uploadButton
+                  )}
+                </Upload>
+              </Form.Item>
+
               <Form.Item label={null} className="crebut">
                 <Button htmlType="submit">Create</Button>
               </Form.Item>
