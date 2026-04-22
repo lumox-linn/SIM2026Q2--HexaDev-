@@ -142,7 +142,7 @@ function ManageAccount() {
           >
             Update {record.name}
           </a>
-          <a onClick={() => showModal(record.username)}>Suspend</a>
+          <a onClick={() => showModal(record)}>Suspend</a>
         </Space>
       ),
     },
