@@ -248,20 +248,6 @@ function ManageAccount() {
     setIsModalOpen(false);
   };
   const onFinish = async (values) => {
-    const formData = new FormData();
-    formData.append("username", values.username);
-    formData.append("password", values.password);
-    formData.append("email", values.email);
-    formData.append("phone", values.phone);
-    if (values.dob) {
-      formData.append("dob", values.dob.format("YYYY-MM-DD"));
-    }
-
-    if (values.avatar && values.avatar.length > 0) {
-      const fileBody = values.avatar[0].originFileObj;
-      formData.append("avatar", fileBody);
-    }
-
     try {
       let res;
       if (setting === "create") {
@@ -274,7 +260,13 @@ function ManageAccount() {
           dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
         });
       } else {
-        res = await apiUpdateAcc(formData);
+        res = await apiUpdateAcc(updateValue.user_id, {
+          email:    values.email || null,
+          phone:    values.phone || null,
+          role:     values.role || null,
+          dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+          password: values.password || undefined,
+        });
       }
       if (res.status === "success") {
         message.success(res.message);
