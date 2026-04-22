@@ -30,6 +30,7 @@ import {
 
 function ManageAccount() {
   const location = useLocation();
+  const [form] = Form.useForm();
   const [createForm] = Form.useForm();
   const [updateForm] = Form.useForm()
   const [componentDisabled, setComponentDisabled] = useState(false);
