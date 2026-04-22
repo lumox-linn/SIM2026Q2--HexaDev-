@@ -59,7 +59,7 @@ export function apiUpdateAcc(data) {
 
 export function apiProfileinfo(data) {
   return newRequest({
-    url: "/profileinfo/",
+    url: "/api/profiles/",
     method: "post",
     data: data,
   });
@@ -67,24 +67,23 @@ export function apiProfileinfo(data) {
 
 export function apiCreateProfile(data) {
   return newRequest({
-    url: "/createProfile/",
+    url: "/api/profiles/",
     method: "post",
     data: data,
   });
 }
 
-export function apiEditProfile(data) {
+export function apiEditProfile(id, data) {
   return newRequest({
-    url: "/editProfile/",
-    method: "post",
+    url: `/api/profiles/${id}`,
+    method: "put",
     data: data,
   });
 }
-export function apiSuspendProfile(data) {
+export function apiSuspendProfile(id) {
   return newRequest({
-    url: "/suspendProfile/",
-    method: "post",
-    data: data,
+    url: `/api/profiles/${id}/suspend`,
+    method: "put",
   });
 }
 export function apiSuspendUser(data) {
