@@ -190,6 +190,7 @@ function ManageAccount() {
         .then((res) => {
           if (res.accounts) {
             const user = res.accounts.map((item) => ({
+              user_id:  item.user_id,
               username: item.username,
               password: item.password,
               role: item.role,
