@@ -28,7 +28,7 @@ function Profile() {
   // change link routes
   useEffect(() => {
     if (!userdata) return;
-    if (userdata.role === "Admin") {
+    if (userdata.role === "admin") {
       setlink([
         { to: "ManageAccount", label: "Account Management" },
         { to: "ManageProfile", label: "Profile Management" },

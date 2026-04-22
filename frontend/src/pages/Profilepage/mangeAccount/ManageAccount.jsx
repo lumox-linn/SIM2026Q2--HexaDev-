@@ -31,6 +31,8 @@ import {
 function ManageAccount() {
   const location = useLocation();
   const [form] = Form.useForm();
+  const [createForm] = Form.useForm();
+  const [updateForm] = Form.useForm()
   const [componentDisabled, setComponentDisabled] = useState(false);
   const [showcrea, setshowcrea] = useState(false);
   const [data, setdata] = useState([]);
@@ -40,7 +42,7 @@ function ManageAccount() {
   const [inpWarningVisi, setinpWarningVisi] = useState(false);
   const [setting, setsetting] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
   const handleChange = (info) => {
     if (info.file.status === "uploading") {
       setLoading(true);
@@ -109,12 +111,12 @@ function ManageAccount() {
     },
 
     {
-      title: "Stutus",
+      title: "Status",
       key: "status",
       dataIndex: "status",
       render: (_, { status }) => (
-        <Tag color="green" key={status}>
-          {String(status).toUpperCase()}
+        <Tag color={status === "online" ? "blue" : "default"}>
+          {String(status || "offline").toUpperCase()}
         </Tag>
       ),
     },
@@ -123,8 +125,8 @@ function ManageAccount() {
       key: "access",
       dataIndex: "access",
       render: (_, { access }) => (
-        <Tag color="green" key={access}>
-          {String(access).toUpperCase()}
+        <Tag color={access === "active" ? "green" : "red"}>
+          {String(access || "active").toUpperCase()}
         </Tag>
       ),
     },
@@ -142,7 +144,7 @@ function ManageAccount() {
           >
             Update {record.name}
           </a>
-          <a onClick={() => showModal(record.username)}>Suspend</a>
+          <a onClick={() => showModal(record)}>Suspend</a>
         </Space>
       ),
     },
@@ -151,7 +153,7 @@ function ManageAccount() {
   useEffect(() => {
     if (setting === "update" && updateValue && showcrea) {
       // when update the value automatically appear
-      form.setFieldsValue({
+      updateForm.setFieldsValue({
         username: updateValue.username,
         password: updateValue.password,
         email: updateValue.email,
@@ -190,6 +192,7 @@ function ManageAccount() {
         .then((res) => {
           if (res.accounts) {
             const user = res.accounts.map((item) => ({
+              user_id: item.user_id,
               username: item.username,
               password: item.password,
               role: item.role,
@@ -198,7 +201,9 @@ function ManageAccount() {
               status: item.loginstatus,
               dob: item.dob == "" ? "None" : item.dob,
               avatar: item.useravatar,
-              access: item.access,
+              status: item.login_status,   // ← online/offline
+              access: item.access,         // ← active/suspended
+              isActive: item.isActive,
             }));
             setdata(user);
           }
@@ -219,15 +224,15 @@ function ManageAccount() {
     setshowcrea(!showcrea);
   };
 
-  const showModal = (username) => {
-    setSelectedUser(username);
+  const showModal = (record) => {
+    setSelectedUser(record);
     setIsModalOpen(true);
   };
   const handleOk = () => {
     setIsModalOpen(false);
     console.log(selectedUser);
     try {
-      apiSuspendAccount({ user: selectedUser })
+      apiSuspendAccount(selectedUser.user_id)
         .then((res) => {
           if (res.status == "success") {
             message.success(res.message);
@@ -244,41 +249,53 @@ function ManageAccount() {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-  const onFinish = async (values) => {
-    const formData = new FormData();
-    formData.append("username", values.username);
-    formData.append("password", values.password);
-    formData.append("email", values.email);
-    formData.append("phone", values.phone);
-    if (values.dob) {
-      formData.append("dob", values.dob.format("YYYY-MM-DD"));
-    }
 
-    if (values.avatar && values.avatar.length > 0) {
-      const fileBody = values.avatar[0].originFileObj;
-      formData.append("avatar", fileBody);
-    }
-
+  const onFinishCreate = async (values) => {
     try {
-      let res;
-      if (setting === "create") {
-        res = await apiCreateAcc(formData);
-      } else {
-        res = await apiUpdateAcc(formData);
-      }
+      const res = await apiCreateAcc({
+        username: values.username,
+        password: values.password,
+        email: values.email,
+        phone: values.phone,
+        role: values.role,
+        dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
+      });
       if (res.status === "success") {
         message.success(res.message);
-        form.resetFields();
+        createForm.resetFields();
         setshowcrea(false);
-        setImageUrl(null);
         refresh();
       } else {
-        message.error(res.message);
+        message.error(res.error || res.message || "Something went wrong");
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+  // ← CHANGE 4: separate onFinish for UPDATE
+  const onFinishUpdate = async (values) => {
+    try {
+      const res = await apiUpdateAcc(updateValue.user_id, {
+        email: values.email || null,
+        phone: values.phone || null,
+        role: values.role || null,
+        dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
+        password: values.password || undefined,
+      });
+      if (res.status === "success") {
+        message.success(res.message);
+        updateForm.resetFields();
+        setshowcrea(false);
+        refresh();
+      } else {
+        message.error(res.error || res.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
@@ -370,11 +387,12 @@ function ManageAccount() {
         columns={columns}
         dataSource={data}
         rowKey="username"
-        // rowClassName={(record, index) => {
-        //   return index === 0 ? "first-row-black" : "";
-        // }}
+      // rowClassName={(record, index) => {
+      //   return index === 0 ? "first-row-black" : "";
+      // }}
       />
-      {showcrea ? (
+      {/* CREATE FORM — all fields required */}
+      {showcrea && setting === "create" ? (
         <div className="createForm">
           <img
             src={close}
@@ -382,24 +400,20 @@ function ManageAccount() {
             className="close"
             onClick={() => {
               setshowcrea(false);
-              form.resetFields();
+              createForm.resetFields();
             }}
           />
           <div className="creForm">
-            <span className="title">
-              {setting === "create" ? "Create Account" : "Update Account"}
-            </span>
-
+            <span className="title">Create Account</span>
             <Form
               labelCol={{ span: 6 }}
               wrapperCol={{ span: 13 }}
               layout="horizontal"
-              disabled={componentDisabled}
               style={{ maxWidth: 600 }}
-              onFinish={onFinish}
+              onFinish={onFinishCreate}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
-              form={form}
+              form={createForm}
             >
               <Form.Item
                 label="Username"
@@ -408,13 +422,28 @@ function ManageAccount() {
               >
                 <Input />
               </Form.Item>
+
               <Form.Item
                 label="Password"
                 name="password"
                 rules={[{ required: true, message: "Please input password!" }]}
               >
-                <Input />
+                <Input.Password />
               </Form.Item>
+
+              <Form.Item
+                label="Role"
+                name="role"
+                rules={[{ required: true, message: "Please select a role!" }]}
+              >
+                <Select placeholder="Select role">
+                  <Select.Option value="admin">Admin</Select.Option>
+                  <Select.Option value="fund_raiser">Fund Raiser</Select.Option>
+                  <Select.Option value="donee">Donee</Select.Option>
+                  <Select.Option value="platform_manager">Platform Manager</Select.Option>
+                </Select>
+              </Form.Item>
+
               <Form.Item
                 label="Email"
                 name="email"
@@ -422,26 +451,18 @@ function ManageAccount() {
               >
                 <Input />
               </Form.Item>
+
               <Form.Item
                 label="Phone"
                 name="phone"
-                rules={[
-                  { required: true, message: "Please input phone number!" },
-                ]}
+                rules={[{ required: true, message: "Please input phone!" }]}
               >
                 <Input />
               </Form.Item>
-              {setting === "update" ? (
-                <Form.Item
-                  label="Dob"
-                  name="dob"
-                  rules={[{ required: true, message: "Please select!" }]}
-                >
-                  <DatePicker />
-                </Form.Item>
-              ) : (
-                ""
-              )}
+
+              <Form.Item label="Date of Birth" name="dob">
+                <DatePicker />
+              </Form.Item>
 
               <Form.Item
                 label="Avatar"
@@ -455,7 +476,6 @@ function ManageAccount() {
                   className="avatar-uploader"
                   maxCount={1}
                   beforeUpload={() => false}
-                  // onChange={handleChange}
                 >
                   {imageUrl ? (
                     <img
@@ -471,16 +491,70 @@ function ManageAccount() {
               </Form.Item>
 
               <Form.Item label={null} className="crebut">
-                <Button htmlType="submit">
-                  {setting === "create" ? "Create" : "Update"}
-                </Button>
+                <Button htmlType="submit">Create</Button>
               </Form.Item>
             </Form>
           </div>
         </div>
-      ) : (
-        ""
-      )}
+      ) : null}
+
+      {/* UPDATE FORM — all fields optional */}
+      {showcrea && setting === "update" ? (
+        <div className="createForm">
+          <img
+            src={close}
+            alt=""
+            className="close"
+            onClick={() => {
+              setshowcrea(false);
+              updateForm.resetFields();
+            }}
+          />
+          <div className="creForm">
+            <span className="title">Update Account — {updateValue.username}</span>
+            <Form
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 13 }}
+              layout="horizontal"
+              style={{ maxWidth: 600 }}
+              onFinish={onFinishUpdate}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+              form={updateForm}
+            >
+              <Form.Item label="Role" name="role">
+                <Select placeholder="Select new role (optional)">
+                  <Select.Option value="admin">Admin</Select.Option>
+                  <Select.Option value="fund_raiser">Fund Raiser</Select.Option>
+                  <Select.Option value="donee">Donee</Select.Option>
+                  <Select.Option value="platform_manager">Platform Manager</Select.Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item label="Email" name="email">
+                <Input placeholder="Leave blank to keep current" />
+              </Form.Item>
+
+              <Form.Item label="Phone" name="phone">
+                <Input placeholder="Leave blank to keep current" />
+              </Form.Item>
+
+              <Form.Item label="Date of Birth" name="dob">
+                <DatePicker />
+              </Form.Item>
+
+              <Form.Item label="New Password" name="password">
+                <Input.Password placeholder="Leave blank to keep current" />
+              </Form.Item>
+
+              <Form.Item label={null} className="crebut">
+                <Button htmlType="submit">Update</Button>
+              </Form.Item>
+            </Form>
+          </div>
+        </div>
+      ) : null}
+
       <Modal
         title="Suspension Confirmation"
         closable={{ "aria-label": "Custom Close Button" }}

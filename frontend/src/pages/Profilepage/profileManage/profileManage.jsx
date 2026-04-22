@@ -1,16 +1,16 @@
 import { useLocation } from "react-router-dom";
-import { useRef, useState } from "react";
-// import fahh from "../../../assets/fahh.mp3";
+import { useState, useEffect } from "react";
 import {
   apiGetAllProfiles,
   apiProfileinfo,
   apiCreateProfile,
   apiEditProfile,
   apiSuspendProfile,
+  apiActivateProfile,
 } from "../../../api";
 import "../profileManage/profileManage.css";
 import { Button, Checkbox, Form, Input, message, Modal } from "antd";
-import { useEffect } from "react";
+
 function profileManage() {
   const location = useLocation();
   const [profileData, setprofileData] = useState([]);
@@ -22,42 +22,70 @@ function profileManage() {
   const { TextArea } = Input;
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("");
-  const showModal = (role) => {
-    setSelectedRole(role);
+  const [selectedProfile, setSelectedProfile] = useState(null); // ← CHANGE 1: store full profile not just role
+  const [editValue, setEditValue] = useState(null);
+
+  // ← CHANGE 2: showModal stores full profile object
+  const showModal = (profile) => {
+    setSelectedProfile(profile);
     setIsModalOpen(true);
   };
+
+  // ← CHANGE 3: handleOk uses profile_id not role
   const handleOk = () => {
     setIsModalOpen(false);
-    console.log(selectedRole);
+    if (!selectedProfile) return;
     try {
-      apiSuspendProfile({ role: selectedRole })
+      apiSuspendProfile(selectedProfile.id)
         .then((res) => {
-          if (res.status == "success") {
+          if (res.status === "success") {
             message.success(res.message);
             refresh();
+          } else {
+            message.error(res.error || "Failed to suspend");
           }
         })
         .catch((err) => {
-          message.error(err.message);
+          message.error("Network error");
         });
     } catch (error) {
       console.error("network:", error);
     }
   };
+
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
+  // ← CHANGE 4: handleActivate for reactivating profiles
+  const handleActivate = (profile) => {
+    try {
+      apiActivateProfile(profile.id)
+        .then((res) => {
+          if (res.status === "success") {
+            message.success(res.message);
+            refresh();
+          } else {
+            message.error(res.error || "Failed to activate");
+          }
+        })
+        .catch((err) => {
+          message.error("Network error");
+        });
+    } catch (error) {
+      console.error("network:", error);
+    }
+  };
+
+  // ← CHANGE 5: refresh uses res.profiles not res.profiledata
   const refresh = () => {
     try {
-      apiGetAllProfiles({})
+      apiProfileinfo()
         .then((res) => {
-          console.log(res);
           if (res.profiles) {
             const profile = res.profiles.map((item) => ({
-              id: item.profile_id,
-              role: item.profile_name,
-              permission: item.permission,
+              id: item.profile_id, // ← profile_id not proid
+              role: item.profile_name, // ← profile_name not role
               description: item.description,
               status: item.status,
             }));
@@ -71,6 +99,7 @@ function profileManage() {
       console.error("network:", error);
     }
   };
+
   const searchProfile = (e) => {
     setinpvalue(e.target.value);
     // when input value changed,set warning to invisible
@@ -85,19 +114,19 @@ function profileManage() {
   useEffect(() => {
     refresh();
   }, []);
+
   const searchPro = () => {
     // if the input has value
     if (inpValue !== "") {
       console.log(inpValue);
       try {
-        apiGetAllProfiles({ username: inpValue })
+        apiProfileinfo({ query: inpValue })
           .then((res) => {
             if (res.profiles) {
               const profile = res.profiles.map((item) => ({
-                id: item.proid,
-                role: item.role,
-                permission: item.permission,
-                description: item.descripton,
+                id: item.profile_id,
+                role: item.profile_name,
+                description: item.description,
                 status: item.status,
               }));
               setprofileData(profile);
@@ -114,65 +143,70 @@ function profileManage() {
       setinpWarningVisi(true);
     }
   };
-  // status classname
+
   const getStatusClass = (item) => {
-    if (item.status === "Disabled") {
-      return "disabled";
-    }
-    if (item.role === "User Admin" || item.role === "Platform Manager") {
-      return "status";
-    }
+    if (item.status === "suspended") return "disabled";
     return "active";
   };
 
+  // ← CHANGE 7: onFinish uses correct API and field names
   const onFinish = (values) => {
     console.log(values);
     try {
-      if (buttype == "create") {
-        apiCreateProfile(values)
+      if (buttype === "create") {
+        apiCreateProfile({
+          profile_name: values.role, // ← profile_name not role
+          description: values.description,
+        })
           .then((res) => {
-            if (res.status == "success") {
+            if (res.status === "success") {
               message.success(res.message);
               setcreaVisi(false);
+              form.resetFields();
               refresh();
             } else {
-              message.error(res.message);
+              message.error(res.error || res.message);
             }
           })
-          .catch((err) => {
-            console.log(err);
-          });
-      } else if (buttype == "edit") {
-        apiEditProfile(values)
+          .catch((err) => console.log(err));
+      } else if (buttype === "edit") {
+        // ← CHANGE 8: edit uses profile_id
+        apiEditProfile(editValue.id, {
+          profile_name: values.role,
+          description: values.description,
+        })
           .then((res) => {
-            if (res.status == "success") {
+            if (res.status === "success") {
               message.success(res.message);
               setcreaVisi(false);
+              form.resetFields();
               refresh();
             } else {
-              message.error(res.message);
+              message.error(res.error || res.message);
             }
           })
-          .catch((err) => {
-            console.log(err);
-          });
+          .catch((err) => console.log(err));
       }
     } catch (error) {
       console.error("network:", error);
     }
   };
+
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
+
+  // ← CHANGE 9: editPro stores full item for profile_id
   const editPro = (item) => {
     setbuttype("edit");
+    setEditValue(item);
     setcreaVisi(true);
     form.setFieldsValue({
       role: item.role,
-      permission: item.permission,
       description: item.description,
     });
   };
+
   return (
     <div className="pm">
       <div className="pmhead">
@@ -180,16 +214,12 @@ function profileManage() {
         <li>
           <input
             type="text"
-            placeholder="Username"
-            onChange={(e) => {
-              searchProfile(e);
-            }}
+            placeholder="Search profile..."
+            onChange={(e) => searchProfile(e)}
           />
           <button onClick={searchPro}>Search</button>
           {inpWarningVisi ? (
-            <span className="inpWarning">
-              Please enter a username to search
-            </span>
+            <span className="inpWarning">Please enter a name to search</span>
           ) : (
             ""
           )}
@@ -210,10 +240,10 @@ function profileManage() {
           <i onClick={() => setcreaVisi(false)}>X</i>
           <div className="createCard">
             <li>
-              {buttype == "create"
+              {buttype === "create"
                 ? "Create Profile"
-                : buttype == "edit"
-                  ? "Edit"
+                : buttype === "edit"
+                  ? "Edit Profile"
                   : ""}
             </li>
             <Form
@@ -228,9 +258,11 @@ function profileManage() {
               form={form}
             >
               <Form.Item
-                label="Role"
+                label="Profile Name"
                 name="role"
-                rules={[{ required: true, message: "Please input role!" }]}
+                rules={[
+                  { required: true, message: "Please input profile name!" },
+                ]}
               >
                 <Input />
               </Form.Item>
@@ -244,6 +276,7 @@ function profileManage() {
               >
                 <Input />
               </Form.Item>
+
               <Form.Item
                 label="Description"
                 name="description"
@@ -256,11 +289,7 @@ function profileManage() {
 
               <Form.Item label={null}>
                 <Button type="primary" htmlType="submit">
-                  {buttype == "create"
-                    ? "Create"
-                    : buttype == "edit"
-                      ? "Edit"
-                      : ""}
+                  {buttype === "create" ? "Create" : "Save"}
                 </Button>
               </Form.Item>
             </Form>
@@ -280,18 +309,31 @@ function profileManage() {
                       : item.role === "fund_raiser"
                         ? "FR"
                         : item.role === "donee"
-                          ? "Donee"
-                          : ""}
+                          ? "DO"
+                          : item.role.substring(0, 2).toUpperCase()}
                 </div>
                 <span className="role">{item.role}</span>
-                <div className={getStatusClass(item)}>{item.status}</div>
+                {/* ← CHANGE 10: status tag color based on value */}
+                <div className={getStatusClass(item)}>
+                  {item.status === "active" ? "Active" : "Suspended"}
+                </div>
               </li>
 
               <span>{item.description}</span>
 
               <li>
                 <button onClick={() => editPro(item)}>Edit</button>
-                <button onClick={() => showModal(item.role)}>Suspend</button>
+                {/* ← CHANGE 11: show Suspend or Activate based on status */}
+                {item.status === "active" ? (
+                  <button onClick={() => showModal(item)}>Suspend</button>
+                ) : (
+                  <button
+                    onClick={() => handleActivate(item)}
+                    style={{ color: "green" }}
+                  >
+                    Activate
+                  </button>
+                )}
                 <Modal
                   title="Suspension Confirmation"
                   closable={{ "aria-label": "Custom Close Button" }}
@@ -301,7 +343,11 @@ function profileManage() {
                   okText="Suspend"
                   okType="danger"
                 >
-                  <p>Are you sure you want to suspend this role?</p>
+                  <p>
+                    Are you sure you want to suspend{" "}
+                    <b>{selectedProfile?.role}</b>? All associated accounts will
+                    also be suspended.
+                  </p>
                 </Modal>
               </li>
             </div>
