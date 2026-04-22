@@ -109,12 +109,12 @@ function ManageAccount() {
     },
 
     {
-      title: "Stutus",
+      title: "Status",
       key: "status",
       dataIndex: "status",
       render: (_, { status }) => (
-        <Tag color="green" key={status}>
-          {String(status).toUpperCase()}
+        <Tag color={status === "online" ? "blue" : "default"}>
+          {String(status || "offline").toUpperCase()}
         </Tag>
       ),
     },
@@ -123,8 +123,8 @@ function ManageAccount() {
       key: "access",
       dataIndex: "access",
       render: (_, { access }) => (
-        <Tag color="green" key={access}>
-          {String(access).toUpperCase()}
+        <Tag color={access === "active" ? "green" : "red"}>
+          {String(access || "active").toUpperCase()}
         </Tag>
       ),
     },
@@ -265,7 +265,14 @@ function ManageAccount() {
     try {
       let res;
       if (setting === "create") {
-        res = await apiCreateAcc(formData);
+        res = await apiCreateAcc({
+          username: values.username,
+          password: values.password,
+          email:    values.email || null,
+          phone:    values.phone || null,
+          role:     values.role,
+          dob:      values.dob ? values.dob.format("YYYY-MM-DD") : null,
+        });
       } else {
         res = await apiUpdateAcc(formData);
       }
