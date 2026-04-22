@@ -221,15 +221,15 @@ function ManageAccount() {
     setshowcrea(!showcrea);
   };
 
-  const showModal = (username) => {
-    setSelectedUser(username);
+  const showModal = (record) => {
+    setSelectedUser(record);
     setIsModalOpen(true);
   };
   const handleOk = () => {
     setIsModalOpen(false);
     console.log(selectedUser);
     try {
-      apiSuspendAccount({ user: selectedUser })
+      apiSuspendAccount(selectedUser.user_id)
         .then((res) => {
           if (res.status == "success") {
             message.success(res.message);
