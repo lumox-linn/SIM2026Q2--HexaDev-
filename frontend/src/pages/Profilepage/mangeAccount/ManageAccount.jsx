@@ -177,7 +177,7 @@ function ManageAccount() {
         })
         .catch((err) => console.log(err));
     } catch (error) {
-      console.error("network:", error);
+      message.error(error.response?.data?.error);
     }
   };
 
@@ -209,7 +209,7 @@ function ManageAccount() {
         })
         .catch(() => message.error("Network error"));
     } catch (error) {
-      console.error("network:", error);
+      message.error(error.response?.data?.error);
     }
   };
 
@@ -230,7 +230,7 @@ function ManageAccount() {
         })
         .catch(() => message.error("Network error"));
     } catch (error) {
-      console.error("network:", error);
+      message.error(error.response?.data?.error);
     }
   };
 
@@ -248,7 +248,7 @@ function ManageAccount() {
           dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
         });
       } else {
-        res = await apiUpdateAcc(Number(updateValue.user_id), {
+        res = await apiUpdateAcc(updateValue.user_id, {
           email: values.email && values.email !== "—" ? values.email : null,
           phone: values.phone && values.phone !== "—" ? values.phone : null,
           role: values.role || null,
@@ -264,11 +264,9 @@ function ManageAccount() {
         setshowcrea(false);
         setImageUrl(null);
         refresh();
-      } else {
-        message.error(res.error || res.message || "Something went wrong");
       }
     } catch (error) {
-      console.log(error);
+      message.error(error.response?.data?.error);
     }
   };
 
@@ -311,7 +309,7 @@ function ManageAccount() {
           })
           .catch((err) => console.log(err));
       } catch (error) {
-        console.error("network:", error);
+        message.error(error.response?.data?.error);
       }
     } else {
       // if the input value is empty

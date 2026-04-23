@@ -46,7 +46,7 @@ function profileManage() {
           message.error("Network error");
         });
     } catch (error) {
-      console.error("network:", error);
+      message.error(error.response?.data?.error);
     }
   };
 
@@ -66,10 +66,10 @@ function profileManage() {
           }
         })
         .catch((err) => {
-          message.error("Network error");
+          message.error(err.response?.data?.error);
         });
     } catch (error) {
-      console.error("network:", error);
+      message.error(error.response?.data?.error);
     }
   };
 
@@ -89,10 +89,10 @@ function profileManage() {
           }
         })
         .catch((err) => {
-          console.log(err);
+          message.error(err.response?.data?.error);
         });
     } catch (error) {
-      console.error("network:", error);
+      message.error(error.response?.data?.error);
     }
   };
 
@@ -129,10 +129,10 @@ function profileManage() {
             }
           })
           .catch((err) => {
-            console.log(err);
+            message.error(err.response?.data?.error);
           });
       } catch (error) {
-        console.error("network:", error);
+        message.error(error.response?.data?.error);
       }
     } else {
       // if the input value is empty
@@ -162,7 +162,7 @@ function profileManage() {
               message.error(res.error || res.message);
             }
           })
-          .catch((err) => console.log(err));
+          .catch((err) => message.error(err.response?.data?.error));
       } else if (buttype === "edit") {
         apiEditProfile(Number(editValue.id), {
           profile_name: values.role,
@@ -178,10 +178,12 @@ function profileManage() {
               message.error(res.error || res.message);
             }
           })
-          .catch((err) => console.log(err));
+          .catch((err) => {
+            message.error(err.response?.data?.error);
+          });
       }
     } catch (error) {
-      console.error("network:", error);
+      message.error(error.response?.data?.error);
     }
   };
 

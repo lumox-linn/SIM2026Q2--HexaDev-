@@ -29,6 +29,7 @@ export function apiGetAccount(id) {
 }
 
 export function apiCreateAcc(data) {
+  console.log(data);
   return newRequest({ url: "/api/auth/accounts", method: "post", data: data });
 }
 
