@@ -20,6 +20,7 @@ export function apiLogout(data) {
 
 // ── Account Management ───────────────────────────────────────
 export function apiGetAllAccounts(params) {
+  console.log(params);
   return newRequest({ url: "/api/accounts/", method: "get", params });
 }
 
@@ -32,6 +33,7 @@ export function apiCreateAcc(data) {
 }
 
 export function apiUpdateAcc(id, data) {
+  console.log(data);
   return newRequest({ url: `/api/accounts/${id}`, method: "put", data: data });
 }
 
@@ -59,7 +61,7 @@ export function apiCreateProfile(data) {
 }
 
 export function apiEditProfile(id, data) {
-  console.log(id);
+  console.log(id, data);
   return newRequest({ url: `/api/profiles/${id}`, method: "put", data: data });
 }
 

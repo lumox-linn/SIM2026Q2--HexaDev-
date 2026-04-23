@@ -248,7 +248,7 @@ function ManageAccount() {
           dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
         });
       } else {
-        res = await apiUpdateAcc(updateValue.user_id, {
+        res = await apiUpdateAcc(Number(updateValue.user_id), {
           email: values.email && values.email !== "—" ? values.email : null,
           phone: values.phone && values.phone !== "—" ? values.phone : null,
           role: values.role || null,
@@ -294,6 +294,7 @@ function ManageAccount() {
         apiGetAllAccounts({ username: inpValue })
           .then((res) => {
             if (res.accounts) {
+              console.log(res);
               const user = res.accounts.map((item) => ({
                 user_id: item.user_id,
                 username: item.username,

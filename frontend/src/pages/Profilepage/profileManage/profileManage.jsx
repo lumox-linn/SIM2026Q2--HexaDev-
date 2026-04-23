@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
-  apiProfileinfo,
+  apiGetAllProfiles,
   apiCreateProfile,
   apiEditProfile,
   apiSuspendProfile,
@@ -21,16 +21,14 @@ function profileManage() {
   const { TextArea } = Input;
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState(null); // ← CHANGE 1: store full profile not just role
+  const [selectedProfile, setSelectedProfile] = useState(null);
   const [editValue, setEditValue] = useState(null);
 
-  // ← CHANGE 2: showModal stores full profile object
   const showModal = (profile) => {
     setSelectedProfile(profile);
     setIsModalOpen(true);
   };
 
-  // ← CHANGE 3: handleOk uses profile_id not role
   const handleOk = () => {
     setIsModalOpen(false);
     if (!selectedProfile) return;
@@ -56,7 +54,6 @@ function profileManage() {
     setIsModalOpen(false);
   };
 
-  // ← CHANGE 4: handleActivate for reactivating profiles
   const handleActivate = (profile) => {
     try {
       apiActivateProfile(profile.id)
@@ -76,16 +73,15 @@ function profileManage() {
     }
   };
 
-  // ← CHANGE 5: refresh uses res.profiles not res.profiledata
   const refresh = () => {
     try {
-      apiProfileinfo()
+      apiGetAllProfiles()
         .then((res) => {
           console.log(res);
           if (res.profiles) {
             const profile = res.profiles.map((item) => ({
-              id: item.profile_id, // ← profile_id not proid
-              role: item.profile_name, // ← profile_name not role
+              id: item.profile_id,
+              role: item.profile_name,
               description: item.description,
               status: item.status,
             }));
@@ -115,13 +111,12 @@ function profileManage() {
     refresh();
   }, []);
 
-  // ← CHANGE 6: searchPro uses query param not username
   const searchPro = () => {
     // if the input has value
     if (inpValue !== "") {
       console.log(inpValue);
       try {
-        apiProfileinfo({ query: inpValue })
+        apiGetAllProfiles({ query: inpValue })
           .then((res) => {
             if (res.profiles) {
               const profile = res.profiles.map((item) => ({
@@ -150,12 +145,11 @@ function profileManage() {
     return "active";
   };
 
-  // ← CHANGE 7: onFinish uses correct API and field names
   const onFinish = (values) => {
     try {
       if (buttype === "create") {
         apiCreateProfile({
-          profile_name: values.role, // ← profile_name not role
+          profile_name: values.role,
           description: values.description,
         })
           .then((res) => {
@@ -170,8 +164,7 @@ function profileManage() {
           })
           .catch((err) => console.log(err));
       } else if (buttype === "edit") {
-        // ← CHANGE 8: edit uses profile_id
-        apiEditProfile(editValue.id, {
+        apiEditProfile(Number(editValue.id), {
           profile_name: values.role,
           description: values.description,
         })
@@ -196,7 +189,6 @@ function profileManage() {
     console.log("Failed:", errorInfo);
   };
 
-  // ← CHANGE 9: editPro stores full item for profile_id
   const editPro = (item) => {
     document.querySelector(".pmhead")?.scrollIntoView({ behavior: "smooth" });
     setbuttype("edit");
@@ -304,7 +296,7 @@ function profileManage() {
                           : item.role.substring(0, 2).toUpperCase()}
                 </div>
                 <span className="role">{item.role}</span>
-                {/* ← CHANGE 10: status tag color based on value */}
+
                 <div className={getStatusClass(item)}>
                   {item.status === "active" ? "Active" : "Suspended"}
                 </div>
@@ -313,7 +305,7 @@ function profileManage() {
 
               <li>
                 <button onClick={() => editPro(item)}>Edit</button>
-                {/* ← CHANGE 11: show Suspend or Activate based on status */}
+
                 {item.status === "active" ? (
                   <button onClick={() => showModal(item)}>Suspend</button>
                 ) : (
