@@ -169,7 +169,9 @@ class TestAdminCreateAccount:
         assert res.status_code == 400
 
     @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=None)
-    def test_duplicate_username_fails(self, _, client, admin_token):
+    @patch('app.utils.auth_utils.UserAccount.findById')
+    def test_duplicate_username_fails(self, mock_find, _, client, admin_token):
+        mock_find.return_value = make_account(role='admin')
         res = client.post('/api/auth/accounts',
             json={'username': 'newuser', 'password': 'pass123', 'role': 'donee'},
             headers={'Authorization': f'Bearer {admin_token}'})
@@ -177,80 +179,29 @@ class TestAdminCreateAccount:
         assert 'exists' in res.get_json()['error'].lower()
 
     @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
-    def test_admin_can_create_admin_role(self, mock_create, client, admin_token):
+    @patch('app.utils.auth_utils.UserAccount.findById')
+    def test_admin_can_create_admin_role(self, mock_find, _, client, admin_token):
+        mock_find.return_value = make_account(role='admin')
         res = client.post('/api/auth/accounts',
             json={'username': 'newadmin', 'password': 'pass123', 'role': 'admin'},
             headers={'Authorization': f'Bearer {admin_token}'})
         assert res.status_code == 201
 
     @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
-    def test_admin_can_create_platform_manager(self, _, client, admin_token):
+    @patch('app.utils.auth_utils.UserAccount.findById')
+    def test_admin_can_create_platform_manager(self, mock_find, _, client, admin_token):
+        mock_find.return_value = make_account(role='admin')
         res = client.post('/api/auth/accounts',
             json={'username': 'newpm', 'password': 'pass123', 'role': 'platform_manager'},
             headers={'Authorization': f'Bearer {admin_token}'})
         assert res.status_code == 201
 
     @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
-    def test_create_success_returns_message(self, _, client, admin_token):
+    @patch('app.utils.auth_utils.UserAccount.findById')
+    def test_create_success_returns_message(self, mock_find, _, client, admin_token):
+        mock_find.return_value = make_account(role='admin')
         res = client.post('/api/auth/accounts',
             json={'username': 'newuser', 'password': 'pass123', 'role': 'donee'},
             headers={'Authorization': f'Bearer {admin_token}'})
         assert res.status_code == 201
         assert 'message' in res.get_json()
-
-
-# ══════════════════════════════════════════════════════════════
-# SELF REGISTER — updated: email required, role auto = donee
-# ══════════════════════════════════════════════════════════════
-
-class TestSelfRegister:
-
-    def test_empty_username_fails(self, client):
-        res = client.post('/api/auth/register',
-            json={'username': '', 'password': 'pass123', 'email': 'test@test.com'})
-        assert res.status_code == 400
-
-    def test_short_password_fails(self, client):
-        res = client.post('/api/auth/register',
-            json={'username': 'newuser', 'password': 'abc', 'email': 'test@test.com'})
-        assert res.status_code == 400
-
-    def test_empty_email_fails(self, client):
-        res = client.post('/api/auth/register',
-            json={'username': 'newuser', 'password': 'pass123', 'email': ''})
-        assert res.status_code == 400
-
-    def test_invalid_email_fails(self, client):
-        res = client.post('/api/auth/register',
-            json={'username': 'newuser', 'password': 'pass123', 'email': 'notanemail'})
-        assert res.status_code == 400
-
-    @patch('app.services.register_controller.UserAccount.register', return_value=None)
-    def test_duplicate_username_fails(self, _, client):
-        res = client.post('/api/auth/register',
-            json={'username': 'newuser', 'password': 'pass123', 'email': 'test@test.com'})
-        assert res.status_code == 400
-        assert 'exists' in res.get_json()['error'].lower()
-
-    @patch('app.services.register_controller.UserAccount.register', return_value=True)
-    def test_register_success(self, _, client):
-        res = client.post('/api/auth/register',
-            json={'username': 'newuser', 'password': 'pass123', 'email': 'test@test.com'})
-        assert res.status_code == 201
-        assert 'message' in res.get_json()
-
-    @patch('app.services.register_controller.UserAccount.register', return_value=True)
-    def test_role_is_always_donee(self, mock_register, client):
-        """Role must always be donee regardless of what is sent."""
-        client.post('/api/auth/register',
-            json={'username': 'newuser', 'password': 'pass123', 'email': 'test@test.com'})
-        call_args = mock_register.call_args[0][0]
-        assert call_args['role'] == 'donee'
-
-    @patch('app.services.register_controller.UserAccount.register', return_value=True)
-    def test_register_saves_email(self, mock_register, client):
-        """Email must be saved during registration."""
-        client.post('/api/auth/register',
-            json={'username': 'newuser', 'password': 'pass123', 'email': 'user@test.com'})
-        call_args = mock_register.call_args[0][0]
-        assert call_args['email'] == 'user@test.com'

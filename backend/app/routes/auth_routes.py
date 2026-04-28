@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify
 from app.services.auth_login_cotroller import AuthLoginCotroller
 from app.services.auth_logout_cotroller import AuthLogoutCotroller
 from app.services.account_controller import AccountController
-from app.services.register_controller import RegisterController
 from app.utils.auth_utils import token_required
 
 auth_bp = Blueprint('auth', __name__)
@@ -45,34 +44,6 @@ def logout():
     return jsonify({'status': 'success', 'message': 'Logged out successfully.'}), 200
 
 
-@auth_bp.route('/register', methods=['POST'])
-def register():
-    """
-    POST /api/auth/register
-    BOUNDARY — validates input, calls controller.
-    """
-    data = request.get_json()
-
-    # [BOUNDARY] Input validation
-    if not data:
-        return jsonify({'status': 'fail', 'error': 'Request body must be JSON.'}), 400
-    if not data.get('username') or not str(data['username']).strip():
-        return jsonify({'status': 'fail', 'error': 'Username is required.'}), 400
-    if len(str(data['username']).strip()) < 3:
-        return jsonify({'status': 'fail', 'error': 'Username must be at least 3 characters.'}), 400
-    if not data.get('password') or not str(data['password']).strip():
-        return jsonify({'status': 'fail', 'error': 'Password is required.'}), 400
-    if len(str(data['password'])) < 6:
-        return jsonify({'status': 'fail', 'error': 'Password must be at least 6 characters.'}), 400
-    if not data.get('email') or not str(data['email']).strip():
-        return jsonify({'status': 'fail', 'error': 'Email is required.'}), 400
-    if '@' not in str(data['email']):
-        return jsonify({'status': 'fail', 'error': 'Please enter a valid email address.'}), 400
-
-    success, payload = RegisterController.registerUser(data)
-    if success:
-        return jsonify(payload), 201
-    return jsonify(payload), 400
 
 
 @auth_bp.route('/accounts', methods=['POST'])
