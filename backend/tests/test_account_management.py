@@ -109,21 +109,21 @@ class TestUpdateAccount:
         assert d['status'] == 'success'
         mock_update.assert_called_once()
 
-    @patch('app.services.account_management_controller.UserAccount.findById')
-    def test_update_invalid_email(self, mock_find):
-        """Invalid email format should fail."""
-        mock_find.return_value = make_account()
-        ok, d = AccountManagementController.updateAccount(1, self._data(email='notanemail'))
-        assert ok is False
-        assert 'email' in d['error'].lower()
+    def test_update_invalid_email(self, client, admin_token):
+        """Invalid email format should fail — validated in boundary."""
+        res = client.put('/api/accounts/1',
+            json={'email': 'notanemail'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
+        assert 'email' in res.get_json()['error'].lower()
 
-    @patch('app.services.account_management_controller.UserAccount.findById')
-    def test_update_invalid_role(self, mock_find):
-        """Invalid role should fail."""
-        mock_find.return_value = make_account()
-        ok, d = AccountManagementController.updateAccount(1, self._data(role='superuser'))
-        assert ok is False
-        assert 'role' in d['error'].lower()
+    def test_update_invalid_role(self, client, admin_token):
+        """Invalid role should fail — validated in boundary."""
+        res = client.put('/api/accounts/1',
+            json={'role': 'superuser'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
+        assert 'role' in res.get_json()['error'].lower()
 
     @patch('app.services.account_management_controller.UserAccount.updateAccount')
     @patch('app.services.account_management_controller.UserAccount.findById')
@@ -291,13 +291,11 @@ class TestGetAllAccounts:
 
     @patch('app.services.account_management_controller.UserAccount.getAll')
     def test_get_all_filter_by_role(self, mock_get):
-        """Can filter accounts by role."""
-        mock_get.return_value = [
-            make_account(user_id=1, role='admin'),
-            make_account(user_id=2, role='donee'),
-        ]
+        """Can filter accounts by role — getAll called with role param."""
+        mock_get.return_value = [make_account(user_id=1, role='admin')]
         ok, d = AccountManagementController.getAllAccounts(role='admin')
         assert ok is True
+        mock_get.assert_called_once_with(role='admin')
         for account in d['accounts']:
             assert account['role'] == 'admin'
 
@@ -432,10 +430,11 @@ class TestSuspendProfile:
 
 class TestSearchProfile:
 
-    def test_empty_query_fails(self):
-        """Search query is required."""
-        ok, d = ProfileManagementController.searchProfile('')
-        assert ok is False
+    def test_empty_query_fails(self, client, admin_token):
+        """Empty search query should fail — validated in boundary."""
+        res = client.get('/api/profiles/?query=',
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
 
     @patch('app.services.profile_management_controller.UserProfile.searchProfiles',
            return_value=[])

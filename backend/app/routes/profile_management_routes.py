@@ -32,6 +32,9 @@ def get_all_profiles(current_user):
     """
     query = request.args.get('query', '').strip()
 
+    if query is not None and query == '' and 'query' in request.args:
+        return jsonify({'status': 'fail', 'error': 'Search query cannot be empty.'}), 400
+
     if query:
         ok, payload = ProfileManagementController.searchProfile(query)
         if ok:

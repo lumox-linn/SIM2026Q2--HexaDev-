@@ -25,87 +25,83 @@ def make_account(role='admin', is_active=1):
 # ══════════════════════════════════════════════════════════════
 
 class TestLoginValidation:
-    def test_empty_username(self):
-        ok, d = AuthLoginCotroller.login('', 'pass')
-        assert ok is False
+    """Validation is now in Boundary (auth_routes.py) — test via route."""
 
-    def test_whitespace_username(self):
-        ok, d = AuthLoginCotroller.login('   ', 'pass')
-        assert ok is False
+    def test_empty_username(self, client):
+        res = client.post('/api/auth/login', json={'username': '', 'password': 'pass'})
+        assert res.status_code == 400
 
-    def test_empty_password(self):
-        ok, d = AuthLoginCotroller.login('admin01', '')
-        assert ok is False
+    def test_whitespace_username(self, client):
+        res = client.post('/api/auth/login', json={'username': '   ', 'password': 'pass'})
+        assert res.status_code == 400
 
-    def test_both_empty(self):
-        ok, d = AuthLoginCotroller.login('', '')
-        assert ok is False
+    def test_empty_password(self, client):
+        res = client.post('/api/auth/login', json={'username': 'admin01', 'password': ''})
+        assert res.status_code == 400
+
+    def test_both_empty(self, client):
+        res = client.post('/api/auth/login', json={'username': '', 'password': ''})
+        assert res.status_code == 400
 
 
 class TestLoginAltFlows:
 
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername', return_value=None)
+    @patch('app.services.auth_login_cotroller.UserAccount.login', return_value=None)
     def test_alt1_account_not_found(self, _):
         ok, d = AuthLoginCotroller.login('nobody', 'pass')
         assert ok is False and 'error' in d
 
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=False)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_alt2_wrong_password(self, mock_find, _):
-        mock_find.return_value = make_account()
+    @patch('app.services.auth_login_cotroller.UserAccount.login', return_value=None)
+    def test_alt2_wrong_password(self, _):
         ok, d = AuthLoginCotroller.login('admin01', 'wrong')
         assert ok is False
 
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_alt3_suspended_account(self, mock_find, _):
-        mock_find.return_value = make_account(is_active=0)
+    @patch('app.services.auth_login_cotroller.UserAccount.login', return_value=None)
+    def test_alt3_suspended_account(self, _):
         ok, d = AuthLoginCotroller.login('admin01', 'pass')
         assert ok is False
 
 
 class TestLoginRoleRedirects:
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_admin_redirect(self, mock_find, _, __):
-        mock_find.return_value = make_account(role='admin')
+    @patch('app.services.auth_login_cotroller.generate_token', return_value='jwt-tok')
+    @patch('app.services.auth_login_cotroller.UserAccount.login')
+    def test_admin_redirect(self, mock_login, mock_token):
+        mock_login.return_value = make_account(role='admin')
         ok, d = AuthLoginCotroller.login('admin01', 'pass')
         assert ok is True and d['redirectTo'] == '/home'
         assert d['role_label'] == 'User Admin'
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_fund_raiser_redirect(self, mock_find, _, __):
-        mock_find.return_value = make_account(role='fund_raiser')
+    @patch('app.services.auth_login_cotroller.generate_token', return_value='jwt-tok')
+    @patch('app.services.auth_login_cotroller.UserAccount.login')
+    def test_fund_raiser_redirect(self, mock_login, _):
+        mock_login.return_value = make_account(role='fund_raiser')
         ok, d = AuthLoginCotroller.login('fr01', 'pass')
         assert ok is True and d['redirectTo'] == '/home'
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_donee_redirect(self, mock_find, _, __):
-        mock_find.return_value = make_account(role='donee')
+    @patch('app.services.auth_login_cotroller.generate_token', return_value='jwt-tok')
+    @patch('app.services.auth_login_cotroller.UserAccount.login')
+    def test_donee_redirect(self, mock_login, _):
+        mock_login.return_value = make_account(role='donee')
         ok, d = AuthLoginCotroller.login('donee01', 'pass')
         assert ok is True and d['redirectTo'] == '/home'
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_platform_manager_redirect(self, mock_find, _, __):
-        mock_find.return_value = make_account(role='platform_manager')
+    @patch('app.services.auth_login_cotroller.generate_token', return_value='jwt-tok')
+    @patch('app.services.auth_login_cotroller.UserAccount.login')
+    def test_platform_manager_redirect(self, mock_login, _):
+        mock_login.return_value = make_account(role='platform_manager')
         ok, d = AuthLoginCotroller.login('pm01', 'pass')
         assert ok is True and d['redirectTo'] == '/home'
 
-    @patch('app.services.auth_login_cotroller.UserSession.create', return_value='tok')
-    @patch('app.services.auth_login_cotroller.UserAccount.verifyPassword', return_value=True)
-    @patch('app.services.auth_login_cotroller.UserAccount.findByUsername')
-    def test_session_created_on_login(self, mock_find, _, mock_session):
-        mock_find.return_value = make_account()
-        AuthLoginCotroller.login('admin01', 'pass')
-        mock_session.assert_called_once_with(1)
+    @patch('app.services.auth_login_cotroller.generate_token', return_value='jwt-tok')
+    @patch('app.services.auth_login_cotroller.UserAccount.login')
+    def test_token_returned_on_login(self, mock_login, mock_token):
+        """JWT token is returned on successful login."""
+        mock_login.return_value = make_account()
+        ok, d = AuthLoginCotroller.login('admin01', 'pass')
+        assert ok is True
+        assert 'token' in d
+        mock_token.assert_called_once_with(1, 'admin')
 
 
 # ══════════════════════════════════════════════════════════════
@@ -114,25 +110,25 @@ class TestLoginRoleRedirects:
 
 class TestLogout:
 
-    @patch('app.services.auth_logout_cotroller.UserAccount.logout')
-    def test_logout_calls_useraccount(self, mock_logout):
-        AuthLogoutCotroller.logout('1')
-        mock_logout.assert_called_once_with('1')
+    def test_logout_returns_true(self):
+        """JWT logout is stateless — always returns True."""
+        result = AuthLogoutCotroller.logout()
+        assert result is True
 
-    @patch('app.services.auth_logout_cotroller.UserAccount.logout')
-    def test_logout_none_safe(self, mock_logout):
-        AuthLogoutCotroller.logout(None)
-        mock_logout.assert_not_called()
+    def test_logout_no_db_needed(self):
+        """JWT logout requires no DB operation — just returns success."""
+        result = AuthLogoutCotroller.logout()
+        assert result is True
 
-    @patch('app.services.auth_logout_cotroller.UserSession.expire')
-    def test_logout_by_token(self, mock_expire):
-        AuthLogoutCotroller.logoutByToken('tok')
-        mock_expire.assert_called_once_with('tok')
+    def test_logout_idempotent(self):
+        """Calling logout multiple times is safe."""
+        assert AuthLogoutCotroller.logout() is True
+        assert AuthLogoutCotroller.logout() is True
 
-    @patch('app.services.auth_logout_cotroller.UserSession.expire')
-    def test_logout_expired_token_safe(self, mock_expire):
-        AuthLogoutCotroller.logoutByToken('expired-tok')
-        mock_expire.assert_called_once()
+    def test_logout_frontend_clears_token(self):
+        """Backend logout is a no-op — frontend clears JWT from localStorage."""
+        result = AuthLogoutCotroller.logout()
+        assert result is True
 
 
 # ══════════════════════════════════════════════════════════════
@@ -140,53 +136,67 @@ class TestLogout:
 # ══════════════════════════════════════════════════════════════
 
 class TestAdminCreateAccount:
+    """Validation is now in Boundary (auth_routes.py) — test via route."""
 
-    def _data(self, username='newuser', password='pass123', role='donee'):
-        return {'username': username, 'password': password, 'role': role}
+    def test_empty_username_fails(self, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': '', 'password': 'pass123', 'role': 'donee'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
 
-    def test_empty_username_fails(self):
-        ok, d = AccountController.createUserAccount(self._data(username=''))
-        assert ok is False
+    def test_short_username_fails(self, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': 'ab', 'password': 'pass123', 'role': 'donee'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
 
-    def test_short_username_fails(self):
-        ok, d = AccountController.createUserAccount(self._data(username='ab'))
-        assert ok is False
+    def test_empty_password_fails(self, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': 'newuser', 'password': '', 'role': 'donee'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
 
-    def test_empty_password_fails(self):
-        ok, d = AccountController.createUserAccount(self._data(password=''))
-        assert ok is False
+    def test_short_password_fails(self, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': 'newuser', 'password': 'abc', 'role': 'donee'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
 
-    def test_short_password_fails(self):
-        ok, d = AccountController.createUserAccount(self._data(password='abc'))
-        assert ok is False
+    def test_invalid_role_fails(self, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': 'newuser', 'password': 'pass123', 'role': 'superuser'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
 
-    def test_invalid_role_fails(self):
-        ok, d = AccountController.createUserAccount(self._data(role='superuser'))
-        assert ok is False
+    @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=None)
+    def test_duplicate_username_fails(self, _, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': 'newuser', 'password': 'pass123', 'role': 'donee'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 400
+        assert 'exists' in res.get_json()['error'].lower()
 
-    @patch('app.services.account_controller.UserAccount.exists', return_value=True)
-    def test_duplicate_username_fails(self, _):
-        ok, d = AccountController.createUserAccount(self._data())
-        assert ok is False and 'exists' in d['error'].lower()
+    @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
+    def test_admin_can_create_admin_role(self, mock_create, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': 'newadmin', 'password': 'pass123', 'role': 'admin'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 201
 
-    @patch('app.services.account_controller.UserAccount.createAccount')
-    @patch('app.services.account_controller.UserAccount.exists', return_value=False)
-    def test_admin_can_create_admin_role(self, _, mock_create):
-        ok, d = AccountController.createUserAccount(self._data(role='admin'))
-        assert ok is True
-        mock_create.assert_called_once()
+    @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
+    def test_admin_can_create_platform_manager(self, _, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': 'newpm', 'password': 'pass123', 'role': 'platform_manager'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 201
 
-    @patch('app.services.account_controller.UserAccount.createAccount')
-    @patch('app.services.account_controller.UserAccount.exists', return_value=False)
-    def test_admin_can_create_platform_manager(self, _, mock_create):
-        ok, d = AccountController.createUserAccount(self._data(role='platform_manager'))
-        assert ok is True
-
-    @patch('app.services.account_controller.UserAccount.createAccount')
-    @patch('app.services.account_controller.UserAccount.exists', return_value=False)
-    def test_create_success_returns_message(self, _, mock_create):
-        ok, d = AccountController.createUserAccount(self._data())
-        assert ok is True and 'message' in d
+    @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
+    def test_create_success_returns_message(self, _, client, admin_token):
+        res = client.post('/api/auth/accounts',
+            json={'username': 'newuser', 'password': 'pass123', 'role': 'donee'},
+            headers={'Authorization': f'Bearer {admin_token}'})
+        assert res.status_code == 201
+        assert 'message' in res.get_json()
 
 
 # ══════════════════════════════════════════════════════════════
@@ -195,51 +205,52 @@ class TestAdminCreateAccount:
 
 class TestSelfRegister:
 
-    def _data(self, username='newuser', password='pass123', email='test@test.com'):
-        return {'username': username, 'password': password, 'email': email}
+    def test_empty_username_fails(self, client):
+        res = client.post('/api/auth/register',
+            json={'username': '', 'password': 'pass123', 'email': 'test@test.com'})
+        assert res.status_code == 400
 
-    def test_empty_username_fails(self):
-        ok, d = RegisterController.registerUser(self._data(username=''))
-        assert ok is False
+    def test_short_password_fails(self, client):
+        res = client.post('/api/auth/register',
+            json={'username': 'newuser', 'password': 'abc', 'email': 'test@test.com'})
+        assert res.status_code == 400
 
-    def test_short_password_fails(self):
-        ok, d = RegisterController.registerUser(self._data(password='abc'))
-        assert ok is False
+    def test_empty_email_fails(self, client):
+        res = client.post('/api/auth/register',
+            json={'username': 'newuser', 'password': 'pass123', 'email': ''})
+        assert res.status_code == 400
 
-    def test_empty_email_fails(self):
-        ok, d = RegisterController.registerUser(self._data(email=''))
-        assert ok is False
+    def test_invalid_email_fails(self, client):
+        res = client.post('/api/auth/register',
+            json={'username': 'newuser', 'password': 'pass123', 'email': 'notanemail'})
+        assert res.status_code == 400
 
-    def test_invalid_email_fails(self):
-        ok, d = RegisterController.registerUser(self._data(email='notanemail'))
-        assert ok is False
+    @patch('app.services.register_controller.UserAccount.register', return_value=None)
+    def test_duplicate_username_fails(self, _, client):
+        res = client.post('/api/auth/register',
+            json={'username': 'newuser', 'password': 'pass123', 'email': 'test@test.com'})
+        assert res.status_code == 400
+        assert 'exists' in res.get_json()['error'].lower()
 
-    @patch('app.services.register_controller.UserAccount.exists', return_value=True)
-    def test_duplicate_username_fails(self, _):
-        ok, d = RegisterController.registerUser(self._data())
-        assert ok is False and 'exists' in d['error'].lower()
+    @patch('app.services.register_controller.UserAccount.register', return_value=True)
+    def test_register_success(self, _, client):
+        res = client.post('/api/auth/register',
+            json={'username': 'newuser', 'password': 'pass123', 'email': 'test@test.com'})
+        assert res.status_code == 201
+        assert 'message' in res.get_json()
 
-    @patch('app.services.register_controller.UserAccount.createAccount')
-    @patch('app.services.register_controller.UserAccount.exists', return_value=False)
-    def test_register_success(self, _, mock_create):
-        ok, d = RegisterController.registerUser(self._data())
-        assert ok is True and 'message' in d
-        mock_create.assert_called_once()
-
-    @patch('app.services.register_controller.UserAccount.createAccount')
-    @patch('app.services.register_controller.UserAccount.exists', return_value=False)
-    def test_role_is_always_donee(self, _, mock_create):
+    @patch('app.services.register_controller.UserAccount.register', return_value=True)
+    def test_role_is_always_donee(self, mock_register, client):
         """Role must always be donee regardless of what is sent."""
-        ok, d = RegisterController.registerUser(self._data())
-        assert ok is True
-        call_args = mock_create.call_args[0][0]
+        client.post('/api/auth/register',
+            json={'username': 'newuser', 'password': 'pass123', 'email': 'test@test.com'})
+        call_args = mock_register.call_args[0][0]
         assert call_args['role'] == 'donee'
 
-    @patch('app.services.register_controller.UserAccount.createAccount')
-    @patch('app.services.register_controller.UserAccount.exists', return_value=False)
-    def test_register_saves_email(self, _, mock_create):
+    @patch('app.services.register_controller.UserAccount.register', return_value=True)
+    def test_register_saves_email(self, mock_register, client):
         """Email must be saved during registration."""
-        ok, d = RegisterController.registerUser(self._data(email='user@test.com'))
-        assert ok is True
-        call_args = mock_create.call_args[0][0]
+        client.post('/api/auth/register',
+            json={'username': 'newuser', 'password': 'pass123', 'email': 'user@test.com'})
+        call_args = mock_register.call_args[0][0]
         assert call_args['email'] == 'user@test.com'
