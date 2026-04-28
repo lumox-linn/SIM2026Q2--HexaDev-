@@ -9,6 +9,7 @@ from unittest.mock import patch
 from app.services.auth_login_cotroller  import AuthLoginCotroller
 from app.services.auth_logout_cotroller import AuthLogoutCotroller
 from app.services.account_controller   import AccountController
+from app.services.register_controller  import RegisterController
 
 
 def make_account(role='admin', is_active=1):
@@ -168,8 +169,9 @@ class TestAdminCreateAccount:
         assert res.status_code == 400
 
     @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=None)
+    @patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None)
     @patch('app.utils.auth_utils.UserAccount.findById')
-    def test_duplicate_username_fails(self, mock_find, _, client, admin_token):
+    def test_duplicate_username_fails(self, mock_find, _, __, client, admin_token):
         mock_find.return_value = make_account(role='admin')
         res = client.post('/api/auth/accounts',
             json={'username': 'newuser', 'password': 'pass123', 'role': 'donee'},
@@ -177,27 +179,30 @@ class TestAdminCreateAccount:
         assert res.status_code == 400
         assert 'exists' in res.get_json()['error'].lower()
 
-    @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
+    @patch('app.models.user_account.UserAccount.createIfNotExists', return_value=True)
+    @patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None)
     @patch('app.utils.auth_utils.UserAccount.findById')
-    def test_admin_can_create_admin_role(self, mock_find, _, client, admin_token):
+    def test_admin_can_create_admin_role(self, mock_find, _, __, client, admin_token):
         mock_find.return_value = make_account(role='admin')
         res = client.post('/api/auth/accounts',
             json={'username': 'newadmin', 'password': 'pass123', 'role': 'admin'},
             headers={'Authorization': f'Bearer {admin_token}'})
         assert res.status_code == 201
 
-    @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
+    @patch('app.models.user_account.UserAccount.createIfNotExists', return_value=True)
+    @patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None)
     @patch('app.utils.auth_utils.UserAccount.findById')
-    def test_admin_can_create_platform_manager(self, mock_find, _, client, admin_token):
+    def test_admin_can_create_platform_manager(self, mock_find, _, __, client, admin_token):
         mock_find.return_value = make_account(role='admin')
         res = client.post('/api/auth/accounts',
             json={'username': 'newpm', 'password': 'pass123', 'role': 'platform_manager'},
             headers={'Authorization': f'Bearer {admin_token}'})
         assert res.status_code == 201
 
-    @patch('app.services.account_controller.UserAccount.createIfNotExists', return_value=True)
+    @patch('app.models.user_account.UserAccount.createIfNotExists', return_value=True)
+    @patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None)
     @patch('app.utils.auth_utils.UserAccount.findById')
-    def test_create_success_returns_message(self, mock_find, _, client, admin_token):
+    def test_create_success_returns_message(self, mock_find, _, __, client, admin_token):
         mock_find.return_value = make_account(role='admin')
         res = client.post('/api/auth/accounts',
             json={'username': 'newuser', 'password': 'pass123', 'role': 'donee'},
