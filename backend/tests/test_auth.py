@@ -9,7 +9,6 @@ from unittest.mock import patch
 from app.services.auth_login_cotroller  import AuthLoginCotroller
 from app.services.auth_logout_cotroller import AuthLogoutCotroller
 from app.services.account_controller   import AccountController
-from app.services.register_controller  import RegisterController
 
 
 def make_account(role='admin', is_active=1):
