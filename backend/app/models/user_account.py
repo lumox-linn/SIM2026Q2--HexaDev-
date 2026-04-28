@@ -1,19 +1,170 @@
 from app import mysql
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 class UserAccount:
     """
-    Entity — maps to useraccount table in csit314 database.
-    Sprint 1 + Sprint 2 methods.
-    Includes login_status (online/offline) and access (active/suspended).
-    Uses GROUP BY ua.user_id to prevent duplicate rows from session JOIN.
+    Entity — maps to useraccount table.
+    REFACTORED: All alt flows live here.
+    Controller only calls these methods and reads the result.
+    No UserSession dependency — using JWT now.
     """
 
-    # ── Sprint 1 methods ─────────────────────────────────────
+    # ── Login (alt flows here) ────────────────────────────────
+
+    @staticmethod
+    def login(username: str, password: str):
+        """
+        Find account and verify credentials.
+        Alt 1: Account not found → return None
+        Alt 2: Password incorrect → return None
+        Alt 3: Account suspended → return None
+        Main: Return account dict
+        """
+        account = UserAccount.findByUsername(username)
+
+        # Alt 1: Account not found
+        if not account:
+            return None
+
+        # Alt 2: Password incorrect
+        if not check_password_hash(account['password_hash'], password):
+            return None
+
+        # Alt 3: Account suspended
+        if not account['isActive']:
+            return None
+
+        return account
+
+    # ── Register (alt flows here) ─────────────────────────────
+
+    @staticmethod
+    def register(data: dict):
+        """
+        Register a new user account.
+        Alt 1: Username already exists → return None
+        Main: Create account, return True
+        """
+        # Alt 1: Username already exists
+        if UserAccount.exists(data['username']):
+            return None
+
+        UserAccount.createAccount(data)
+        return True
+
+    # ── Create (alt flows here) ───────────────────────────────
+
+    @staticmethod
+    def createIfNotExists(data: dict):
+        """
+        Admin creates a user account.
+        Alt 1: Username already exists → return None
+        Main: Create account, return True
+        """
+        # Alt 1: Already exists
+        if UserAccount.exists(data['username']):
+            return None
+
+        UserAccount.createAccount(data)
+        return True
+
+    # ── Update (alt flows here) ───────────────────────────────
+
+    @staticmethod
+    def updateIfExists(user_id: int, data: dict):
+        """
+        Update a user account.
+        Alt 1: Account not found → return None
+        Main: Update account, return True
+        """
+        # Alt 1: Not found
+        account = UserAccount.findById(user_id)
+        if not account:
+            return None
+
+        UserAccount.updateAccount(user_id, data)
+        return True
+
+    # ── Suspend (alt flows here) ──────────────────────────────
+
+    @staticmethod
+    def suspendIfAllowed(user_id: int):
+        """
+        Suspend a user account.
+        Alt 1: Account not found → return 'not_found'
+        Alt 2: Already suspended → return 'already_suspended'
+        Alt 3: Is admin → return 'is_admin'
+        Main: Suspend, return True
+        """
+        account = UserAccount.findById(user_id)
+
+        # Alt 1: Not found
+        if not account:
+            return 'not_found'
+
+        # Alt 2: Already suspended
+        if account['isActive'] == 0:
+            return 'already_suspended'
+
+        # Alt 3: Cannot suspend admin
+        if account['role'] == 'admin':
+            return 'is_admin'
+
+        UserAccount.suspendAccount(user_id)
+        return True
+
+    # ── Activate (alt flows here) ─────────────────────────────
+
+    @staticmethod
+    def activateIfAllowed(user_id: int):
+        """
+        Activate a user account.
+        Alt 1: Account not found → return 'not_found'
+        Alt 2: Already active → return 'already_active'
+        Main: Activate, return True
+        """
+        account = UserAccount.findById(user_id)
+
+        # Alt 1: Not found
+        if not account:
+            return 'not_found'
+
+        # Alt 2: Already active
+        if account['isActive'] == 1:
+            return 'already_active'
+
+        UserAccount.activateAccount(user_id)
+        return True
+
+    # ── Delete (alt flows here) ───────────────────────────────
+
+    @staticmethod
+    def deleteIfAllowed(user_id: int):
+        """
+        Delete a user account.
+        Alt 1: Account not found → return 'not_found'
+        Alt 2: Is admin → return 'is_admin'
+        Main: Delete, return True
+        """
+        account = UserAccount.findById(user_id)
+
+        # Alt 1: Not found
+        if not account:
+            return 'not_found'
+
+        # Alt 2: Cannot delete admin
+        if account['role'] == 'admin':
+            return 'is_admin'
+
+        UserAccount.deleteAccount(user_id)
+        return True
+
+    # ── Pure SQL methods (no logic) ───────────────────────────
 
     @staticmethod
     def findByUsername(username: str):
+        """SELECT account by username."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             """SELECT ua.*, up.profile_name, up.status as profile_status
@@ -27,31 +178,26 @@ class UserAccount:
         return account
 
     @staticmethod
-    def verifyPassword(password: str, password_hash: str) -> bool:
-        return check_password_hash(password_hash, password)
-
-    @staticmethod
-    def isActive(account) -> bool:
-        return bool(account['isActive'])
-
-    @staticmethod
-    def hasRole(account, role: str) -> bool:
-        return account.get('role') == role or account.get('profile_name') == role
-
-    @staticmethod
-    def logout(accountId: str) -> None:
+    def findById(user_id: int):
+        """SELECT account by user_id."""
         cursor = mysql.connection.cursor()
         cursor.execute(
-            """UPDATE usersession
-               SET status = 'expired', logout_time = NOW()
-               WHERE user_id = %s AND status = 'active'""",
-            (accountId,)
+            """SELECT ua.user_id, ua.username, ua.isActive, ua.role,
+                      ua.email, ua.phone, ua.dob, ua.profile_picture,
+                      ua.created_at, ua.profile_id,
+                      up.profile_name, up.status as profile_status
+               FROM useraccount ua
+               LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
+               WHERE ua.user_id = %s""",
+            (user_id,)
         )
-        mysql.connection.commit()
+        account = cursor.fetchone()
         cursor.close()
+        return account
 
     @staticmethod
     def exists(username: str) -> bool:
+        """Check if username already exists."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "SELECT user_id FROM useraccount WHERE username = %s", (username,)
@@ -61,11 +207,47 @@ class UserAccount:
         return result is not None
 
     @staticmethod
+    def getAll(role: str = None):
+        """Get all accounts, optionally filtered by role."""
+        cursor = mysql.connection.cursor()
+        if role:
+            cursor.execute(
+                """SELECT ua.user_id, ua.username, ua.password_hash, ua.isActive, ua.role,
+                          ua.email, ua.phone, ua.dob, ua.profile_picture,
+                          ua.created_at, ua.profile_id,
+                          up.profile_name, up.status as profile_status,
+                          CASE WHEN ua.isActive = 1 THEN 'active' ELSE 'suspended' END as access
+                   FROM useraccount ua
+                   LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
+                   WHERE ua.role = %s
+                   GROUP BY ua.user_id
+                   ORDER BY ua.created_at DESC""",
+                (role,)
+            )
+        else:
+            cursor.execute(
+                """SELECT ua.user_id, ua.username, ua.password_hash, ua.isActive, ua.role,
+                          ua.email, ua.phone, ua.dob, ua.profile_picture,
+                          ua.created_at, ua.profile_id,
+                          up.profile_name, up.status as profile_status,
+                          CASE WHEN ua.isActive = 1 THEN 'active' ELSE 'suspended' END as access
+                   FROM useraccount ua
+                   LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
+                   GROUP BY ua.user_id
+                   ORDER BY ua.created_at DESC"""
+            )
+        accounts = cursor.fetchall()
+        cursor.close()
+        return accounts
+
+    @staticmethod
     def createAccount(data: dict) -> None:
-        from werkzeug.security import generate_password_hash
+        """INSERT new account into useraccount."""
         from app.models.user_profile import UserProfile
+
         profile = UserProfile.findByName(data['role'])
         profile_id = profile['profile_id'] if profile else None
+
         cursor = mysql.connection.cursor()
         cursor.execute(
             """INSERT INTO useraccount
@@ -86,135 +268,36 @@ class UserAccount:
         cursor.close()
 
     @staticmethod
-    def updateProfilePicture(user_id: int, filename: str) -> None:
-        cursor = mysql.connection.cursor()
-        cursor.execute(
-            "UPDATE useraccount SET profile_picture = %s WHERE user_id = %s",
-            (filename, user_id)
-        )
-        mysql.connection.commit()
-        cursor.close()
-
-    @staticmethod
-    def getProfilePicture(user_id: int):
-        cursor = mysql.connection.cursor()
-        cursor.execute(
-            "SELECT profile_picture FROM useraccount WHERE user_id = %s",
-            (user_id,)
-        )
-        row = cursor.fetchone()
-        cursor.close()
-        return row['profile_picture'] if row else None
-
-    @staticmethod
-    def updateEmail(user_id: int, email: str) -> None:
-        cursor = mysql.connection.cursor()
-        cursor.execute(
-            "UPDATE useraccount SET email = %s WHERE user_id = %s",
-            (email, user_id)
-        )
-        mysql.connection.commit()
-        cursor.close()
-
-    @staticmethod
-    def updateDob(user_id: int, dob: str) -> None:
-        cursor = mysql.connection.cursor()
-        cursor.execute(
-            "UPDATE useraccount SET dob = %s WHERE user_id = %s",
-            (dob, user_id)
-        )
-        mysql.connection.commit()
-        cursor.close()
-
-    # ── Sprint 2 methods ─────────────────────────────────────
-
-    @staticmethod
-    def findById(user_id: int):
-        cursor = mysql.connection.cursor()
-        cursor.execute(
-            """SELECT ua.user_id, ua.username, ua.isActive, ua.role,
-                      ua.email, ua.phone, ua.dob, ua.profile_picture,
-                      ua.created_at, ua.profile_id,
-                      up.profile_name, up.status as profile_status,
-                      CASE WHEN MAX(s.session_id) IS NOT NULL
-                           THEN 'online' ELSE 'offline'
-                      END as login_status,
-                      CASE WHEN ua.isActive = 1
-                           THEN 'active' ELSE 'suspended'
-                      END as access
-               FROM useraccount ua
-               LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-               LEFT JOIN usersession s ON ua.user_id = s.user_id
-                  AND s.status = 'active' AND s.expires_at > NOW()
-               WHERE ua.user_id = %s
-               GROUP BY ua.user_id""",
-            (user_id,)
-        )
-        account = cursor.fetchone()
-        cursor.close()
-        return account
-
-    @staticmethod
-    def getAll(role: str = None):
-        """
-        Get all accounts with login_status and access.
-        GROUP BY ua.user_id prevents duplicate rows from session JOIN.
-        """
-        cursor = mysql.connection.cursor()
-        base = """SELECT ua.user_id, ua.username, ua.isActive, ua.role,
-                         ua.email, ua.phone, ua.dob, ua.profile_picture,
-                         ua.created_at, ua.profile_id,
-                         up.profile_name, up.status as profile_status,
-                         CASE WHEN MAX(s.session_id) IS NOT NULL
-                              THEN 'online' ELSE 'offline'
-                         END as login_status,
-                         CASE WHEN ua.isActive = 1
-                              THEN 'active' ELSE 'suspended'
-                         END as access
-                  FROM useraccount ua
-                  LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-                  LEFT JOIN usersession s ON ua.user_id = s.user_id
-                     AND s.status = 'active' AND s.expires_at > NOW()"""
-        if role:
-            cursor.execute(
-                base + " WHERE ua.role = %s GROUP BY ua.user_id ORDER BY ua.created_at DESC",
-                (role,)
-            )
-        else:
-            cursor.execute(
-                base + " GROUP BY ua.user_id ORDER BY ua.created_at DESC"
-            )
-        accounts = cursor.fetchall()
-        cursor.close()
-        return accounts
-
-    @staticmethod
     def updateAccount(user_id: int, data: dict) -> None:
-        from werkzeug.security import generate_password_hash
+        """UPDATE account fields."""
         from app.models.user_profile import UserProfile
+
         fields = []
         values = []
-        if 'email' in data and data['email'] is not None:
+
+        if data.get('email') is not None:
             fields.append('email = %s')
             values.append(data['email'])
-        if 'phone' in data and data['phone'] is not None:
+        if data.get('phone') is not None:
             fields.append('phone = %s')
             values.append(data['phone'])
-        if 'dob' in data and data['dob'] is not None:
+        if data.get('dob') is not None:
             fields.append('dob = %s')
             values.append(data['dob'])
-        if 'role' in data and data['role'] is not None:
+        if data.get('role') is not None:
             fields.append('role = %s')
             values.append(data['role'])
             profile = UserProfile.findByName(data['role'])
             if profile:
                 fields.append('profile_id = %s')
                 values.append(profile['profile_id'])
-        if 'password' in data and data['password']:
+        if data.get('password'):
             fields.append('password_hash = %s')
             values.append(generate_password_hash(data['password']))
+
         if not fields:
             return
+
         values.append(user_id)
         cursor = mysql.connection.cursor()
         cursor.execute(
@@ -226,6 +309,7 @@ class UserAccount:
 
     @staticmethod
     def suspendAccount(user_id: int) -> None:
+        """SET isActive = 0."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "UPDATE useraccount SET isActive = 0 WHERE user_id = %s", (user_id,)
@@ -235,6 +319,7 @@ class UserAccount:
 
     @staticmethod
     def activateAccount(user_id: int) -> None:
+        """SET isActive = 1."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "UPDATE useraccount SET isActive = 1 WHERE user_id = %s", (user_id,)
@@ -243,35 +328,39 @@ class UserAccount:
         cursor.close()
 
     @staticmethod
+    def deleteAccount(user_id: int) -> None:
+        """DELETE account permanently."""
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "DELETE FROM useraccount WHERE user_id = %s", (user_id,)
+        )
+        mysql.connection.commit()
+        cursor.close()
+
+    @staticmethod
     def searchAccounts(query: dict):
+        """Search accounts by username and/or role."""
         conditions = []
         values = []
+
         if query.get('username'):
             conditions.append('ua.username LIKE %s')
             values.append(f"%{query['username']}%")
         if query.get('role'):
             conditions.append('ua.role = %s')
             values.append(query['role'])
-        if query.get('isActive') is not None:
-            conditions.append('ua.isActive = %s')
-            values.append(query['isActive'])
+
         where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
         cursor = mysql.connection.cursor()
         cursor.execute(
-            f"""SELECT ua.user_id, ua.username, ua.isActive, ua.role,
+            f"""SELECT ua.user_id, ua.username, ua.password_hash, ua.isActive, ua.role,
                        ua.email, ua.phone, ua.dob, ua.profile_picture,
                        ua.created_at, ua.profile_id,
                        up.profile_name, up.status as profile_status,
-                       CASE WHEN MAX(s.session_id) IS NOT NULL
-                            THEN 'online' ELSE 'offline'
-                       END as login_status,
-                       CASE WHEN ua.isActive = 1
-                            THEN 'active' ELSE 'suspended'
-                       END as access
+                       CASE WHEN ua.isActive = 1 THEN 'active' ELSE 'suspended' END as access
                 FROM useraccount ua
                 LEFT JOIN userprofile up ON ua.profile_id = up.profile_id
-                LEFT JOIN usersession s ON ua.user_id = s.user_id
-                   AND s.status = 'active' AND s.expires_at > NOW()
                 {where}
                 GROUP BY ua.user_id
                 ORDER BY ua.created_at DESC""",
@@ -280,3 +369,40 @@ class UserAccount:
         accounts = cursor.fetchall()
         cursor.close()
         return accounts
+
+    @staticmethod
+    def getProfilePicture(user_id: int):
+        """Return profile_picture filename or None."""
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "SELECT profile_picture FROM useraccount WHERE user_id = %s", (user_id,)
+        )
+        row = cursor.fetchone()
+        cursor.close()
+        return row['profile_picture'] if row else None
+
+    @staticmethod
+    def updateProfilePicture(user_id: int, filename: str) -> None:
+        """UPDATE profile_picture filename."""
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "UPDATE useraccount SET profile_picture = %s WHERE user_id = %s",
+            (filename, user_id)
+        )
+        mysql.connection.commit()
+        cursor.close()
+
+    @staticmethod
+    def verifyPassword(password: str, password_hash: str) -> bool:
+        """Verify plain password against stored hash."""
+        return check_password_hash(password_hash, password)
+
+    @staticmethod
+    def isActive(account) -> bool:
+        """Returns True if isActive = 1."""
+        return bool(account['isActive'])
+
+    @staticmethod
+    def hasRole(account, role: str) -> bool:
+        """Returns True if account role matches."""
+        return account.get('role') == role

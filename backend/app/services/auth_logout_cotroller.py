@@ -1,30 +1,14 @@
-from app.models.user_account import UserAccount
-from app.models.user_session import UserSession
-
-
 class AuthLogoutCotroller:
     """
-    Control — AuthLogoutCotroller <controller> from BCE diagram.
-    Method: logout(accountId: String)
-    Delegates to UserAccount.logout(accountId) per sequence diagram.
+    Control — AuthLogoutCotroller.
+    JWT is stateless — no DB operation needed on logout.
+    Frontend clears token from localStorage.
     """
 
     @staticmethod
-    def logout(accountId: str) -> None:
+    def logout():
         """
-        Sequence diagram flow:
-          LogoutBoundary → AuthLogoutCotroller.logout(accountId)
-                         → UserAccount.logout(accountId)   [expires all sessions]
-                         ← return ("login-page")
+        JWT logout — nothing to do on backend.
+        Frontend handles clearing the token.
         """
-        if accountId:
-            UserAccount.logout(accountId)
-
-    @staticmethod
-    def logoutByToken(token: str) -> None:
-        """
-        Alternative: expire a specific session by token.
-        Used when only the token is known (not the accountId).
-        """
-        if token:
-            UserSession.expire(token)
+        return True

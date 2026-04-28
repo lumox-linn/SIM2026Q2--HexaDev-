@@ -3,52 +3,117 @@ app/models/user_profile.py — Entity Layer
 ==========================================
 Sprint 2 — User Profile Management
 
-Represents the userprofile table in MySQL.
-A profile = a role type in the system.
-
-Database table: userprofile
-+------------+------------------+--------+---------------------+
-| profile_id | profile_name     | status | description         |
-+------------+------------------+--------+---------------------+
-|     1      | admin            | active | System administrator|
-|     2      | fund_raiser      | active | Creates campaigns   |
-|     3      | donee            | active | Donates to campaigns|
-|     4      | platform_manager | active | Manages categories  |
-+------------+------------------+--------+---------------------+
-
-When a profile is suspended:
-  - No new accounts can be assigned that profile
-  - Existing accounts with that profile are also suspended (isActive=0)
+REFACTORED: Alt flows live here now.
+Controller only calls these methods and reads the result.
 """
 from app import mysql
+
+PROTECTED_PROFILES = ['admin']
 
 
 class UserProfile:
 
+    # ── Alt flow methods ──────────────────────────────────────
+
+    @staticmethod
+    def createIfNotExists(data: dict):
+        """
+        Create a profile.
+        Alt 1: Profile name already exists → return None
+        Main: Create, return True
+        """
+        # Alt 1: Already exists
+        if UserProfile.exists(data['profile_name']):
+            return None
+
+        UserProfile.createProfile(data)
+        return True
+
+    @staticmethod
+    def updateIfExists(profile_id: int, data: dict):
+        """
+        Update a profile.
+        Alt 1: Profile not found → return 'not_found'
+        Alt 2: New name already taken → return 'name_taken'
+        Main: Update, return True
+        """
+        # Alt 1: Not found
+        profile = UserProfile.findById(profile_id)
+        if not profile:
+            return 'not_found'
+
+        # Alt 2: Name already taken by another profile
+        if data.get('profile_name') and data['profile_name'] != profile['profile_name']:
+            if UserProfile.exists(data['profile_name']):
+                return 'name_taken'
+
+        UserProfile.updateProfile(profile_id, data)
+        return True
+
+    @staticmethod
+    def suspendIfAllowed(profile_id: int):
+        """
+        Suspend a profile + all linked accounts.
+        Alt 1: Profile not found → return 'not_found'
+        Alt 2: Already suspended → return 'already_suspended'
+        Alt 3: Protected profile → return 'protected'
+        Main: Suspend, return True
+        """
+        profile = UserProfile.findById(profile_id)
+
+        # Alt 1: Not found
+        if not profile:
+            return 'not_found'
+
+        # Alt 2: Already suspended
+        if profile['status'] == 'suspended':
+            return 'already_suspended'
+
+        # Alt 3: Cannot suspend protected profiles
+        if profile['profile_name'] in PROTECTED_PROFILES:
+            return 'protected'
+
+        UserProfile.suspendProfile(profile_id)
+        return True
+
+    @staticmethod
+    def activateIfAllowed(profile_id: int):
+        """
+        Activate a profile + all linked accounts.
+        Alt 1: Profile not found → return 'not_found'
+        Alt 2: Already active → return 'already_active'
+        Main: Activate, return True
+        """
+        profile = UserProfile.findById(profile_id)
+
+        # Alt 1: Not found
+        if not profile:
+            return 'not_found'
+
+        # Alt 2: Already active
+        if profile['status'] == 'active':
+            return 'already_active'
+
+        UserProfile.activateProfile(profile_id)
+        return True
+
+    # ── Pure SQL methods ──────────────────────────────────────
+
     @staticmethod
     def getAll():
-        """
-        Get all profiles.
-        Used by: getAllProfiles (UA-02 view all)
-        """
+        """SELECT all profiles."""
         cursor = mysql.connection.cursor()
-        cursor.execute(
-            "SELECT * FROM userprofile ORDER BY profile_id ASC"
-        )
+        cursor.execute("SELECT * FROM userprofile ORDER BY profile_id ASC")
         profiles = cursor.fetchall()
         cursor.close()
         return profiles
 
     @staticmethod
     def findById(profile_id: int):
-        """
-        Find a profile by ID.
-        Used by: viewProfile (UA-02)
-        """
+        """SELECT profile by ID."""
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "SELECT * FROM userprofile WHERE profile_id = %s",
-            (profile_id,)
+            "SELECT * FROM userprofile WHERE profile_id = %s", (profile_id,)
         )
         profile = cursor.fetchone()
         cursor.close()
@@ -56,14 +121,10 @@ class UserProfile:
 
     @staticmethod
     def findByName(profile_name: str):
-        """
-        Find a profile by name.
-        Used by: login, register to get profile_id
-        """
+        """SELECT profile by name."""
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "SELECT * FROM userprofile WHERE profile_name = %s",
-            (profile_name,)
+            "SELECT * FROM userprofile WHERE profile_name = %s", (profile_name,)
         )
         profile = cursor.fetchone()
         cursor.close()
@@ -71,14 +132,10 @@ class UserProfile:
 
     @staticmethod
     def exists(profile_name: str) -> bool:
-        """
-        Check if a profile name already exists.
-        Used by: createProfile (UA-01)
-        """
+        """Check if profile name already exists."""
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "SELECT profile_id FROM userprofile WHERE profile_name = %s",
-            (profile_name,)
+            "SELECT profile_id FROM userprofile WHERE profile_name = %s", (profile_name,)
         )
         result = cursor.fetchone()
         cursor.close()
@@ -86,37 +143,25 @@ class UserProfile:
 
     @staticmethod
     def createProfile(data: dict) -> None:
-        """
-        Insert a new profile into userprofile table.
-        Used by: createProfile (UA-01)
-        SQL: INSERT INTO userprofile (profile_name, description) VALUES (...)
-        """
+        """INSERT new profile."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             """INSERT INTO userprofile (profile_name, status, description)
                VALUES (%s, 'active', %s)""",
-            (
-                data['profile_name'],
-                data.get('description', None),
-            )
+            (data['profile_name'], data.get('description', None))
         )
         mysql.connection.commit()
         cursor.close()
 
     @staticmethod
     def updateProfile(profile_id: int, data: dict) -> None:
-        """
-        Update profile details.
-        Used by: updateProfile (UA-03)
-        SQL: UPDATE userprofile SET ... WHERE profile_id = ?
-        """
+        """UPDATE profile fields."""
         fields = []
         values = []
 
-        if 'profile_name' in data and data['profile_name']:
+        if data.get('profile_name'):
             fields.append('profile_name = %s')
             values.append(data['profile_name'])
-
         if 'description' in data:
             fields.append('description = %s')
             values.append(data['description'])
@@ -135,58 +180,37 @@ class UserProfile:
 
     @staticmethod
     def suspendProfile(profile_id: int) -> None:
-        """
-        Suspend a profile — set status = 'suspended'.
-        Also suspends all accounts with this profile (isActive = 0).
-        Used by: suspendProfile (UA-04)
-        """
+        """SET profile status = suspended + suspend all linked accounts."""
         cursor = mysql.connection.cursor()
-
-        # Suspend the profile
         cursor.execute(
             "UPDATE userprofile SET status = 'suspended' WHERE profile_id = %s",
             (profile_id,)
         )
-
-        # Also suspend all accounts with this profile
         cursor.execute(
             "UPDATE useraccount SET isActive = 0 WHERE profile_id = %s",
             (profile_id,)
         )
-
         mysql.connection.commit()
         cursor.close()
 
     @staticmethod
     def activateProfile(profile_id: int) -> None:
-        """
-        Reactivate a suspended profile — set status = 'active'.
-        Also reactivates all accounts with this profile (isActive = 1).
-        """
+        """SET profile status = active + activate all linked accounts."""
         cursor = mysql.connection.cursor()
-
-        # Activate the profile
         cursor.execute(
             "UPDATE userprofile SET status = 'active' WHERE profile_id = %s",
             (profile_id,)
         )
-
-        # Also reactivate all accounts with this profile
         cursor.execute(
             "UPDATE useraccount SET isActive = 1 WHERE profile_id = %s",
             (profile_id,)
         )
-
         mysql.connection.commit()
         cursor.close()
 
     @staticmethod
     def searchProfiles(query: str):
-        """
-        Search profiles by name.
-        Used by: searchProfile (UA-05)
-        SQL: SELECT * FROM userprofile WHERE profile_name LIKE ?
-        """
+        """SEARCH profiles by name."""
         cursor = mysql.connection.cursor()
         cursor.execute(
             "SELECT * FROM userprofile WHERE profile_name LIKE %s ORDER BY profile_id ASC",
