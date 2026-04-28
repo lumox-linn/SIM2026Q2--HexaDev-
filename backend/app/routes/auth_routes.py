@@ -44,8 +44,6 @@ def logout():
     return jsonify({'status': 'success', 'message': 'Logged out successfully.'}), 200
 
 
-
-
 @auth_bp.route('/accounts', methods=['POST'])
 @token_required(roles=['admin'])
 def admin_create_account(current_user):
