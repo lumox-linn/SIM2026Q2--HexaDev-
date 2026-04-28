@@ -1,52 +1,33 @@
 from app.models.user_account import UserAccount
 
-ADMIN_ONLY_ROLES = ['admin', 'platform_manager']
-VALID_ROLES = ['admin', 'fund_raiser', 'donee', 'platform_manager']
-
 
 class AccountController:
     """
-    Control — AccountController <controller> from BCE diagram (UA-03).
-    Admin creates accounts for any role.
+    Control — AccountController (UA-06).
+    Only calls Entity methods — no validation logic.
+    Validation is in Boundary (auth_routes.py).
+    Alt flows are in Entity (user_account.py).
     """
 
     @staticmethod
-    def validateInput(data: dict):
-        username = data.get('username', '').strip()
-        password = data.get('password', '').strip()
-        role     = data.get('role', '').strip()
-
-        if not username:
-            return False, 'Username is required.'
-        if len(username) < 3:
-            return False, 'Username must be at least 3 characters.'
-        if not password:
-            return False, 'Password is required.'
-        if len(password) < 6:
-            return False, 'Password must be at least 6 characters.'
-        if not role:
-            return False, 'Role is required.'
-        if role not in VALID_ROLES:
-            return False, f'Invalid role. Must be one of: {", ".join(VALID_ROLES)}.'
-
-        return True, None
-
-    @staticmethod
     def createUserAccount(data: dict):
-        valid, error = AccountController.validateInput(data)
-        if not valid:
-            return False, {'status': 'fail', 'error': error}
-
-        if UserAccount.exists(data['username'].strip()):
-            return False, {'status': 'fail', 'error': 'Username already exists. Please choose another.'}
-
-        UserAccount.createAccount({
+        """
+        Admin creates a new user account.
+        Calls UserAccount.createIfNotExists() which handles alt flows.
+        """
+        # [CONTROL] — call Entity, handle result
+        result = UserAccount.createIfNotExists({
             'username': data['username'].strip(),
             'password': data['password'],
             'email':    data.get('email', None),
+            'phone':    data.get('phone', None),
             'role':     data['role'].strip(),
+            'dob':      data.get('dob', None),
             'isActive': 1,
         })
+
+        if not result:
+            return False, {'status': 'fail', 'error': 'Username already exists. Please choose another.'}
 
         return True, {
             'status':   'success',
