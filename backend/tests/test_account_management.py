@@ -109,16 +109,22 @@ class TestUpdateAccount:
         assert d['status'] == 'success'
         mock_update.assert_called_once()
 
-    def test_update_invalid_email(self, client, admin_token):
+    @patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None)
+    @patch('app.utils.auth_utils.UserAccount.findById')
+    def test_update_invalid_email(self, mock_find, _, client, admin_token):
         """Invalid email format should fail — validated in boundary."""
+        mock_find.return_value = make_account(role='admin')
         res = client.put('/api/accounts/1',
             json={'email': 'notanemail'},
             headers={'Authorization': f'Bearer {admin_token}'})
         assert res.status_code == 400
         assert 'email' in res.get_json()['error'].lower()
 
-    def test_update_invalid_role(self, client, admin_token):
+    @patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None)
+    @patch('app.utils.auth_utils.UserAccount.findById')
+    def test_update_invalid_role(self, mock_find, _, client, admin_token):
         """Invalid role should fail — validated in boundary."""
+        mock_find.return_value = make_account(role='admin')
         res = client.put('/api/accounts/1',
             json={'role': 'superuser'},
             headers={'Authorization': f'Bearer {admin_token}'})
@@ -430,8 +436,11 @@ class TestSuspendProfile:
 
 class TestSearchProfile:
 
-    def test_empty_query_fails(self, client, admin_token):
+    @patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None)
+    @patch('app.utils.auth_utils.UserAccount.findById')
+    def test_empty_query_fails(self, mock_find, _, client, admin_token):
         """Empty search query should fail — validated in boundary."""
+        mock_find.return_value = make_account(role='admin')
         res = client.get('/api/profiles/?query=',
             headers={'Authorization': f'Bearer {admin_token}'})
         assert res.status_code == 400

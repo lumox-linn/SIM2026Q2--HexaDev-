@@ -96,6 +96,15 @@ def update_account(current_user, user_id):
     if not data:
         return jsonify({'status': 'fail', 'error': 'Request body must be JSON.'}), 400
 
+    # [BOUNDARY] Input validation
+    valid_roles = ['admin', 'fund_raiser', 'donee', 'platform_manager']
+    if data.get('email') and '@' not in str(data['email']):
+        return jsonify({'status': 'fail', 'error': 'Invalid email format.'}), 400
+    if data.get('role') and data['role'] not in valid_roles:
+        return jsonify({'status': 'fail', 'error': f'Invalid role. Must be one of: {", ".join(valid_roles)}.'}), 400
+    if data.get('password') and len(str(data['password'])) < 6:
+        return jsonify({'status': 'fail', 'error': 'Password must be at least 6 characters.'}), 400
+
     ok, payload = AccountManagementController.updateAccount(user_id, data)
     if ok:
         return jsonify(payload), 200
@@ -133,6 +142,21 @@ def activate_account(current_user, user_id):
     Returns: { status, message, user_id }
     """
     ok, payload = AccountManagementController.activateAccount(user_id)
+    if ok:
+        return jsonify(payload), 200
+    return jsonify(payload), 400
+
+
+@account_management_bp.route('/<int:user_id>', methods=['DELETE'])
+@token_required(roles=['admin'])
+def delete_account(current_user, user_id):
+    """
+    DELETE /api/accounts/<user_id>
+    Permanently delete a user account.
+    Cannot delete admin accounts.
+    Admin only.
+    """
+    ok, payload = AccountManagementController.deleteAccount(user_id)
     if ok:
         return jsonify(payload), 200
     return jsonify(payload), 400
