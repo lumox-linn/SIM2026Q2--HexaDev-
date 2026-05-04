@@ -49,4 +49,8 @@ def create_app():
     from app.routes.profile_management_routes import profile_management_bp
     app.register_blueprint(profile_management_bp, url_prefix='/api/profiles')
 
+    # Sprint 3 routes
+    from app.routes.category_routes import category_bp
+    app.register_blueprint(category_bp, url_prefix='/api/categories')
+
     return app
