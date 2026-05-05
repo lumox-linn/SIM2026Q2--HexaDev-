@@ -1,22 +1,25 @@
+"""
+app/services/account_controller.py — Control Layer
+====================================================
+Sprint 1 — UA-06: Admin Create Account
+
+CreateAccountController — calls Entity only, no validation.
+"""
 from app.models.user_account import UserAccount
 
 
-class AccountController:
+class CreateAccountController:
     """
-    Control — AccountController (UA-06).
-    Only calls Entity methods — no validation logic.
-    Validation is in Boundary (auth_routes.py).
-    Alt flows are in Entity (user_account.py).
+    Control — CreateAccountController (UA-06)
+    Only calls Entity methods — no validation, no alt flow logic.
+    Validation is in Boundary (CreateAccountBoundary).
+    Alt flows are in Entity (UserAccount.create()).
     """
 
     @staticmethod
-    def createUserAccount(data: dict):
-        """
-        Admin creates a new user account.
-        Calls UserAccount.createIfNotExists() which handles alt flows.
-        """
-        # [CONTROL] — call Entity, handle result
-        result = UserAccount.createIfNotExists({
+    def createAccount(data: dict):
+        # [CONTROL] call Entity — alt flows handled inside Entity
+        result = UserAccount.create({
             'username': data['username'].strip(),
             'password': data['password'],
             'email':    data.get('email', None),
@@ -35,3 +38,7 @@ class AccountController:
             'username': data['username'].strip(),
             'role':     data['role'].strip(),
         }
+
+
+# Keep old name as alias for backward compatibility
+AccountController = CreateAccountController

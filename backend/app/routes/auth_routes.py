@@ -3,7 +3,7 @@ app/routes/auth_routes.py — Boundary Layer
 ===========================================
 Sprint 1 — Authentication
 
-Separate boundary class per use case:
+Each route function IS the boundary class:
 - LoginBoundary     (UA-11, FR-06, DN-06, PM-09)
 - LogoutBoundary    (UA-12, FR-07, DN-07, PM-10)
 - CreateAccountBoundary (UA-06)
@@ -23,6 +23,7 @@ class LoginBoundary:
     Validates login input, calls LoginController.
     """
     @staticmethod
+    @auth_bp.route('/login', methods=['POST'])
     def login():
         data = request.get_json()
 
@@ -49,6 +50,7 @@ class LogoutBoundary:
     JWT logout is stateless — just calls LogoutController.
     """
     @staticmethod
+    @auth_bp.route('/logout', methods=['POST'])
     def logout():
         LogoutController.logout()
         return jsonify({'status': 'success', 'message': 'Logged out successfully.'}), 200
@@ -61,6 +63,8 @@ class CreateAccountBoundary:
     Admin only.
     """
     @staticmethod
+    @auth_bp.route('/accounts', methods=['POST'])
+    @token_required(roles=['admin'])
     def create_account(current_user):
         data = request.get_json()
 
@@ -86,24 +90,6 @@ class CreateAccountBoundary:
         if success:
             return jsonify(payload), 201
         return jsonify(payload), 400
-
-
-# ── Route registration ────────────────────────────────────────
-
-@auth_bp.route('/login', methods=['POST'])
-def login():
-    return LoginBoundary.login()
-
-
-@auth_bp.route('/logout', methods=['POST'])
-def logout():
-    return LogoutBoundary.logout()
-
-
-@auth_bp.route('/accounts', methods=['POST'])
-@token_required(roles=['admin'])
-def admin_create_account(current_user):
-    return CreateAccountBoundary.create_account(current_user)
 
 
 @auth_bp.route('/me', methods=['GET'])

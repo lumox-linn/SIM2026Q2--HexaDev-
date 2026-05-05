@@ -1,14 +1,23 @@
-class AuthLogoutCotroller:
+"""
+app/services/auth_logout_cotroller.py — Control Layer
+======================================================
+Sprint 1 — UA-12, FR-07, DN-07, PM-10: Logout
+
+LogoutController — JWT is stateless, no DB operation needed.
+"""
+
+
+class LogoutController:
     """
-    Control — AuthLogoutCotroller.
-    JWT is stateless — no DB operation needed on logout.
+    Control — LogoutController (UA-12, FR-07, DN-07, PM-10)
+    JWT logout is stateless — no DB operation needed.
     Frontend clears token from localStorage.
     """
 
     @staticmethod
     def logout():
-        """
-        JWT logout — nothing to do on backend.
-        Frontend handles clearing the token.
-        """
         return True
+
+
+# Keep old name as alias for backward compatibility
+AuthLogoutCotroller = LogoutController
