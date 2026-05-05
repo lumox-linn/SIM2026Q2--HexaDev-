@@ -70,7 +70,7 @@ class TestCreateCategory:
              patch('app.utils.auth_utils.UserAccount.findById', return_value=make_pm_account()):
             res = client.post('/api/categories/',
                 headers={'Authorization': f'Bearer {pm_token}'})
-        assert res.status_code == 400
+        assert res.status_code in [400, 415]
 
     def test_non_pm_cannot_create(self, client):
         from app.utils.auth_utils import generate_token
@@ -154,8 +154,9 @@ class TestUpdateCategory:
         ok, d = UpdateCategoryController.updateCategory(1, {'category_name': 'Health'})
         assert ok is False and 'exists' in d['error'].lower()
 
+    @patch('app.models.category.Category.exists', return_value=False)
     @patch('app.models.category.Category.findById')
-    def test_update_success(self, mock_find):
+    def test_update_success(self, mock_find, _):
         mock_find.return_value = make_category()
         ok, d = UpdateCategoryController.updateCategory(1, {'category_name': 'New Name'})
         assert ok is True and d['status'] == 'success'

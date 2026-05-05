@@ -23,8 +23,8 @@ class ViewAccountController:
     """Control — ViewAccountController (UA-07)"""
 
     @staticmethod
-    def getAllAccounts():
-        accounts = UserAccount.getAll()
+    def getAllAccounts(role: str = None):
+        accounts = UserAccount.getAll(role=role)
         return True, {
             'status':   'success',
             'message':  f'{len(accounts)} account(s) found.',
