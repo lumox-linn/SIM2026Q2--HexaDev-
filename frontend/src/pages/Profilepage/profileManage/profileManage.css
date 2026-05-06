@@ -130,6 +130,15 @@
   cursor: pointer;
 }
 
+.pm .profileContent .card .activeBut {
+  background-color: rgba(155, 215, 155, 0.5);
+  color: grey;
+}
+
+.pm .profileContent .card .activeBut:hover {
+  background-color: palegoldenrod;
+}
+
 .pm .profileContent .card .status {
   color: black;
   background-color: #daeaf7;

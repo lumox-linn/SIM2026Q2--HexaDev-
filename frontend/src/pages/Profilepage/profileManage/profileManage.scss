@@ -125,6 +125,13 @@
           cursor: pointer;
         }
       }
+      .activeBut {
+        background-color: rgba(155, 215, 155, 0.5);
+        color: grey;
+        &:hover {
+          background-color: palegoldenrod;
+        }
+      }
       .status {
         color: black;
         background-color: rgb(218, 234, 247);

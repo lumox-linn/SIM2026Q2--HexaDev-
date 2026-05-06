@@ -14,33 +14,33 @@ function Login() {
   const [time, settime] = useState(30);
   const [loginstatus, setloginstatus] = useState(false);
   const navigate = useNavigate();
-  const handleSendCode = async () => {
-    try {
-      // get value from the form
-      const email = form.getFieldValue("email");
+  // const handleSendCode = async () => {
+  //   try {
+  //     // get value from the form
+  //     const email = form.getFieldValue("email");
 
-      if (
-        !email ||
-        !/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)
-      ) {
-        alert("Please enter a valid email address!");
-        return;
-      } else {
-        setcodeable(true);
-      }
+  //     if (
+  //       !email ||
+  //       !/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)
+  //     ) {
+  //       alert("Please enter a valid email address!");
+  //       return;
+  //     } else {
+  //       setcodeable(true);
+  //     }
 
-      //call api
-      const res = await apiSendCode({ email });
+  //     //call api
+  //     const res = await apiSendCode({ email });
 
-      if (res.status === "success") {
-        console.log("Varification code sent:", email);
-      } else {
-        alert(res.message || "Send failed");
-      }
-    } catch (err) {
-      console.error("network:", err);
-    }
-  };
+  //     if (res.status === "success") {
+  //       console.log("Varification code sent:", email);
+  //     } else {
+  //       alert(res.message || "Send failed");
+  //     }
+  //   } catch (err) {
+  //     console.error("network:", err);
+  //   }
+  // };
   const onFinish = async (values) => {
     try {
       const res = await apiLogin(values);
@@ -76,6 +76,7 @@ function Login() {
           });
         }, 1000);
       } else if (res.status === "fail") {
+        console.log(res);
         if (res.reason) {
           message.open({
             type: "error",
@@ -89,7 +90,8 @@ function Login() {
       }
       form.resetFields();
     } catch (err) {
-      console.log(err);
+      console.log(err.response);
+      message.error(err.response?.data?.error);
     }
   };
   useEffect(() => {
@@ -178,7 +180,7 @@ function Login() {
                 { label: <span>Admin</span>, value: "Admin" },
 
                 {
-                  label: <span>Platform manager</span>,
+                  label: <span>Platform Manager</span>,
                   value: "Platform Manager",
                 },
                 {

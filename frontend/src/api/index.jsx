@@ -73,3 +73,26 @@ export function apiSuspendProfile(id) {
 export function apiActivateProfile(id) {
   return newRequest({ url: `/api/profiles/${id}/activate`, method: "put" });
 }
+
+// categories
+export function apiGetAllCategories(params) {
+  console.log(params);
+  return newRequest({ url: "/api/categories/", method: "get", params: params });
+}
+
+export function apiCreateCategories(data) {
+  return newRequest({ url: "/api/categories/", method: "post", data: data });
+}
+
+export function apiEditCategories(id, data) {
+  console.log(id, data);
+  return newRequest({
+    url: `/api/categories/${id}`,
+    method: "put",
+    data: data,
+  });
+}
+
+export function apiDeleteCategories(id) {
+  return newRequest({ url: `/api/categories/${id}/delete`, method: "put" });
+}

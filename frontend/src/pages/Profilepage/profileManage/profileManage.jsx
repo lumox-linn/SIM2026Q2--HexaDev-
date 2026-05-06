@@ -313,7 +313,7 @@ function profileManage() {
                 ) : (
                   <button
                     onClick={() => handleActivate(item)}
-                    style={{ color: "green" }}
+                    className="activeBut"
                   >
                     Activate
                   </button>

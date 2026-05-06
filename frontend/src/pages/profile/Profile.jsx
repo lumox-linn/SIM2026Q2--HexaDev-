@@ -11,7 +11,6 @@ import avatar from "../../assets/Avatar.svg";
 import logo from "../../assets/logo.png";
 console.log(111);
 function Profile() {
-  console.log("22");
   const { id } = useParams();
   const location = useLocation();
   const userdata = location.state?.userdata || {};
@@ -27,7 +26,6 @@ function Profile() {
       sessionStorage.setItem("user_avatar_cache", currentAvatar);
     }
   }, [currentAvatar]);
-  console.log(userdata.role);
   // change link routes
   useEffect(() => {
     if (!userdata) return;
@@ -36,8 +34,8 @@ function Profile() {
         { to: "ManageAccount", label: "Account Management" },
         { to: "ManageProfile", label: "Profile Management" },
       ]);
-    } else if (userdata.role === "Platform manager") {
-      setlink([{ to: "ManageActivities", label: "Activity Management" }]);
+    } else if (userdata.role === "platform_manager") {
+      setlink([{ to: "ManageCategory", label: "Category Management" }]);
     } else if (userdata.role === "Donee" || userdata.role === "Fund Raiser") {
       setlink([
         { to: "personalinfo", label: "Profile" },
@@ -50,12 +48,15 @@ function Profile() {
   return (
     <div className="profile">
       <div className="usernav">
-        <img
-          src={logo}
-          alt=""
-          className="logo"
-          onClick={() => navigate("/home")}
-        />
+        <div className="logobox">
+          <img
+            src={logo}
+            alt=""
+            className="logo"
+            onClick={() => navigate("/home")}
+          />
+        </div>
+
         <ul className="userhead">
           {/* <img src={headback} alt="" className="headback" /> */}
           {/* <div className="headback"></div> */}
@@ -80,7 +81,6 @@ function Profile() {
                   userRavatar: finalAvatar,
                 }}
               >
-                {console.log(link)}
                 {links.label}
               </NavLink>
             </li>
