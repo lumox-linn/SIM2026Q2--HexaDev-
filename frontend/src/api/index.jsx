@@ -94,5 +94,6 @@ export function apiEditCategories(id, data) {
 }
 
 export function apiDeleteCategories(id) {
-  return newRequest({ url: `/api/categories/${id}/delete`, method: "put" });
+  console.log("delete", id);
+  return newRequest({ url: `/api/categories/${id}`, method: "delete" });
 }
