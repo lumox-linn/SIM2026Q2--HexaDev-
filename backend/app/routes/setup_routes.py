@@ -74,7 +74,17 @@ def setup():
 
         conn.commit()
 
-        # Insert default profiles
+        # Create category table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS `category` (
+              `category_id`   INT          NOT NULL AUTO_INCREMENT,
+              `category_name` VARCHAR(100) NOT NULL UNIQUE,
+              `description`   TEXT,
+              `status`        VARCHAR(20)  NOT NULL DEFAULT 'active',
+              `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`category_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
         profiles = [
             ('admin',            'active', 'System administrator'),
             ('fund_raiser',      'active', 'Creates and manages fundraising campaigns'),
