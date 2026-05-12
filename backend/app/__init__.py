@@ -53,6 +53,10 @@ def create_app():
     from app.routes.category_routes import category_bp
     app.register_blueprint(category_bp, url_prefix='/api/categories')
 
+    # Sprint 4 routes
+    from app.routes.activity_routes import activity_bp
+    app.register_blueprint(activity_bp, url_prefix='/api/activities')
+
     # Setup route (run once to create tables and seed data)
     from app.routes.setup_routes import setup_bp
     app.register_blueprint(setup_bp, url_prefix='/api')
