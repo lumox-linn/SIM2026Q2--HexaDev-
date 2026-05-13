@@ -6,7 +6,7 @@ setup_bp = Blueprint('setup', __name__)
 
 @setup_bp.route('/setup', methods=['GET'])
 def setup():
-    """Temporary endpoint — DELETE after running once!"""
+    """Temporary endpoint — creates all tables and seeds accounts."""
     try:
         import pymysql
         from werkzeug.security import generate_password_hash
@@ -20,6 +20,19 @@ def setup():
             ssl_disabled=True,
         )
         cursor = conn.cursor()
+
+        # Create userprofile table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS `userprofile` (
+              `profile_id`   INT(8)       NOT NULL AUTO_INCREMENT,
+              `profile_name` VARCHAR(50)  NOT NULL,
+              `status`       ENUM('active','suspended') NOT NULL DEFAULT 'active',
+              `description`  VARCHAR(255) DEFAULT NULL,
+              `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`profile_id`),
+              UNIQUE KEY `profile_name` (`profile_name`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
 
         # Create useraccount table
         cursor.execute("""
@@ -36,43 +49,10 @@ def setup():
               `phone`           VARCHAR(20)  DEFAULT NULL,
               `profile_id`      INT(8)       DEFAULT NULL,
               PRIMARY KEY (`user_id`),
-              UNIQUE KEY `username` (`username`)
+              UNIQUE KEY `username` (`username`),
+              FOREIGN KEY (`profile_id`) REFERENCES `userprofile`(`profile_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
-
-        # Create usersession table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS `usersession` (
-              `session_id`  INT(8)      NOT NULL AUTO_INCREMENT,
-              `user_id`     INT(8)      NOT NULL,
-              `token`       VARCHAR(64) NOT NULL,
-              `login_time`  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              `logout_time` DATETIME    DEFAULT NULL,
-              `expires_at`  DATETIME    NOT NULL,
-              `status`      ENUM('active','expired') NOT NULL DEFAULT 'active',
-              PRIMARY KEY (`session_id`),
-              UNIQUE KEY `token` (`token`),
-              KEY `user_id` (`user_id`),
-              CONSTRAINT `fk_session_user`
-                FOREIGN KEY (`user_id`) REFERENCES `useraccount` (`user_id`)
-                ON DELETE CASCADE ON UPDATE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """)
-
-        # Create userprofile table
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS `userprofile` (
-              `profile_id`   INT(8)       NOT NULL AUTO_INCREMENT,
-              `profile_name` VARCHAR(50)  NOT NULL,
-              `status`       ENUM('active','suspended') NOT NULL DEFAULT 'active',
-              `description`  VARCHAR(255) DEFAULT NULL,
-              `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-              PRIMARY KEY (`profile_id`),
-              UNIQUE KEY `profile_name` (`profile_name`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """)
-
-        conn.commit()
 
         # Create category table
         cursor.execute("""
@@ -85,6 +65,30 @@ def setup():
               PRIMARY KEY (`category_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
+
+        # Create activity table — Sprint 4
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS `activity` (
+              `activity_id`   INT            NOT NULL AUTO_INCREMENT,
+              `title`         VARCHAR(200)   NOT NULL,
+              `description`   TEXT,
+              `category_id`   INT            DEFAULT NULL,
+              `created_by`    INT            NOT NULL,
+              `target_amount` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+              `amount_raised` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+              `start_date`    DATE           DEFAULT NULL,
+              `end_date`      DATE           DEFAULT NULL,
+              `status`        VARCHAR(20)    NOT NULL DEFAULT 'active',
+              `created_at`    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`activity_id`),
+              FOREIGN KEY (`category_id`) REFERENCES `category`(`category_id`) ON DELETE SET NULL,
+              FOREIGN KEY (`created_by`)  REFERENCES `useraccount`(`user_id`)  ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+
+        conn.commit()
+
+        # Seed default profiles
         profiles = [
             ('admin',            'active', 'System administrator'),
             ('fund_raiser',      'active', 'Creates and manages fundraising campaigns'),
@@ -100,14 +104,6 @@ def setup():
             except Exception:
                 pass
 
-        conn.commit()
-
-        # Update useraccount profile_id FK
-        cursor.execute("""
-            UPDATE useraccount ua
-            JOIN userprofile up ON ua.role = up.profile_name
-            SET ua.profile_id = up.profile_id
-        """)
         conn.commit()
 
         # Seed demo accounts
@@ -132,7 +128,7 @@ def setup():
 
         conn.commit()
 
-        # Update profile_id for newly inserted accounts
+        # Update profile_id FK for all accounts
         cursor.execute("""
             UPDATE useraccount ua
             JOIN userprofile up ON ua.role = up.profile_name
@@ -146,6 +142,7 @@ def setup():
         return jsonify({
             'status':  'success',
             'message': f'All tables created! {inserted} accounts seeded.',
+            'tables':  ['userprofile', 'useraccount', 'category', 'activity'],
             'accounts': [
                 {'username': 'admin01',     'password': 'admin123',  'role': 'admin'},
                 {'username': 'fr01',        'password': 'fr123',     'role': 'fund_raiser'},

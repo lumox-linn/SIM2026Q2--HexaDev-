@@ -20,20 +20,23 @@ class Activity:
         Alt 1: Title already exists for this user → return None
         Main: INSERT into DB, return True
         """
-        # Alt 1: Same title by same fund raiser already exists
         if Activity.existsByTitle(data['title'], data['created_by']):
             return None
 
         cursor = mysql.connection.cursor()
         cursor.execute(
             """INSERT INTO activity
-               (title, description, category_id, created_by, status)
-               VALUES (%s, %s, %s, %s, 'active')""",
+               (title, description, category_id, created_by,
+                target_amount, amount_raised, start_date, end_date, status)
+               VALUES (%s, %s, %s, %s, %s, 0.00, %s, %s, 'active')""",
             (
                 data['title'].strip(),
                 data.get('description', None),
                 data.get('category_id', None),
                 data['created_by'],
+                data.get('target_amount', 0.00),
+                data.get('start_date', None),
+                data.get('end_date', None),
             )
         )
         mysql.connection.commit()
@@ -47,14 +50,14 @@ class Activity:
         """
         Update a fundraising activity.
         Alt 1: Activity not found → return 'not_found'
-        Alt 2: Activity belongs to different user → return 'unauthorized'
+        Alt 2: Belongs to different user → return 'unauthorized'
         Main: UPDATE in DB, return True
         """
         activity = Activity.findById(activity_id)
 
-        if not activity:                                         # Alt 1
+        if not activity:                              # Alt 1
             return 'not_found'
-        if activity['created_by'] != user_id:                   # Alt 2
+        if activity['created_by'] != user_id:         # Alt 2
             return 'unauthorized'
 
         fields = []
@@ -69,6 +72,18 @@ class Activity:
         if data.get('category_id') is not None:
             fields.append('category_id = %s')
             values.append(data['category_id'])
+        if data.get('target_amount') is not None:
+            fields.append('target_amount = %s')
+            values.append(data['target_amount'])
+        if data.get('amount_raised') is not None:
+            fields.append('amount_raised = %s')
+            values.append(data['amount_raised'])
+        if data.get('start_date') is not None:
+            fields.append('start_date = %s')
+            values.append(data['start_date'])
+        if data.get('end_date') is not None:
+            fields.append('end_date = %s')
+            values.append(data['end_date'])
 
         if not fields:
             return True
@@ -90,14 +105,14 @@ class Activity:
         """
         Delete a fundraising activity.
         Alt 1: Activity not found → return 'not_found'
-        Alt 2: Activity belongs to different user → return 'unauthorized'
+        Alt 2: Belongs to different user → return 'unauthorized'
         Main: DELETE from DB, return True
         """
         activity = Activity.findById(activity_id)
 
-        if not activity:                                         # Alt 1
+        if not activity:                              # Alt 1
             return 'not_found'
-        if activity['created_by'] != user_id:                   # Alt 2
+        if activity['created_by'] != user_id:         # Alt 2
             return 'unauthorized'
 
         cursor = mysql.connection.cursor()

@@ -19,10 +19,13 @@ class CreateActivityController:
     @staticmethod
     def createActivity(data: dict, user_id: int):
         result = Activity.create({
-            'title':       data['title'],
-            'description': data.get('description', None),
-            'category_id': data.get('category_id', None),
-            'created_by':  user_id,
+            'title':         data['title'],
+            'description':   data.get('description', None),
+            'category_id':   data.get('category_id', None),
+            'created_by':    user_id,
+            'target_amount': data.get('target_amount', 0.00),
+            'start_date':    data.get('start_date', None),
+            'end_date':      data.get('end_date', None),
         })
 
         if not result:

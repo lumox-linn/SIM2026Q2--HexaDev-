@@ -39,6 +39,13 @@ class CreateActivityBoundary:
             return jsonify({'status': 'fail', 'error': 'Title is required.'}), 400
         if len(str(data['title']).strip()) < 3:
             return jsonify({'status': 'fail', 'error': 'Title must be at least 3 characters.'}), 400
+        if not data.get('target_amount'):
+            return jsonify({'status': 'fail', 'error': 'Target amount is required.'}), 400
+        if float(data['target_amount']) <= 0:
+            return jsonify({'status': 'fail', 'error': 'Target amount must be greater than 0.'}), 400
+        if data.get('start_date') and data.get('end_date'):
+            if data['end_date'] < data['start_date']:
+                return jsonify({'status': 'fail', 'error': 'End date cannot be before start date.'}), 400
 
         ok, payload = CreateActivityController.createActivity(data, current_user['user_id'])
         if ok:
@@ -55,7 +62,6 @@ class ViewActivityBoundary:
     def get_all_activities(current_user):
         query = request.args.get('query', '').strip()
 
-        # [BOUNDARY] Validate empty query
         if 'query' in request.args and query == '':
             return jsonify({'status': 'fail', 'error': 'Search query cannot be empty.'}), 400
 
@@ -96,6 +102,13 @@ class UpdateActivityBoundary:
             return jsonify({'status': 'fail', 'error': 'Request body must be JSON.'}), 400
         if data.get('title') and len(str(data['title']).strip()) < 3:
             return jsonify({'status': 'fail', 'error': 'Title must be at least 3 characters.'}), 400
+        if data.get('target_amount') is not None and float(data['target_amount']) <= 0:
+            return jsonify({'status': 'fail', 'error': 'Target amount must be greater than 0.'}), 400
+        if data.get('amount_raised') is not None and float(data['amount_raised']) < 0:
+            return jsonify({'status': 'fail', 'error': 'Amount raised cannot be negative.'}), 400
+        if data.get('start_date') and data.get('end_date'):
+            if data['end_date'] < data['start_date']:
+                return jsonify({'status': 'fail', 'error': 'End date cannot be before start date.'}), 400
 
         ok, payload = UpdateActivityController.updateActivity(
             activity_id, current_user['user_id'], data
@@ -129,7 +142,6 @@ class SearchActivityBoundary:
     def search_activities(current_user):
         query = request.args.get('query', '').strip()
 
-        # [BOUNDARY] Validate empty query
         if not query:
             return jsonify({'status': 'fail', 'error': 'Search query cannot be empty.'}), 400
 
