@@ -97,3 +97,27 @@ export function apiDeleteCategories(id) {
   console.log("delete", id);
   return newRequest({ url: `/api/categories/${id}`, method: "delete" });
 }
+
+// activities
+export function apiGetAllActivities(params) {
+  console.log(params);
+  return newRequest({ url: "/api/activities/", method: "get", params: params });
+}
+
+export function apiCreateActivities(data) {
+  return newRequest({ url: "/api/activities/", method: "post", data: data });
+}
+
+export function apiEditActivities(id, data) {
+  console.log(id, data);
+  return newRequest({
+    url: `/api/activities/${id}`,
+    method: "put",
+    data: data,
+  });
+}
+
+export function apiDeleteActivities(id) {
+  console.log("delete", id);
+  return newRequest({ url: `/api/activities/${id}`, method: "delete" });
+}

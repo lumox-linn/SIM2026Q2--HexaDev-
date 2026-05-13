@@ -36,11 +36,13 @@ function Profile() {
       ]);
     } else if (userdata.role === "platform_manager") {
       setlink([{ to: "ManageCategory", label: "Category Management" }]);
-    } else if (userdata.role === "Donee" || userdata.role === "Fund Raiser") {
+    } else if (userdata.role === "Donee") {
       setlink([
         { to: "personalinfo", label: "Profile" },
-        { to: "ActivityStatus", label: "Activity Status" },
+        { to: "ActivityStatus", label: "Activity Management" },
       ]);
+    } else if (userdata.role === "fund_raiser") {
+      setlink([{ to: "ActivityStatus", label: "Activity Management" }]);
     }
   }, [userdata]);
   const finalAvatar =

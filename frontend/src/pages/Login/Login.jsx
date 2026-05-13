@@ -45,7 +45,7 @@ function Login() {
     try {
       const res = await apiLogin(values);
       if (res.status == "success") {
-        localStorage.setItem("token", res.token);
+        cookie.set("token", res.token, { expires: 1, path: "/" });
         localStorage.setItem(
           "userData",
           JSON.stringify({
@@ -61,7 +61,7 @@ function Login() {
             activity: res.avtivity,
           }),
         );
-
+        console.log(res);
         window.dispatchEvent(new Event("storage"));
         message.open({
           type: "success",

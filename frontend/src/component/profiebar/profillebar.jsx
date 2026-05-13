@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import arrow from "../../assets/arrow.svg";
 import { apiLogout } from "../../api";
+import cookie from "js-cookie";
 function ProfileBar({ user, userRavatar }) {
   console.log(user);
   const navigate = useNavigate();
@@ -45,9 +46,9 @@ function ProfileBar({ user, userRavatar }) {
             logout(user.userid);
             // remove the localstorage
             localStorage.removeItem("userData");
-
+            // localStorage.removeItem("token");
+            cookie.remove("token");
             window.dispatchEvent(new Event("storage"));
-
             navigate("/home");
           }}
         >
