@@ -162,14 +162,16 @@ function ActivityStatus() {
               creator: item.creator,
               target_amount: item.target_amount,
               category_name: item.category_name,
-              start_date: item.start_date.split(" ").slice(0, 4).join(" "),
-              end_date: item.end_date.split(" ").slice(0, 4).join(" "),
+              start_date: item.start_date,
+              // start_date: item.start_date.split(" ").slice(0, 4).join(" "),
+              end_date: item.end_date,
+              // end_date: item.end_date.split(" ").slice(0, 4).join(" "),
             }));
             setactivityData(activities);
           }
         })
         .catch((err) => {
-          console.log(err.response);
+          console.log(err);
           // message.error(err.response?.data?.error);
         });
     } catch (error) {
