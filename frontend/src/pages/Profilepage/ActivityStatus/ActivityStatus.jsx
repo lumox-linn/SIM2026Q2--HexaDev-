@@ -575,9 +575,17 @@ function ActivityStatus() {
                   </li>
                 ) : null}
 
-                <span>{item.description}</span>
+                <span style={{ marginBottom: "45px" }}>{item.description}</span>
 
-                <li>
+                <li
+                  className="butStyle"
+                  style={{
+                    position: "absolute",
+                    bottom: "13px",
+                    zIndex: 10,
+                    left: "19px",
+                  }}
+                >
                   <button onClick={() => editPro(item)}>Edit</button>
                   <button onClick={() => showModal(item)}>Delete</button>
 

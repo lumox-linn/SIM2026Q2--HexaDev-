@@ -87,6 +87,7 @@
   transition: all 0.4s ease;
   display: flex;
   flex-direction: column;
+  position: relative;
   color: #706d6d;
   gap: 18px;
 }
