@@ -1,79 +1,172 @@
 import "./ActivityStatus.css";
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import {
   apiGetAllActivities,
   apiCreateActivities,
   apiEditActivities,
   apiDeleteActivities,
 } from "../../../api";
-import { Button, Checkbox, Form, Input, message, Modal } from "antd";
+import { createStaticStyles } from "antd-style";
+
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  message,
+  Modal,
+  Flex,
+  DatePicker,
+  Space,
+  Tag,
+  Progress,
+  Select,
+} from "antd";
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 function ActivityStatus() {
   const location = useLocation();
-  const [categoryData, setcategoryData] = useState([]);
+  const [activityData, setactivityData] = useState([]);
   const userdata = location.state?.userdata || {};
   const [inpWarningVisi, setinpWarningVisi] = useState(false);
+  const userId = localStorage.getItem("userData")
+    ? JSON.parse(localStorage.getItem("userData")).userid
+    : null;
   const [inpValue, setinpvalue] = useState("");
   const [creaVisi, setcreaVisi] = useState(false);
   const [buttype, setbuttype] = useState("");
   const { TextArea } = Input;
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedActivities, setselectedActivities] = useState(null);
   const [editValue, setEditValue] = useState(null);
+  const [viewActivity, setViewActivity] = useState({
+    viewstatus: false,
+    actId: null,
+  });
+  // const [cat, setcat] = useState(null);
+  const [allcategories, setallCategories] = useState([
+    { category: "Animal", catId: 2 },
+    { category: "Education", catId: 3 },
+    { category: "Environment", catId: 5 },
+    { category: "Health", catId: 4 },
+    { category: "School", catId: 1 },
+  ]);
+  const [targetNumber, settargetNumber] = useState(false);
+  const percentage = (item) => {
+    const raised = parseFloat(item.amount_raised) || 0;
+    const target = parseFloat(item.target_amount) || 0;
+    if (target <= 0) return 0;
+    const res = Math.round((raised / target) * 100);
+
+    return res;
+  };
+  const progressClass = {
+    root: "demo-progress-root",
+    rail: "demo-progress-rail",
+    track: "demo-progress-track",
+  };
+  const styles = {
+    root: {
+      backgroundColor: "#e6f7ff",
+    },
+    icon: {
+      color: "#52c41a",
+    },
+    content: {
+      color: "#706d6d",
+    },
+  };
+
+  const classNames = createStaticStyles(({ css }) => ({
+    root: css`
+      padding: 2px 6px;
+      border-radius: 8px;
+      margin-left: 10px;
+    `,
+  }));
 
   const showModal = (profile) => {
-    setSelectedCategory(profile);
+    setselectedActivities(profile);
     setIsModalOpen(true);
   };
 
   const handleOk = () => {
     setIsModalOpen(false);
-    if (!selectedCategory) return;
-    console.log("delete");
-    // try {
-    //   apiDeleteActivities(selectedCategory.id)
-    //     .then((res) => {
-    //       console.log(res);
-    //       // if (res.status === "success") {
-    //       //   message.success(res.message);
-    //       //   refresh();
-    //       // } else {
-    //       //   message.error(res.error || "Failed to delete");
-    //       // }
-    //     })
-    //     .catch((err) => {
-    //       console.log(err.response);
-    //       message.error(error.response?.data?.error);
-    //     });
-    // } catch (error) {
-    //   console.log(error);
-    //   message.error(error.response?.data?.error);
-    // }
+    if (!selectedActivities) return;
+    console.log(selectedActivities);
+    try {
+      apiDeleteActivities(selectedActivities.activity_id)
+        .then((res) => {
+          console.log(res);
+          if (res.status === "success") {
+            message.success(res.message);
+            refresh();
+          } else {
+            message.error(res.error || "Failed to delete");
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          message.error(err.response?.data?.error);
+        });
+    } catch (error) {
+      console.log(error);
+      message.error(error.response?.data?.error);
+    }
   };
 
+  const stylesFn = (info) => {
+    const val = info.props.percent ?? 0;
+    const safeVal = Math.min(Math.max(val, 0), 100);
+    const hue = 200 - (200 * val) / 100;
+    return {
+      indicator: {
+        backgroundImage: `
+        linear-gradient(
+          to right,
+          hsla(${hue}, 85%, 65%, 1),
+          height: '8px',
+          hsla(${hue + 30}, 90%, 55%, 0.95)
+        )`,
+        borderRadius: 8,
+        transition: "all 0.3s ease",
+      },
+      rail: {
+        backgroundColor: "rgba(0, 0, 0, 0.1)",
+        borderRadius: 8,
+        height: "8px",
+      },
+    };
+  };
   const handleCancel = () => {
     setIsModalOpen(false);
   };
 
   const refresh = () => {
-    const userId = localStorage.getItem("userData")
-      ? JSON.parse(localStorage.getItem("userData")).userid
-      : null;
     console.log(userId);
     try {
       apiGetAllActivities({ user_id: userId })
         .then((res) => {
           console.log(res);
-          // if (res.activities) {
-          //   const activities = res.activities.map((item) => ({
-          //     id: item.activity_id,
-          //     name: item.activity_name,
-          //     description: item.description,
-          //     status: item.status,
-          //   }));
-          //   setcategoryData(activities);
-          // }
+          if (res.activities) {
+            const activities = res.activities.map((item) => ({
+              activity_id: item.activity_id,
+              title: item.title,
+              description: item.description,
+              amount_raised: item.amount_raised,
+              category: item.category_name,
+              status: item.status,
+              created_at: item.created_at.split(" ").slice(0, 4).join(" "),
+              creator: item.creator,
+              target_amount: item.target_amount,
+              category_name: item.category_name,
+              start_date: item.start_date.split(" ").slice(0, 4).join(" "),
+              end_date: item.end_date.split(" ").slice(0, 4).join(" "),
+            }));
+            setactivityData(activities);
+          }
         })
         .catch((err) => {
           console.log(err.response);
@@ -84,8 +177,15 @@ function ActivityStatus() {
       // message.error(error.response?.data?.error);
     }
   };
+  const viewAct = (item) => {
+    setViewActivity({
+      viewstatus: true,
+      actId: item.activity_id,
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-  const searchCategory = (e) => {
+  const searchActivities = (e) => {
     setinpvalue(e.target.value);
     // when input value changed,set warning to invisible
     if (e.target.value !== "") {
@@ -108,18 +208,26 @@ function ActivityStatus() {
         apiGetAllActivities({ query: inpValue })
           .then((res) => {
             console.log(res);
-            // if (res.activities) {
-            //   const activities = res.activities.map((item) => ({
-            //     id: item.activity_id,
-            //     name: item.activity_name,
-            //     description: item.description,
-            //     status: item.status,
-            //   }));
-            //   setcategoryData(activities);
-            // }
+            if (res.activities) {
+              const activities = res.activities.map((item) => ({
+                activity_id: item.activity_id,
+                title: item.title,
+                description: item.description,
+                amount_raised: item.amount_raised,
+                category: item.category_name,
+                status: item.status,
+                created_at: item.created_at.split(" ").slice(0, 4).join(" "),
+                creator: item.creator,
+                target_amount: item.target_amount,
+                category_name: item.category_name,
+                start_date: item.start_date.split(" ").slice(0, 4).join(" "),
+                end_date: item.end_date.split(" ").slice(0, 4).join(" "),
+              }));
+              setactivityData(activities);
+            }
           })
           .catch((err) => {
-            setcategoryData([]);
+            setactivityData([]);
             message.error(err.response?.data?.error);
           });
       } catch (error) {
@@ -131,51 +239,78 @@ function ActivityStatus() {
     }
   };
 
-  // const getStatusClass = (item) => {
-  //   if (item.status === "suspended") return "disabled";
-  //   return "active";
-  // };
+  const getStatusClass = (item) => {
+    if (item.status === "suspended") return "disabled";
+    return "active";
+  };
 
   const onFinish = (values) => {
+    // const pp = allcategories.find(
+    //   (item) => item.category == values.category_id,
+    // );
+    // console.log(pp);
+    const cat = allcategories.find(
+      (item) => item.category == values.category_id,
+    );
+    console.log(values);
     try {
       if (buttype === "create") {
-        console.log("create");
-        // apiCreateActivities({
-        //   activity_name: values.name,
-        //   description: values.description,
-        // })
-        //   .then((res) => {
-        //     console.log(res);
-        //     // if (res.status === "success") {
-        //     //   message.success(res.message);
-        //     //   setcreaVisi(false);
-        //     //   form.resetFields();
-        //     //   refresh();
-        //     // } else {
-        //     //   message.error(res.error || res.message);
-        //     // }
-        //   })
-        //   .catch((err) => message.error(err.response?.data?.error));
+        console.log(values);
+        apiCreateActivities({
+          title: values.title,
+          description: values.description,
+          category_id: cat.catId,
+          created_by: userId,
+          target_amount: values.target_amount,
+          start_date: values.start_date
+            ? values.start_date.format("YYYY-MM-DD")
+            : null,
+          end_date: values.end_date
+            ? values.end_date.format("YYYY-MM-DD")
+            : null,
+        })
+          .then((res) => {
+            console.log(res);
+            if (res.status === "success") {
+              message.success(res.message);
+              setcreaVisi(false);
+              form.resetFields();
+              refresh();
+            } else {
+              message.error(res.error || res.message);
+            }
+          })
+          .catch((err) => message.error(err.response?.data?.error));
       } else if (buttype === "edit") {
         console.log("edit");
-        // apiEditActivities(Number(editValue.id), {
-        //   activity_name: values.role,
-        //   description: values.description,
-        // })
-        //   .then((res) => {
-        //     console.log(res);
-        //     // if (res.status === "success") {
-        //     //   message.success(res.message);
-        //     //   setcreaVisi(false);
-        //     //   form.resetFields();
-        //     //   refresh();
-        //     // } else {
-        //     //   message.error(res.error || res.message);
-        //     // }
-        //   })
-        //   .catch((err) => {
-        //     message.error(err.response?.data?.error);
-        //   });
+        apiEditActivities(Number(editValue.activity_id), {
+          title: values.title,
+          description: values.description,
+          category_id: cat.catId,
+          created_by: userId,
+          amount_raised: values.amount_raised,
+          target_amount: values.target_amount,
+          start_date: values.start_date
+            ? values.start_date.format("YYYY-MM-DD")
+            : null,
+          end_date: values.end_date
+            ? values.end_date.format("YYYY-MM-DD")
+            : null,
+        })
+          .then((res) => {
+            console.log(res);
+            if (res.status === "success") {
+              message.success(res.message);
+              setcreaVisi(false);
+              form.resetFields();
+              refresh();
+            } else {
+              message.error(res.error || res.message);
+            }
+          })
+          .catch((err) => {
+            message.error(err.response?.data?.error);
+          });
       }
     } catch (error) {
       message.error(error.response?.data?.error);
@@ -191,25 +326,43 @@ function ActivityStatus() {
     document.querySelector(".pmhead")?.scrollIntoView({ behavior: "smooth" });
     setbuttype("edit");
     setEditValue(item);
+    setViewActivity({ actId: null, viewstatus: false });
+
+    const found = allcategories.find(
+      (i) => i.category.toLowerCase() === item.category_name.toLowerCase(),
+    );
+
+    console.log(item);
     setcreaVisi(true);
-    form.setFieldsValue({
-      name: item.name,
-      description: item.description,
-    });
+    console.log(allcategories);
+    setTimeout(() => {
+      form.setFieldsValue({
+        title: item.title,
+        description: item.description,
+        category_id: found.category,
+        created_by: item.creator,
+        target_amount: item.target_amount,
+        start_date: item.start_date ? dayjs(item.start_date) : null,
+        amount_raised: item.amount_raised,
+        end_date: item.end_date ? dayjs(item.end_date) : null,
+      });
+    }, 100);
   };
   return (
     <div className="mc">
       <div className="pmhead">
-        <span className="title">Category management</span>
+        <span className="title">Activity management</span>
         <li>
           <input
             type="text"
-            placeholder="Search category..."
-            onChange={(e) => searchCategory(e)}
+            placeholder="Search Activities..."
+            onChange={(e) => searchActivities(e)}
           />
           <button onClick={searchPro}>Search</button>
           {inpWarningVisi ? (
-            <span className="inpWarning">Please enter a name to search</span>
+            <span className="inpWarning">
+              Please enter a activity to search
+            </span>
           ) : (
             ""
           )}
@@ -219,9 +372,12 @@ function ActivityStatus() {
               setcreaVisi(!creaVisi);
               setbuttype("create");
               form.resetFields();
+              if (viewActivity.viewstatus) {
+                setViewActivity({ actId: null, viewstatus: false });
+              }
             }}
           >
-            + Create New Category
+            + Create New Activity
           </button>
         </li>
       </div>
@@ -232,9 +388,9 @@ function ActivityStatus() {
           <div className="createCard">
             <li>
               {buttype === "create"
-                ? "Create Category"
+                ? "Create Activities"
                 : buttype === "edit"
-                  ? "Edit Category"
+                  ? "Edit Activities"
                   : ""}
             </li>
             <Form
@@ -249,15 +405,64 @@ function ActivityStatus() {
               form={form}
             >
               <Form.Item
-                label="Category Title"
-                name="name"
+                label="Activities Title"
+                name="title"
                 rules={[
-                  { required: true, message: "Please input category title!" },
+                  { required: true, message: "Please input Activities title!" },
                 ]}
               >
                 <Input />
               </Form.Item>
+              <Form.Item
+                label="Target Amount"
+                name="target_amount"
+                rules={[
+                  { required: true, message: "Please input target amount!" },
+                  {
+                    transform: (value) => Number(value),
+                    type: "number",
+                    message: "Please input a valid number!",
+                  },
+                ]}
+                style={{ position: "relative" }}
+              >
+                <Input />
+              </Form.Item>
+              {buttype === "edit" ? (
+                <Form.Item
+                  label="Amount Raised"
+                  name="amount_raised"
+                  rules={[
+                    { required: true, message: "Please input raised amount!" },
+                    {
+                      transform: (value) => Number(value),
+                      type: "number",
+                      message: "Please input a valid number!",
+                    },
+                  ]}
+                  style={{ position: "relative" }}
+                >
+                  <Input />
+                </Form.Item>
+              ) : null}
 
+              <Form.Item label="Category" name="category_id">
+                <Select
+                  rules={[{ required: true, message: "Please input!" }]}
+                  options={allcategories.map((element, index) => ({
+                    value: element.category,
+                    label: element.category,
+                    key: element.catId,
+                  }))}
+                />
+              </Form.Item>
+
+              <Form.Item label="Start Date" name="start_date">
+                <DatePicker />
+              </Form.Item>
+              <Form.Item label="End Date" name="end_date">
+                <DatePicker />
+              </Form.Item>
               <Form.Item
                 label="Description"
                 name="description"
@@ -276,82 +481,144 @@ function ActivityStatus() {
             </Form>
           </div>
         </div>
-        <div className="card">
-          <li className="first">category</li>
-          <span>description</span>
 
-          <li>
-            <button onClick={() => editPro("0")}>Edit</button>
-            <button onClick={() => showModal("1")}>Delete</button>
-            <Modal
-              title="Suspension Confirmation"
-              open={isModalOpen}
-              onOk={handleOk}
-              onCancel={handleCancel}
-              okText="Delete"
-              okType="danger"
-            >
-              <p>
-                Are you sure you want to delete this
-                {/* <b>{selectedCategory?.role}</b>? */}
-              </p>
-            </Modal>
-          </li>
-        </div>
-        {/* {categoryData.map((item) => {
-          return (
-            <div key={item.id} className="card">
-              <li className="first">
-                {/* <div className="img">
-                  {item.role === "admin"
-                    ? "UA"
-                    : item.role === "platform_manager"
-                      ? "PM"
-                      : item.role === "fund_raiser"
-                        ? "FR"
-                        : item.role === "donee"
-                          ? "DO"
-                          : item.role.substring(0, 2).toUpperCase()}
-                </div> */}
-        {/* <span className="name">{item.name}</span> */}
-
-        {/* <div className={getStatusClass(item)}>
-                  {item.status === "active" ? "Active" : "Suspended"}
-                </div>*/}
-        {/* </li>
-              <span>{item.description}</span>
-
-              <li>
-                <button onClick={() => editPro(item)}>Edit</button>
-                <button onClick={() => showModal(item)}>Delete</button> */}
-
-        {/* {item.status === "active" ? (
-                  <button onClick={() => showModal(item)}>Suspend</button>
-                ) : (
-                  <button
-                    onClick={() => handleActivate(item)}
-                    className="activeBut"
+        {activityData
+          .slice()
+          .sort((a, b) => {
+            if (a.activity_id === viewActivity.actId) return -1;
+            if (b.activity_id === viewActivity.actId) return 1;
+            return 0;
+          })
+          .map((item) => {
+            return (
+              <div
+                key={item.activity_id}
+                className={
+                  item.activity_id === viewActivity.actId ? "cardView" : "card"
+                }
+              >
+                {item.activity_id === viewActivity.actId ? (
+                  <i
+                    onClick={() =>
+                      setViewActivity({ actId: null, viewstatus: false })
+                    }
+                    className="closeView"
                   >
-                    Activate
-                  </button>
-                )} */}
-        {/* <Modal
-                  title="Suspension Confirmation"
-                  open={isModalOpen}
-                  onOk={handleOk}
-                  onCancel={handleCancel}
-                  okText="Delete"
-                  okType="danger"
-                >
-                  <p>
-                    Are you sure you want to delete the category
-                    <b> {selectedCategory?.name}?</b>
-                  </p>
-                </Modal>
-              </li>
-            </div> */}
-        {/* ); */}
-        {/* })} */}
+                    X
+                  </i>
+                ) : (
+                  ""
+                )}
+                <li className="first">
+                  <span className="name">{item.title}</span>
+
+                  <div className={getStatusClass(item)}>
+                    {item.status === "active" ? "Active" : "Suspended"}
+                  </div>
+                  {item.activity_id === viewActivity.actId ? (
+                    <p>
+                      <Tag
+                        classNames={classNames}
+                        styles={styles}
+                        icon={
+                          item.status === "active" ? (
+                            <CheckCircleOutlined />
+                          ) : (
+                            <CloseCircleOutlined />
+                          )
+                        }
+                      >
+                        {item.category}
+                      </Tag>
+                    </p>
+                  ) : null}
+                </li>
+                {item.activity_id === viewActivity.actId ? (
+                  <li className="date">
+                    <p>
+                      <span>Start date: {item.start_date}</span>
+                      <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
+                        End date: {item.end_date}
+                      </span>
+                    </p>
+
+                    <p
+                      style={{
+                        width: "100%",
+                        height: "20px",
+                        display: "flex",
+                        flexDirection: "row",
+                        // padding: "0 2px",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      {" "}
+                      <span style={{ color: "#6bacea" }}>
+                        Target: ${item.target_amount}
+                      </span>
+                      <span style={{ color: "#b3bc4b" }}>
+                        Raised: ${item.amount_raised}
+                      </span>
+                    </p>
+                    <Flex vertical gap="large">
+                      {/* <span>{item.targetAmount}</span> */}
+                      <Progress
+                        classNames={progressClass}
+                        styles={stylesFn}
+                        percent={percentage(item)}
+                      />
+                    </Flex>
+                    {/* <hr /> */}
+                  </li>
+                ) : null}
+
+                <span>{item.description}</span>
+
+                <li>
+                  <button onClick={() => editPro(item)}>Edit</button>
+                  <button onClick={() => showModal(item)}>Delete</button>
+
+                  {/* {item.status === "active" ? (
+                    <button onClick={() => showModal(item)}>Suspend</button>
+                  ) : (
+                    <button
+                      onClick={() => handleActivate(item)}
+                      className="activeBut"
+                    >
+                      Activity
+                    </button>
+                  )} */}
+                  {viewActivity.actId == item.activity_id ? null : (
+                    <button
+                      onClick={() => {
+                        viewAct(item);
+                        if (creaVisi) {
+                          setcreaVisi(!creaVisi);
+                        }
+                      }}
+                    >
+                      View
+                    </button>
+                  )}
+
+                  <Modal
+                    title="Suspension Confirmation"
+                    open={isModalOpen}
+                    onOk={handleOk}
+                    onCancel={handleCancel}
+                    okText="Delete"
+                    okType="danger"
+                    className="modall"
+                  >
+                    <p>
+                      Are you sure you want to delete the Activities
+                      <b> {selectedActivities?.title}?</b>
+                    </p>
+                  </Modal>
+                </li>
+              </div>
+            );
+          })}
       </div>
     </div>
   );

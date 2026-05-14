@@ -111,6 +111,7 @@ function ManageCategory() {
                 description: item.description,
                 status: item.status,
               }));
+
               setcategoryData(categories);
             }
           })
