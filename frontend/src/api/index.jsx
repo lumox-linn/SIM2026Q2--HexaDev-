@@ -57,6 +57,11 @@ export function apiGetAllProfiles(params) {
   return newRequest({ url: "/api/profiles/", method: "get", params: params });
 }
 
+export function apiViewProfile(id) {
+  return newRequest({ url: `/api/profiles/${id}`, method: 'get' })
+}
+
+
 export function apiCreateProfile(data) {
   return newRequest({ url: "/api/profiles/", method: "post", data: data });
 }
