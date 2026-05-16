@@ -27,11 +27,6 @@ def create_app():
     app.config['MYSQL_CURSORCLASS']  = 'DictCursor'
     app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
-    if os.getenv('MYSQL_SSL', 'false').lower() == 'true':
-        app.config['MYSQL_SSL'] = {
-            'ca': os.getenv('MYSQL_SSL_CA', 'certs/ca.pem')
-        }
-
     CORS(app, origins='*', supports_credentials=False)
     mysql.init_app(app)
 
@@ -53,13 +48,23 @@ def create_app():
     from app.routes.category_routes import category_bp
     app.register_blueprint(category_bp, url_prefix='/api/categories')
 
+    # Sprint 4 routes
+    from app.routes.activity_routes import activity_bp
+    app.register_blueprint(activity_bp, url_prefix='/api/activities')
+
     # Sprint 5 routes
     from app.routes.donee_routes import donee_bp
     app.register_blueprint(donee_bp, url_prefix='/api/donee')
 
-    # Sprint 4 routes
-    from app.routes.activity_routes import activity_bp
-    app.register_blueprint(activity_bp, url_prefix='/api/activities')
+    # Sprint 6 routes
+    from app.routes.interest_routes import interest_bp
+    app.register_blueprint(interest_bp, url_prefix='/api/interest')
+
+    from app.routes.history_routes import history_bp
+    app.register_blueprint(history_bp, url_prefix='/api/history')
+
+    from app.routes.report_routes import report_bp
+    app.register_blueprint(report_bp, url_prefix='/api/reports')
 
     # Setup route
     from app.routes.setup_routes import setup_bp
