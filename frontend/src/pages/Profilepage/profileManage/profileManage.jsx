@@ -323,7 +323,8 @@ function profileManage() {
               <span>{item.description}</span>
 
               <li>
-                
+                <button onClick={() => handleViewProfile(item)}>View</button>
+
                 <button onClick={() => editPro(item)}>Edit</button>
 
                 {item.status === "active" ? (
