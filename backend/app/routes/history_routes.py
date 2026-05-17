@@ -3,7 +3,7 @@ app/routes/history_routes.py — Boundary Layer
 ===============================================
 Sprint 6 — FR-HS-01, FR-HS-02, DN-HS-01, DN-HS-02
 
-Separate boundary class per use case:
+Separate boundary class per usecase:
 - ViewFRHistoryBoundary    (FR-HS-01, FR-HS-02)
 - ViewDoneeHistoryBoundary (DN-HS-01, DN-HS-02)
 """
