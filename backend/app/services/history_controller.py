@@ -8,6 +8,7 @@ Separate controller class per use case:
 - ViewDoneeHistoryController (DN-HS-01, DN-HS-02)
 """
 from app.models.activity import Activity
+from app.models.donation import Donation
 
 
 class ViewFRHistoryController:
@@ -42,7 +43,7 @@ class ViewDoneeHistoryController:
     def getDoneeHistory(user_id: int, category_id: int = None,
                         start_date: str = None, end_date: str = None):
         """Get donation history for a Donee."""
-        history = Activity.getDoneeHistory(
+        history = Donation.getHistory(
             user_id=user_id,
             category_id=category_id,
             start_date=start_date,
