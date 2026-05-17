@@ -144,7 +144,7 @@ function myDonations() {
       },
     };
   };
-  const searchProfile = (e) => {
+  const searchDonations = (e) => {
     setinpvalue(e.target.value);
     // when input value changed,set warning to invisible
     if (e.target.value !== "") {
@@ -233,84 +233,35 @@ function myDonations() {
       ),
     },
   ];
-  // table
-  // const data = [
-  //   {
-  //     key: "1",
-  //     title: "Help the children learn",
-  //     category: "Education",
-  //     TargetMoney: "$3000",
-  //     MoneyRaised: "$1000",
-  //     Start: "2026-01-01",
-  //     End: "2026-03-06",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  // ];
   const searchPro = () => {
     // if the input has value
     if (inpValue !== "") {
       console.log(inpValue);
-      // try {
-      //   apiMyDonations(user.userid)
-      //     .then((res) => {
-      //       console.log(res);
-      //     })
-      //     .catch((err) => {
-      //       message.error(err.response?.data?.error);
-      //     });
-      // } catch (error) {
-      //   message.error(error.response?.data?.error);
-      // }
+      try {
+        apiMyDonations({ activity_id: user.userid, role: token })
+          .then((res) => {
+            console.log(res);
+            //    const backendList = res.activities;
+
+            // const activities = backendList.map((item) => ({
+            //   key: item.activity_id,
+            //   title: item.title,
+            //   category: item.category_name,
+            //   TargetMoney: item.target_amount,
+            //   MoneyRaised: item.amount_raised,
+            //   Start: item.start_date?.split(" ").slice(0, 4).join(" "),
+            //   End: item.end_date?.split(" ").slice(0, 4).join(" "),
+            //   status: item.status,
+            // }));
+            // console.log(activities);
+            // setData(activities);
+          })
+          .catch((err) => {
+            message.error(err.response?.data?.error);
+          });
+      } catch (error) {
+        message.error(error.response?.data?.error);
+      }
     } else {
       // if the input value is empty
       setinpWarningVisi(true);
@@ -324,18 +275,20 @@ function myDonations() {
       apiMyDonations({ user_id: user.userid }, token)
         .then((res) => {
           // console.log("3333");
-          // console.log(res);
-          const activities = res.activities.map((item) => ({
-            key: res.activity_id,
 
-            title: res.title,
-            category: res.category_name,
-            TargetMoney: res.target_amount,
-            MoneyRaised: res.amount_raised,
-            Start: res.start_date,
-            End: res.end_date,
-            status: res.status,
+          const backendList = res.activities;
+
+          const activities = backendList.map((item) => ({
+            key: item.activity_id,
+            title: item.title,
+            category: item.category_name,
+            TargetMoney: item.target_amount,
+            MoneyRaised: item.amount_raised,
+            Start: item.start_date?.split(" ").slice(0, 4).join(" "),
+            End: item.end_date?.split(" ").slice(0, 4).join(" "),
+            status: item.status,
           }));
+          console.log(activities);
           setData(activities);
         })
         .catch((err) => {
@@ -356,9 +309,9 @@ function myDonations() {
             <div>
               <img src={user.useravatar} alt="" />
             </div>
-            <li>username</li>
-            <li>email</li>
-            <li>phone</li>
+            <li>{user?.username || "Username"}</li>
+            <li>{user?.useremail || "Email"}</li>
+            <li>{user?.userphone || "Phone"}</li>
           </div>
           <div className="donations">
             <div
@@ -412,13 +365,20 @@ function myDonations() {
             </li>
           </div>
 
+          {/* <div className={tableClass ? "onedata" : "tableS"}>
+            {
+              data.map((item)=>{
+                return 
+              })
+            } */}
+          {console.log(data)}
           <div className={tableClass ? "onedata" : "tableS"}>
             <Table
               bordered="true"
               className="only-title-line"
               columns={columns}
               dataSource={data}
-              rowKey="user_id"
+              rowKey="key"
               pagination={
                 tableClass
                   ? false
@@ -428,97 +388,90 @@ function myDonations() {
               }
             />
           </div>
-          {/* key: "2",
-      title: "huhuhuhdushdu",
-      category: "Animal",
-      TargetMoney: "$4000",
-      MoneyRaised: "$2000",
-      Start: "2026-02-04",
-      End: "2026-08-00",
-      status: "Active", */}
-          {seeMore ? (
-            <div className="seemore">
-              <div className="cardView">
-                <i
-                  onClick={() => {
-                    setData(alldata);
-                    setseeMore(false);
-                    settableClass(false);
-                  }}
-                  className="closeView"
-                >
-                  X
-                </i>
 
-                <li className="first">
-                  <span className="name">{singleData.title}</span>
+          {/* {seeMore ? (
+          <div className="seemore">
+            <div className="cardView">
+              <i
+                onClick={() => {
+                  setData(alldata);
+                  setseeMore(false);
+                  settableClass(false);
+                }}
+                className="closeView"
+              >
+                X
+              </i>
 
-                  <div className={getStatusClass(singleData)}>
-                    {singleData.status === "Active" ? "Active" : "Suspended"}
-                  </div>
+              <li className="first">
+                <span className="name">{singleData.title}</span>
 
-                  <p>
-                    <Tag
-                      classNames={classNames}
-                      styles={styles}
-                      icon={
-                        singleData.status === "Active" ? (
-                          <CheckCircleOutlined />
-                        ) : (
-                          <CloseCircleOutlined />
-                        )
-                      }
-                    >
-                      {singleData.category}
-                    </Tag>
-                  </p>
-                </li>
+                <div className={getStatusClass(singleData)}>
+                  {singleData.status === "Active" ? "Active" : "Suspended"}
+                </div>
 
-                <li className="date">
-                  <p>
-                    <span>Start date: {singleData.Start}</span>
-                    <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
-                      End date: {singleData.End}
-                    </span>
-                  </p>
-
-                  <p
-                    style={{
-                      width: "100%",
-                      height: "20px",
-                      display: "flex",
-                      flexDirection: "row",
-                      // padding: "0 2px",
-                      justifyContent: "space-between",
-                    }}
+                <p>
+                  <Tag
+                    classNames={classNames}
+                    styles={styles}
+                    icon={
+                      singleData.status === "Active" ? (
+                        <CheckCircleOutlined />
+                      ) : (
+                        <CloseCircleOutlined />
+                      )
+                    }
                   >
-                    {" "}
-                    <span style={{ color: "#6bacea" }}>
-                      Target: ${singleData.TargetMoney}
-                    </span>
-                    <span style={{ color: "#b3bc4b" }}>
-                      Raised: ${singleData.MoneyRaised}
-                    </span>
-                  </p>
-                  <Flex vertical gap="large">
-                    {/* <span>{item.targetAmount}</span> */}
-                    <Progress
-                      classNames={progressClass}
-                      styles={stylesFn}
-                      percent={percentage(singleData)}
-                    />
-                  </Flex>
-                  {/* <hr /> */}
-                </li>
+                    {singleData.category}
+                  </Tag>
+                </p>
+              </li>
 
-                {/* <span style={{ marginBottom: "45px" }}>{item.description}</span> */}
-                <li className="myD">
-                  <span>I donated: &nbsp;{userDonate.donate}</span>
-                  <span>Date of donation: &nbsp; {userDonate.donateDate}</span>
-                </li>
-              </div>
+              <li className="date">
+                <p>
+                  <span>Start date: {singleData.Start}</span>
+                  <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
+                    End date: {singleData.End}
+                  </span>
+                </p>
+
+                <p
+                  style={{
+                    width: "100%",
+                    height: "20px",
+                    display: "flex",
+                    flexDirection: "row",
+                    // padding: "0 2px",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  {" "}
+                  <span style={{ color: "#6bacea" }}>
+                    Target: ${singleData.TargetMoney}
+                  </span>
+                  <span style={{ color: "#b3bc4b" }}>
+                    Raised: ${singleData.MoneyRaised}
+                  </span>
+                </p>
+                <Flex vertical gap="large">
+                  {/* <span>{item.targetAmount}</span> */}
+          {/* <Progress
+                    classNames={progressClass}
+                    styles={stylesFn}
+                    percent={percentage(singleData)}
+                  />
+                </Flex>
+                {/* <hr /> */}
+          {/* </li> */}
+
+          {/* <span style={{ marginBottom: "45px" }}>{item.description}</span> */}
+          {/* <li className="myD">
+                <span>I donated: &nbsp;{userDonate.donate}</span>
+                <span>Date of donation: &nbsp; {userDonate.donateDate}</span>
+              </li>
             </div>
-          ) : null}
+          </div>
+        ) : null} */}
         </div>
       </div>
     </div>

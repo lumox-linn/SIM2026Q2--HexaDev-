@@ -122,32 +122,72 @@ export function apiDeleteActivities(id) {
   return newRequest({ url: `/api/activities/${id}`, method: "delete" });
 }
 // donee
-export function apiMyDonations(params, token) {
-  console.log(params, token);
+// Donation history
+export function apiMyDonations(params = {}) {
+  return newRequest({
+    url: "/api/history/donee",
+    method: "get",
+    params: params,
+  });
+}
+
+// Browse activities
+export function apiGetDoneeActivities(params = {}) {
   return newRequest({
     url: "/api/donee/activities",
     method: "get",
     params: params,
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 }
-// favorites
-export function apiGetAllFavorites(params, token) {
+
+// Get favourites
+export function apiGetAllFavorites() {
+  return newRequest({ url: "/api/donee/favourites", method: "get" });
+}
+
+// Save favourite
+export function apiSaveFavourite(activity_id) {
   return newRequest({
     url: "/api/donee/favourites",
-    method: "get",
-    data: params,
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    method: "post",
+    data: { activity_id: activity_id },
   });
 }
-export function apiRemoveFavorites(userid, data) {
+
+// Remove favourite
+export function apiRemoveFavorites(activity_id) {
   return newRequest({
-    url: `/api/remove/${userid}`,
-    method: "put",
-    data: data,
+    url: `/api/donee/favourites/${activity_id}`,
+    method: "delete",
   });
 }
+
+// export function apiMyDonations(params, token) {
+//   console.log(params, token);
+//   return newRequest({
+//     url: "/api/donee/activities",
+//     method: "get",
+//     params: params,
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//     },
+//   });
+// }
+// // favorites
+// export function apiGetAllFavorites(params, token) {
+//   return newRequest({
+//     url: "/api/donee/favourites",
+//     method: "get",
+//     data: params,
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//     },
+//   });
+// }
+// export function apiRemoveFavorites(userid, data) {
+//   return newRequest({
+//     url: `/api/remove/${userid}`,
+//     method: "put",
+//     data: data,
+//   });
+// }
