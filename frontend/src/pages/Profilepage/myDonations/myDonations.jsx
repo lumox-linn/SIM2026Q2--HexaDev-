@@ -269,44 +269,35 @@ function myDonations() {
   };
 
   const refresh = () => {
-    console.log(user);
-    console.log(inpValue);
-    if (!user || !token) return;
-    try {
-      const apiParams = {
-        user_id: user.userid,
-      };
+  console.log(user);
+  if (!user) return;  // ← remove token check
+  try {
+    apiMyDonations()  // ✅ no params, no token
+      .then((res) => {
+        const backendList = res.history;  // ✅ change from res.activities to res.history
 
-      if (typeof inpValue !== "undefined" && inpValue.trim() !== "") {
-        apiParams.category_id = Number(inpValue) || undefined;
-      }
-      apiMyDonations({ user_id: user.userid }, token)
-        .then((res) => {
-          // console.log("3333");
-
-          const backendList = res.activities;
-
-          const activities = backendList.map((item) => ({
-            key: item.activity_id,
-            title: item.title,
-            category: item.category_name,
-            TargetMoney: item.target_amount,
-            MoneyRaised: item.amount_raised,
-            Start: item.start_date?.split(" ").slice(0, 4).join(" "),
-            End: item.end_date?.split(" ").slice(0, 4).join(" "),
-            status: item.status,
-          }));
-          console.log(activities);
-          setData(activities);
-        })
-        .catch((err) => {
-          console.log(err);
-          message.error(err.response?.data?.error);
-        });
-    } catch (error) {
-      message.error(error.response?.data?.error);
-    }
-  };
+        const activities = backendList.map((item) => ({
+          key: item.donation_id,           // ✅ use donation_id not activity_id
+          title: item.title,
+          category: item.category_name,
+          TargetMoney: item.target_amount,
+          MoneyRaised: item.amount_raised,
+          amount: item.amount,             // ✅ add donated amount
+          Start: item.start_date,
+          End: item.end_date,
+          status: item.status,
+          donated_at: item.donated_at,     // ✅ add donation date
+        }));
+        setData(activities);
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error(err.response?.data?.error);
+      });
+  } catch (error) {
+    message.error(error.response?.data?.error);
+  }
+};
   return (
     <div className="myDona">
       <li className="title">Donation History</li>
