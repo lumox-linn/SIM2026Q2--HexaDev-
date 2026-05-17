@@ -136,7 +136,7 @@ export function apiGetDoneeActivities(params = {}) {
   return newRequest({
     url: "/api/donee/activities",
     method: "get",
-    params: params,
+    params,
   });
 }
 
