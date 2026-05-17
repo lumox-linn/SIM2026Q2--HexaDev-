@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, app
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
@@ -65,6 +65,7 @@ def create_app():
 
     from app.routes.report_routes import report_bp
     app.register_blueprint(report_bp, url_prefix='/api/reports')
+
 
     # Setup route
     from app.routes.setup_routes import setup_bp

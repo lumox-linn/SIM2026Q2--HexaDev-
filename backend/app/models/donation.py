@@ -1,7 +1,7 @@
 """
 app/models/donation.py — Entity Layer
 =======================================
-Sprint 6 — DN-HS-01, DN-HS-02: Donee Donation History
+Sprint 6 — DN-HS-01, DN-HS-02: Donee Donation History.
 
 Entity: maps to donation table.
 All SQL queries and alt flows live here.

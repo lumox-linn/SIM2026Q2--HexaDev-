@@ -1,7 +1,7 @@
 """
 app/services/history_controller.py — Control Layer
 ====================================================
-Sprint 6 — FR-HS-01, FR-HS-02, DN-HS-01, DN-HS-02
+Sprint 6 — FR-HS-01, FR-HS-02, DN-HS-01, DN-HS-02.
 
 Separate controller class per use case:
 - ViewFRHistoryController    (FR-HS-01, FR-HS-02)
