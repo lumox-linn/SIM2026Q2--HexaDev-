@@ -127,7 +127,7 @@ export function apiMyDonations(params = {}) {
   return newRequest({
     url: "/api/history/donee",
     method: "get",
-    params,
+    params: params,
   });
 }
 
@@ -162,17 +162,17 @@ export function apiRemoveFavorites(activity_id) {
   });
 }
 
-// export function apiMyDonations(params, token) {
-//   console.log(params, token);
-//   return newRequest({
-//     url: "/api/donee/activities",
-//     method: "get",
-//     params: params,
-//     headers: {
-//       Authorization: `Bearer ${token}`,
-//     },
-//   });
-// }
+export function apiMyDonations(params, token) {
+  console.log(params, token);
+  return newRequest({
+    url: "/api/history/donee",
+    method: "get",
+    params: params,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
 // // favorites
 // export function apiGetAllFavorites(params, token) {
 //   return newRequest({

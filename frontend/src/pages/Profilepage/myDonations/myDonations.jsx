@@ -238,7 +238,7 @@ function myDonations() {
     if (inpValue !== "") {
       console.log(inpValue);
       try {
-        apiMyDonations({ activity_id: user.userid, role: token })
+        apiMyDonations({ activity_id: user.userid }, token)
           .then((res) => {
             console.log(res);
             //    const backendList = res.activities;
@@ -270,8 +270,16 @@ function myDonations() {
 
   const refresh = () => {
     console.log(user);
-    console.log(token);
+    console.log(inpValue);
+    if (!user || !token) return;
     try {
+      const apiParams = {
+        user_id: user.userid,
+      };
+
+      if (typeof inpValue !== "undefined" && inpValue.trim() !== "") {
+        apiParams.category_id = Number(inpValue) || undefined;
+      }
       apiMyDonations({ user_id: user.userid }, token)
         .then((res) => {
           // console.log("3333");
