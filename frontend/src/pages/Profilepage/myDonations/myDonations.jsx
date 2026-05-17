@@ -238,7 +238,7 @@ function myDonations() {
     if (inpValue !== "") {
       console.log(inpValue);
       try {
-        apiMyDonations({ activity_id: user.userid }, token)
+        apiMyDonations()
           .then((res) => {
             console.log(res);
             //    const backendList = res.activities;
