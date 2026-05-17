@@ -7,7 +7,7 @@ Separate boundary class per use case:
 - CreateActivityBoundary (FR-01)
 - ViewActivityBoundary   (FR-02)
 - UpdateActivityBoundary (FR-03)
-- DeleteActivityBoundary (FR-04)
+- SuspendActivityBoundary (FR-04)
 - SearchActivityBoundary (FR-05)
 """
 from flask import Blueprint, request, jsonify
@@ -58,7 +58,7 @@ class ViewActivityBoundary:
 
     @staticmethod
     @activity_bp.route('/', methods=['GET'])
-    @token_required(roles=['fund_raiser'])
+    @token_required(roles=['fund_raiser', 'platform_manager'])
     def get_all_activities(current_user):
         query = request.args.get('query', '').strip()
 
