@@ -59,6 +59,9 @@ class BrowseActivityController:
                 'status': 'fail',
                 'error':  f'Activity with ID {activity_id} not found.'
             }
+            
+        Activity.incrementViewCount(activity_id)
+        
         return True, {
             'status':   'success',
             'activity': activity
