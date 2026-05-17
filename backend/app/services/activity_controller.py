@@ -89,12 +89,12 @@ class UpdateActivityController:
         }
 
 
-class DeleteActivityController:
-    """Control — DeleteActivityController (FR-04)"""
+class SuspendActivityController:
+    """Control — SuspendActivityController (FR-04)"""
 
     @staticmethod
-    def deleteActivity(activity_id: int, user_id: int):
-        result = Activity.delete(activity_id, user_id)
+    def suspendActivity(activity_id: int, user_id: int):
+        result = Activity.suspend(activity_id, user_id)
 
         if result == 'not_found':
             return False, {
@@ -104,11 +104,11 @@ class DeleteActivityController:
         if result == 'unauthorized':
             return False, {
                 'status': 'fail',
-                'error':  'You can only delete your own activities.'
+                'error':  'You can only suspend your own activities.'
             }
         return True, {
             'status':      'success',
-            'message':     'Activity deleted successfully.',
+            'message':     'Activity suspended successfully.',
             'activity_id': activity_id
         }
 
@@ -137,5 +137,5 @@ class ActivityController:
     getAllActivities = ViewActivityController.getAllActivities
     viewActivity    = ViewActivityController.viewActivity
     updateActivity  = UpdateActivityController.updateActivity
-    deleteActivity  = DeleteActivityController.deleteActivity
+    suspendActivity = SuspendActivityController.suspendActivity
     searchActivity  = SearchActivityController.searchActivity

@@ -10,7 +10,7 @@ import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 import {
   apiGetDoneeActivities,
-  apiDeleteActivities,
+  apiSuspendActivities,
   apiSaveFavourite,
   apiViewActivity,
   apisearchActivities,

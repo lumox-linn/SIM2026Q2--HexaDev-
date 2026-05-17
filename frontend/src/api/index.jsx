@@ -117,9 +117,9 @@ export function apiEditActivities(id, data) {
   });
 }
 
-export function apiDeleteActivities(id) {
-  console.log("delete", id);
-  return newRequest({ url: `/api/activities/${id}`, method: "delete" });
+export function apiSuspendActivities(id) {
+  console.log("suspend", id);
+  return newRequest({ url: `/api/activities/${id}/suspend`, method: "put" });
 }
 // donee
 // Donation history
