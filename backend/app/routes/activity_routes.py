@@ -15,7 +15,7 @@ from app.services.activity_controller import (
     CreateActivityController,
     ViewActivityController,
     UpdateActivityController,
-    DeleteActivityController,
+    SuspendActivityController,
     SearchActivityController,
 )
 from app.utils.auth_utils import token_required
@@ -118,14 +118,14 @@ class UpdateActivityBoundary:
         return jsonify(payload), 400
 
 
-class DeleteActivityBoundary:
-    """Boundary — DeleteActivityBoundary (FR-04)"""
+class SuspendActivityBoundary:
+    """Boundary — SuspendActivityBoundary (FR-04)"""
 
     @staticmethod
-    @activity_bp.route('/<int:activity_id>', methods=['DELETE'])
+    @activity_bp.route('/<int:activity_id>/suspend', methods=['PUT'])
     @token_required(roles=['fund_raiser'])
-    def delete_activity(current_user, activity_id):
-        ok, payload = DeleteActivityController.deleteActivity(
+    def suspend_activity(current_user, activity_id):
+        ok, payload = SuspendActivityController.suspendActivity(
             activity_id, current_user['user_id']
         )
         if ok:
