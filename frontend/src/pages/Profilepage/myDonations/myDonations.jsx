@@ -1,13 +1,37 @@
 import { useEffect, useState } from "react";
 import cookie from "js-cookie";
+import { useLocation } from "react-router-dom";
 import "./Myactivities.css";
-import { message, Flex, Space, Table, Tag, Progress } from "antd";
+import dayjs from "dayjs";
+import {
+  message,
+  Flex,
+  Space,
+  Table,
+  Tag,
+  Progress,
+  Select,
+  DatePicker,
+  Form,
+  ConfigProvider,
+  TimePicker,
+} from "antd";
+const { RangePicker } = DatePicker;
 import { createStaticStyles } from "antd-style";
+
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
-import { apiMyDonations } from "../../../api";
+import {
+  apiMyDonations,
+  apisearchHistory,
+  apiGetDoneeActivities,
+} from "../../../api";
 import money from "../../../assets/money.svg";
 import donate from "../../../assets/donate.svg";
+import date from "../../../assets/date.svg";
+import restart from "../../../assets/restart.svg";
 function myDonations() {
+  const location = useLocation();
+  const [allcat, setallcat] = useState([]);
   const [userData, setuserData] = useState();
   const userdata = localStorage.getItem("userData");
   const [singleData, setsingleData] = useState({});
@@ -15,10 +39,13 @@ function myDonations() {
   const [inpWarningVisi, setinpWarningVisi] = useState(false);
   const [data, setData] = useState([]);
   const [tableClass, settableClass] = useState(false);
-
+  const [selectv, setselectv] = useState(null);
   const [inpValue, setinpvalue] = useState("");
   const [seeMore, setseeMore] = useState(false);
+  const [allmoney, setallmoney] = useState(0);
+  const [catid, setcatid] = useState(0);
   const token = cookie.get("token");
+  const userId = localStorage.getItem("userData");
   const getStatusClass = (item) => {
     if (item.status === "suspended") return "disabled";
     return "active";
@@ -28,68 +55,6 @@ function myDonations() {
     title: "Help the children learn",
     donateDate: "2026-03-02",
   };
-  // const alldata = [
-  //   {
-  //     key: "1",
-  //     title: "Help the children learn",
-  //     category: "Education",
-  //     TargetMoney: "$3000",
-  //     MoneyRaised: "$1000",
-  //     Start: "2026-01-01",
-  //     End: "2026-03-06",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  // ];
   useEffect(() => {
     if (user) {
       setuserData(user);
@@ -121,6 +86,8 @@ function myDonations() {
     rail: "demo-progress-rail",
     track: "demo-progress-track",
   };
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const stylesFn = (info) => {
     const val = info.props.percent ?? 0;
     const safeVal = Math.min(Math.max(val, 0), 100);
@@ -234,29 +201,34 @@ function myDonations() {
     },
   ];
   const searchPro = () => {
-    // if the input has value
-    if (inpValue !== "") {
-      console.log(inpValue);
+    console.log(startDate, endDate, selectv);
+    if ((startDate && endDate) || catid) {
       try {
-        apiMyDonations()
+        apisearchHistory(
+          selectv
+            ? { category_id: catid }
+            : { start_date: startDate, end_Date: endDate },
+        )
           .then((res) => {
+            const backendList = res.history;
             console.log(res);
-            //    const backendList = res.activities;
-
-            // const activities = backendList.map((item) => ({
-            //   key: item.activity_id,
-            //   title: item.title,
-            //   category: item.category_name,
-            //   TargetMoney: item.target_amount,
-            //   MoneyRaised: item.amount_raised,
-            //   Start: item.start_date?.split(" ").slice(0, 4).join(" "),
-            //   End: item.end_date?.split(" ").slice(0, 4).join(" "),
-            //   status: item.status,
-            // }));
-            // console.log(activities);
-            // setData(activities);
+            const activities = backendList.map((item) => ({
+              key: item.donation_id,
+              description: item.description,
+              amount: item.amount,
+              donated_at: item.donated_at?.split(" ").slice(0, 4).join(" "),
+              title: item.title,
+              category: item.category_name,
+              TargetMoney: item.target_amount,
+              MoneyRaised: item.amount_raised,
+              Start: item.start_date?.split(" ").slice(0, 4).join(" "),
+              End: item.end_date?.split(" ").slice(0, 4).join(" "),
+              status: item.status,
+            }));
+            setData(activities);
           })
           .catch((err) => {
+            console.log(err);
             message.error(err.response?.data?.error);
           });
       } catch (error) {
@@ -269,35 +241,71 @@ function myDonations() {
   };
 
   const refresh = () => {
-  console.log(user);
-  if (!user) return;  // ← remove token check
-  try {
-    apiMyDonations()  // ✅ no params, no token
-      .then((res) => {
-        const backendList = res.history;  // ✅ change from res.activities to res.history
+    console.log(user);
+    console.log(inpValue);
+    if (!user) return;
+    try {
+      const apiParams = {
+        user_id: user.userid,
+      };
 
-        const activities = backendList.map((item) => ({
-          key: item.donation_id,           // ✅ use donation_id not activity_id
-          title: item.title,
-          category: item.category_name,
-          TargetMoney: item.target_amount,
-          MoneyRaised: item.amount_raised,
-          amount: item.amount,             // ✅ add donated amount
-          Start: item.start_date,
-          End: item.end_date,
-          status: item.status,
-          donated_at: item.donated_at,     // ✅ add donation date
-        }));
-        setData(activities);
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error(err.response?.data?.error);
-      });
-  } catch (error) {
-    message.error(error.response?.data?.error);
-  }
-};
+      apiMyDonations()
+        .then((res) => {
+          const backendList = res.history;
+          console.log(res);
+          const activities = backendList.map((item) => ({
+            key: item.donation_id,
+            description: item.description,
+            amount: item.amount,
+            donated_at: item.donated_at?.split(" ").slice(0, 4).join(" "),
+            title: item.title,
+            category: item.category_name,
+            TargetMoney: item.target_amount,
+            MoneyRaised: item.amount_raised,
+            Start: item.start_date?.split(" ").slice(0, 4).join(" "),
+            End: item.end_date?.split(" ").slice(0, 4).join(" "),
+            status: item.status,
+          }));
+          setData(activities);
+
+          const totalAmount = activities.reduce((prev, curr) => {
+            const currentAmount = parseFloat(curr.amount) || 0;
+            return prev + currentAmount;
+          }, 0);
+
+          setallmoney(totalAmount);
+          const uniqueCategoryNamess = [
+            ...new Set(activities.map((item) => item.category)),
+          ];
+
+          const selectOptions = uniqueCategoryNamess.map((name) => ({
+            value: name,
+            label: name,
+          }));
+          setallcat(selectOptions);
+        })
+        .catch((err) => {
+          console.log(err);
+          message.error(err.response?.data?.error);
+        });
+    } catch (error) {
+      message.error(error.response?.data?.error);
+    }
+  };
+
+  const onChange = (value) => {
+    console.log(value);
+    if (value) {
+      // const newdata = activityData.find((item) => item.category == value);
+      // console.log(newdata);
+      // setactivityData([newdata]);
+    } else {
+      // refresh();
+    }
+  };
+  const onSearch = (value) => {
+    console.log("search:", value);
+  };
   return (
     <div className="myDona">
       <li className="title">Donation History</li>
@@ -321,13 +329,15 @@ function myDonations() {
             >
               <li>
                 <img src={donate} alt="" />
-                Total Activity
+                Total Activities
               </li>
-              <li>
+              <li style={{ paddingLeft: "20px" }}>
                 &nbsp;&nbsp;
-                <span style={{ fontSize: "25px" }}>3</span> &nbsp; Activities
+                <span style={{ fontSize: "25px" }}>{data.length}</span> &nbsp;
               </li>
-              <li>Total activities donated</li>
+              <li style={{ paddingLeft: "6px" }}>
+                Activities you've supported
+              </li>
             </div>
             <div
               className="money"
@@ -337,10 +347,12 @@ function myDonations() {
             >
               <li>
                 <img src={money} alt="" />
-                Total Amount
+                Total Contributions
               </li>
-              <li style={{ fontSize: "25px" }}>$ 3000</li>
-              <li>Total amount of money donated</li>
+              <li style={{ fontSize: "25px", paddingLeft: "20px" }}>
+                $ {allmoney}
+              </li>
+              <li>Total amount you've donated</li>
             </div>
           </div>
         </div>
@@ -348,15 +360,85 @@ function myDonations() {
         <div className="allInfo">
           <div className="mdHead">
             <li>
-              <input
-                type="text"
-                placeholder="Category name..."
-                onChange={(e) => searchDonations(e)}
+              <img
+                src={restart}
+                alt=""
+                className="restart"
+                onClick={() => {
+                  setStartDate(null);
+                  setEndDate(null);
+                  setselectv(undefined);
+                  setinpWarningVisi(false);
+                  refresh();
+                }}
+              />
+              Date:
+              <ConfigProvider
+                theme={{
+                  components: {
+                    DatePicker: {
+                      colorPrimary: "#78b853",
+                      colorLink: "#78b853",
+                      activeBorderColor: "#78b853",
+                      hoverBorderColor: "#62b580",
+                      borderRadius: 4,
+                      cellHoverBg: "rgba(120, 184, 83, 0.1)",
+                    },
+                  },
+                }}
+              >
+                <DatePicker
+                  style={{ width: "140px", height: "30px" }}
+                  variant="borderless"
+                  onChange={(date, dateString) => {
+                    setStartDate(dateString);
+                  }}
+                  value={startDate ? dayjs(startDate) : null}
+                />
+                -
+                <DatePicker
+                  style={{ width: "140px", height: "30px" }}
+                  variant="borderless"
+                  onChange={(date, dateString) => {
+                    setEndDate(dateString);
+                  }}
+                  value={endDate ? dayjs(endDate) : null}
+                />
+              </ConfigProvider>
+              <Select
+                value={selectv}
+                allowClear
+                showSearch={{ optionFilterProp: "label", onSearch }}
+                placeholder="Select a category"
+                onChange={(value) => {
+                  // const uniqueCategoryNamess = [
+                  //   ...new Set(data.map((item) => item.category)),
+                  // ];
+                  setselectv(value);
+                  apiGetDoneeActivities({ user_id: userId })
+                    .then((res) => {
+                      console.log(res);
+
+                      if (value !== null) {
+                        const selectOptions = res.activities.find((item) => {
+                          return item.category_name == value;
+                        });
+                        console.log(selectOptions);
+
+                        setcatid(selectOptions.category_id);
+                      }
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                      message.error(err.response?.data?.error);
+                    });
+                }}
+                options={allcat}
               />
               <button onClick={searchPro}>Search</button>
               {inpWarningVisi ? (
                 <span className="inpWarning">
-                  Please enter a category to search
+                  Please choose something to search!
                 </span>
               ) : (
                 ""
@@ -370,7 +452,7 @@ function myDonations() {
                 return 
               })
             } */}
-          {console.log(data)}
+
           <div className={tableClass ? "onedata" : "tableS"}>
             <Table
               bordered="true"
@@ -382,95 +464,114 @@ function myDonations() {
                 tableClass
                   ? false
                   : {
-                      pageSize: 8,
+                      pageSize: 6,
                     }
               }
             />
           </div>
 
-          {/* {seeMore ? (
-          <div className="seemore">
-            <div className="cardView">
-              <i
-                onClick={() => {
-                  setData(alldata);
-                  setseeMore(false);
-                  settableClass(false);
-                }}
-                className="closeView"
-              >
-                X
-              </i>
-
-              <li className="first">
-                <span className="name">{singleData.title}</span>
-
-                <div className={getStatusClass(singleData)}>
-                  {singleData.status === "Active" ? "Active" : "Suspended"}
-                </div>
-
-                <p>
-                  <Tag
-                    classNames={classNames}
-                    styles={styles}
-                    icon={
-                      singleData.status === "Active" ? (
-                        <CheckCircleOutlined />
-                      ) : (
-                        <CloseCircleOutlined />
-                      )
-                    }
-                  >
-                    {singleData.category}
-                  </Tag>
-                </p>
-              </li>
-
-              <li className="date">
-                <p>
-                  <span>Start date: {singleData.Start}</span>
-                  <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
-                    End date: {singleData.End}
-                  </span>
-                </p>
-
-                <p
-                  style={{
-                    width: "100%",
-                    height: "20px",
-                    display: "flex",
-                    flexDirection: "row",
-                    // padding: "0 2px",
-                    justifyContent: "space-between",
+          {seeMore ? (
+            <div className="seemore">
+              <div className="cardView">
+                <i
+                  onClick={() => {
+                    setseeMore(false);
+                    settableClass(false);
+                    refresh();
                   }}
+                  className="closeView"
                 >
-                  {" "}
-                  <span style={{ color: "#6bacea" }}>
-                    Target: ${singleData.TargetMoney}
-                  </span>
-                  <span style={{ color: "#b3bc4b" }}>
-                    Raised: ${singleData.MoneyRaised}
-                  </span>
-                </p>
-                <Flex vertical gap="large">
-                  {/* <span>{item.targetAmount}</span> */}
-          {/* <Progress
-                    classNames={progressClass}
-                    styles={stylesFn}
-                    percent={percentage(singleData)}
-                  />
-                </Flex>
-                {/* <hr /> */}
-          {/* </li> */}
+                  X
+                </i>
 
-          {/* <span style={{ marginBottom: "45px" }}>{item.description}</span> */}
-          {/* <li className="myD">
-                <span>I donated: &nbsp;{userDonate.donate}</span>
-                <span>Date of donation: &nbsp; {userDonate.donateDate}</span>
-              </li>
+                <li className="first">
+                  <span className="name">{singleData.title}</span>
+
+                  <div className={getStatusClass(singleData)}>
+                    {singleData.status === "Active" ? "Active" : "Suspended"}
+                  </div>
+
+                  <p>
+                    <Tag
+                      classNames={classNames}
+                      styles={styles}
+                      icon={
+                        singleData.status === "Active" ? (
+                          <CheckCircleOutlined />
+                        ) : (
+                          <CloseCircleOutlined />
+                        )
+                      }
+                    >
+                      {singleData.category}
+                    </Tag>
+                  </p>
+                </li>
+
+                <li className="date">
+                  <p>
+                    <span>Start date: {singleData.Start}</span>
+                    <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
+                      End date: {singleData.End}
+                    </span>
+                  </p>
+
+                  <p
+                    style={{
+                      width: "100%",
+                      height: "20px",
+                      display: "flex",
+                      flexDirection: "row",
+                      // padding: "0 2px",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    {" "}
+                    <span style={{ color: "#6bacea" }}>
+                      Target: ${singleData.TargetMoney}
+                    </span>
+                    <span style={{ color: "#b3bc4b" }}>
+                      Raised: ${singleData.MoneyRaised}
+                    </span>
+                  </p>
+                  <Flex vertical gap="large">
+                    <span>{singleData.targetAmount}</span>
+                    <Progress
+                      classNames={progressClass}
+                      styles={stylesFn}
+                      percent={percentage(singleData)}
+                    />
+                  </Flex>
+                  <hr />
+                </li>
+
+                <span style={{ marginBottom: "10px" }}>
+                  {singleData.description}
+                </span>
+                <li className="myD">
+                  <span>
+                    <img
+                      src={money}
+                      alt=""
+                      style={{
+                        width: "30px",
+                        marginRight: "20px",
+                      }}
+                    />
+                    My Contribution: &nbsp;${singleData.amount}
+                  </span>
+                  <span>
+                    <img
+                      src={date}
+                      alt=""
+                      style={{ width: "30px", marginRight: "10px" }}
+                    />
+                    Donation Date: &nbsp; {singleData.donated_at}
+                  </span>
+                </li>
+              </div>
             </div>
-          </div>
-        ) : null} */}
+          ) : null}
         </div>
       </div>
     </div>

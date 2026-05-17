@@ -18,7 +18,11 @@ import {
   Progress,
   Select,
 } from "antd";
-import { apiRemoveFavorites, apiGetAllFavorites } from "../../api";
+import {
+  apiRemoveFavorites,
+  apiGetAllFavorites,
+  apiSearchFavorites,
+} from "../../api";
 function Favorites() {
   const location = useLocation();
   const [selectedActivities, setselectedActivities] = useState(null);
@@ -35,6 +39,8 @@ function Favorites() {
     if (item.status === "suspended") return "disabled";
     return "active";
   };
+  const [inpValue, setinpvalue] = useState("");
+  const [inpWarningVisi, setinpWarningVisi] = useState(false);
   const [targetNumber, settargetNumber] = useState(false);
   const percentage = (item) => {
     const raised = parseFloat(item.amount_raised) || 0;
@@ -116,6 +122,24 @@ function Favorites() {
     setselectedActivities(profile);
     setIsModalOpen(true);
   };
+  const removeac = (item) => {
+    setselectedActivities(item);
+    console.log(item);
+    try {
+      apiRemoveFavorites(item.activity_id)
+        .then((res) => {
+          if (res.status == "success") {
+            message.success(res.message);
+            refresh();
+          }
+        })
+        .catch((err) => {
+          message.error(err.response?.data?.error);
+        });
+    } catch (error) {
+      message.error(error.response?.data?.error);
+    }
+  };
   const refresh = () => {
     const token = cookie.get("token");
     console.log(activityData);
@@ -123,8 +147,8 @@ function Favorites() {
       apiGetAllFavorites({ user_id: userdata.userid }, token)
         .then((res) => {
           console.log(res);
-          if (res.activities) {
-            const activities = res.activities.map((item) => ({
+          if (res.favourites) {
+            const activities = res.favourites.map((item) => ({
               activity_id: item.activity_id,
               title: item.title,
               description: item.description,
@@ -136,21 +160,31 @@ function Favorites() {
               category_id: item.category_id,
               start_date: item.start_date,
               // start_date: item.start_date.split(" ").slice(0, 4).join(" "),
-              end_date: item.end_date,
+              end_date: item.end_date?.split(" ").slice(0, 4).join(" "),
+              saved_at: item.saved_at?.split(" ").slice(0, 4).join(" "),
             }));
             setactivityData(activities);
           }
         })
         .catch((err) => {
           console.log(err);
-          // message.error(err.response?.data?.error);
+          message.error(err.response?.data?.error);
         });
     } catch (error) {
       console.log(error);
-      // message.error(error.response?.data?.error);
+      message.error(error.response?.data?.error);
     }
   };
-
+  const searchAccount = (e) => {
+    setinpvalue(e.target.value);
+    // when input value changed,set warning to invisible
+    if (e.target.value !== "") {
+      setinpWarningVisi(false);
+    } else {
+      // if the input value is empty, refresh data
+      refresh();
+    }
+  };
   const classNames = createStaticStyles(({ css }) => ({
     root: css`
       padding: 2px 6px;
@@ -168,18 +202,64 @@ function Favorites() {
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
+  const Search = () => {
+    if (inpValue !== "") {
+      try {
+        apiSearchFavorites({ query: inpValue })
+          .then((res) => {
+            console.log(res);
+            if (res.favourites) {
+              const activities = res.favourites.map((item) => ({
+                activity_id: item.activity_id,
+                title: item.title,
+                description: item.description,
+                amount_raised: item.amount_raised,
+                category_name: item.category_name,
+                status: item.status,
+                creator: item.creator,
+                target_amount: item.target_amount,
+                category_id: item.category_id,
+                start_date: item.start_date,
+                // start_date: item.start_date.split(" ").slice(0, 4).join(" "),
+                end_date: item.end_date?.split(" ").slice(0, 4).join(" "),
+                saved_at: item.saved_at?.split(" ").slice(0, 4).join(" "),
+              }));
+              setactivityData(activities);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            message.error(err.response?.data?.error);
+          });
+      } catch (error) {
+        message.error(error.response?.data?.error);
+      }
+    } else {
+      // if the input value is empty
+      setinpWarningVisi(true);
+    }
+  };
   return (
     <div className="mac">
       <div className="top">
         <img src={currentAvatar} alt="" />
         <li>{userdata.role}</li>
-        <li>Total favorites: {totalF}</li>
+        <li>Total favorites: {activityData.length}</li>
       </div>
       <div className="flist">
         <li className="search">
-          <input type="text" placeholder="Enter Category" />
-          <button>Search</button>
+          <input
+            type="text"
+            placeholder="Enter Category"
+            onChange={(e) => searchAccount(e)}
+            className="inp"
+          />
+          {inpWarningVisi ? (
+            <span className="inpWarning">Please enter activity to search</span>
+          ) : (
+            ""
+          )}
+          <button onClick={() => Search()}>Search</button>
         </li>
         <div className="list">
           {activityData
@@ -211,7 +291,6 @@ function Favorites() {
                   ) : (
                     ""
                   )}
-
                   <li className="first">
                     <span className="name">{item.title}</span>
 
@@ -235,15 +314,7 @@ function Favorites() {
                         </Tag>
                       </p>
                     ) : null}
-                    <button
-                      onClick={() => setselectedActivities(item)}
-                      style={{
-                        position: "absolute",
-                        right: "2px",
-                        top: "10px",
-                        width: "60px",
-                      }}
-                    >
+                    <button onClick={() => removeac(item)} className="remove">
                       Remove
                     </button>
                   </li>
@@ -285,11 +356,9 @@ function Favorites() {
                       {/* <hr /> */}
                     </li>
                   ) : null}
-
                   <span style={{ marginBottom: "45px" }}>
                     {item.description}
                   </span>
-
                   <li
                     className="butStyle"
                     style={{

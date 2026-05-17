@@ -15,11 +15,12 @@ function Navfull({
         <li>
           <a href="/activities">Activities</a>
         </li>
-        {RouterConfig.filter((item) => item.nav?.title).map((item, idx) => (
+
+        {/* {RouterConfig.filter((item) => item.nav?.title).map((item, idx) => (
           <li key={idx}>
             <a href={item.path}>{item.nav.title}</a>
           </li>
-        ))}
+        ))} */}
       </ul>
 
       {/* <ul>

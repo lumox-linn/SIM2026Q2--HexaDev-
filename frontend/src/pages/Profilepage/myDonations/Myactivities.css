@@ -28,12 +28,12 @@
 }
 
 .myDona .mdHead {
-  width: 350px;
+  width: auto;
   height: auto;
   display: flex;
   flex-direction: column;
   position: absolute;
-  right: -60px;
+  right: -10px;
   top: -35px;
 }
 
@@ -41,6 +41,25 @@
   width: auto;
   height: 40px;
   position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.myDona .mdHead li .restart {
+  width: 30px;
+  margin-right: 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.myDona .mdHead li .restart:hover {
+  transform: rotate(-90deg);
+  cursor: pointer;
+}
+
+.myDona .mdHead li .ant-select {
+  height: 35px;
 }
 
 .myDona .mdHead li .inpWarning {
@@ -67,14 +86,14 @@
   height: 30px;
   margin: 0 10px;
   border: none;
-  background-color: #596375;
+  background-color: #8c9eb4;
   color: white;
   border-radius: 20px;
 }
 
 .myDona .mdHead li button:hover {
   cursor: pointer;
-  background-color: #3690b6;
+  background-color: #246480;
 }
 
 .myDona .mdContent {
@@ -187,8 +206,17 @@
   gap: 15px;
 }
 
+.myDona .mdContent .allInfo .seemore .cardView .myD {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
 .myDona .mdContent .allInfo .seemore .cardView .myD span {
   margin-right: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .myDona .mdContent .allInfo .seemore .cardView .role {

@@ -20,7 +20,6 @@ function Login() {
       const res = await apiLogin(values);
       if (res.status == "success") {
         cookie.set("token", res.token, { expires: 1, path: "/" });
-        localStorage.setItem("token", res.token);
         localStorage.setItem(
           "userData",
           JSON.stringify({

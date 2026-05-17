@@ -127,7 +127,7 @@ export function apiMyDonations(params = {}) {
   return newRequest({
     url: "/api/history/donee",
     method: "get",
-    params,
+    params: params,
   });
 }
 
@@ -139,10 +139,20 @@ export function apiGetDoneeActivities(params = {}) {
     params: params,
   });
 }
+export function apiViewActivity(activity_id) {
+  return newRequest({
+    url: `/api/donee/activities/${activity_id}`,
+    method: "get",
+  });
+}
 
-// Get favourites
-export function apiGetAllFavorites() {
-  return newRequest({ url: "/api/donee/favourites", method: "get" });
+// search history
+export function apisearchHistory(params) {
+  return newRequest({
+    url: "/api/history/donee/search",
+    method: "get",
+    params: params,
+  });
 }
 
 // Save favourite
@@ -161,33 +171,22 @@ export function apiRemoveFavorites(activity_id) {
     method: "delete",
   });
 }
+export function apiSearchFavorites(params) {
+  return newRequest({
+    url: `api/donee/favourites/search`,
+    method: "get",
+    params: params,
+  });
+}
 
-// export function apiMyDonations(params, token) {
-//   console.log(params, token);
-//   return newRequest({
-//     url: "/api/history/donee",
-//     method: "get",
-//     params: params,
-//     headers: {
-//       Authorization: `Bearer ${token}`,
-//     },
-//   });
-// }
-// // favorites
-// export function apiGetAllFavorites(params, token) {
-//   return newRequest({
-//     url: "/api/donee/favourites",
-//     method: "get",
-//     data: params,
-//     headers: {
-//       Authorization: `Bearer ${token}`,
-//     },
-//   });
-// }
-// export function apiRemoveFavorites(userid, data) {
-//   return newRequest({
-//     url: `/api/remove/${userid}`,
-//     method: "put",
-//     data: data,
-//   });
-// }
+// favorites;
+export function apiGetAllFavorites(params, token) {
+  return newRequest({
+    url: "/api/donee/favourites",
+    method: "get",
+    data: params,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

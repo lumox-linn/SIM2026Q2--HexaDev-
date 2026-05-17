@@ -25,20 +25,37 @@
   }
   .mdHead {
     // background-color: aqua;
-    width: 350px;
+    width: auto;
     height: auto;
     // margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     // align-items: flex-start;
     position: absolute;
-    right: -60px;
+    right: -10px;
     top: -35px;
 
     li {
       width: auto;
       height: 40px;
       position: relative;
+      display: flex;
+      flex-direction: row;
+
+      align-items: center;
+      gap: 10px;
+      .restart {
+        width: 30px;
+        margin-right: 10px;
+        transition: transform 0.3s ease-in-out;
+        &:hover {
+          transform: rotate(-90deg);
+          cursor: pointer;
+        }
+      }
+      .ant-select {
+        height: 35px;
+      }
       .inpWarning {
         position: absolute;
         bottom: -15px;
@@ -64,12 +81,12 @@
         height: 30px;
         margin: 0 10px;
         border: none;
-        background-color: #596375;
+        background-color: #8c9eb4;
         color: white;
         border-radius: 20px;
         &:hover {
           cursor: pointer;
-          background-color: rgb(54, 144, 182);
+          background-color: rgb(36, 100, 128);
         }
       }
       // .creaPro {
@@ -186,8 +203,14 @@
             gap: 15px;
           }
           .myD {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
             span {
               margin-right: 10px;
+              display: flex;
+              flex-direction: row;
+              align-items: center;
             }
           }
           .role {

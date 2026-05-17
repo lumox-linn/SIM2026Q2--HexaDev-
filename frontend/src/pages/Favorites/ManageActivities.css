@@ -26,7 +26,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  background-color: beige;
+  position: relative;
 }
 
 .mac .flist .search input {
@@ -34,19 +34,29 @@
   height: 30px;
   margin-right: 10px;
   padding-left: 10px;
-}
-
-.mac .flist .search input:focus {
-  border-color: #bfd9ef;
+  border-radius: 10px;
+  border: 1px solid #bfd9ef;
 }
 
 .mac .flist .search button {
   width: 70px;
   height: 30px;
-  background-color: #63a4a6;
+  background-color: #77cbce;
   border-radius: 10px;
   color: white;
-  border: 1px solid #447375;
+  border: 1px solid #7bb4b7;
+  cursor: pointer;
+}
+
+.mac .flist .search button:hover {
+  background-color: #79b3b6;
+}
+
+.mac .flist .search .inpWarning {
+  position: absolute;
+  bottom: -10px;
+  right: 655px;
+  color: red;
 }
 
 .mac .flist .list {
@@ -101,6 +111,14 @@
   display: inline-block;
   margin-right: 10px;
   color: #646262;
+}
+
+.mac .flist .list .card .remove {
+  position: absolute;
+  left: 180px;
+  margin-bottom: -234px;
+  width: 70px;
+  height: 30px;
 }
 
 .mac .flist .list .card button {
@@ -187,6 +205,14 @@
   flex-direction: column;
   color: #706d6d;
   gap: 15px;
+}
+
+.mac .flist .list .cardView .remove {
+  position: absolute;
+  left: 110px;
+  bottom: 13px;
+  width: 70px;
+  height: 30px;
 }
 
 .mac .flist .list .cardView .first {
@@ -276,7 +302,7 @@
 .mac .flist .list .cardView .closeView {
   position: absolute;
   right: 15px;
-  top: 7px;
+  top: 15px;
   font-size: 20px;
   color: #706d6d;
 }
