@@ -127,7 +127,7 @@ export function apiMyDonations(params = {}) {
   return newRequest({
     url: "/api/history/donee",
     method: "get",
-    params: params,
+    params,
   });
 }
 
