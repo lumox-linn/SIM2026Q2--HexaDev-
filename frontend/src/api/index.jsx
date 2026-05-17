@@ -145,6 +145,13 @@ export function apiViewActivity(activity_id) {
     method: "get",
   });
 }
+export function apisearchActivities(activity_title) {
+  return newRequest({
+    url: "/api/donee/activities/search",
+    method: "get",
+    params: activity_title,
+  });
+}
 
 // search history
 export function apisearchHistory(params) {

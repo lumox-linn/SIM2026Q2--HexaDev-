@@ -28,38 +28,43 @@ function Testheader({ onNavClick, Router, user, isVisible, setIsVisible }) {
           setIsVisible(!isVisible);
         }}
       />
-      <Navfull
+
+      {/* <Navfull
         Router={Router}
         onLinkClick={onNavClick}
         usre={user}
         className={isVisible ? "active" : ""}
-      ></Navfull>
-      <ul className="user">
-        <li>
-          {/* If any user has logged in  */}
-          {user ? (
-            // if this user has set his avatar then use his, otherwise use default
-            <img
-              src={userRavatar}
-              alt=""
-              onClick={() => {
-                setshowpro(!showpro);
-              }}
-            />
+      ></Navfull> */}
+      <div className="hhhhh">
+        <a href="/activities">Activities</a>
+
+        <ul className="user">
+          <li>
+            {/* If any user has logged in  */}
+            {user ? (
+              // if this user has set his avatar then use his, otherwise use default
+              <img
+                src={userRavatar}
+                alt=""
+                onClick={() => {
+                  setshowpro(!showpro);
+                }}
+              />
+            ) : (
+              <a href="/login">Login</a>
+            )}
+          </li>
+          {showpro ? (
+            <ProfileBar
+              user={user}
+              key={location.key}
+              userRavatar={userRavatar}
+            ></ProfileBar>
           ) : (
-            <a href="/login">Login</a>
+            ""
           )}
-        </li>
-        {showpro ? (
-          <ProfileBar
-            user={user}
-            key={location.key}
-            userRavatar={userRavatar}
-          ></ProfileBar>
-        ) : (
-          ""
-        )}
-      </ul>
+        </ul>
+      </div>
     </div>
   );
 }

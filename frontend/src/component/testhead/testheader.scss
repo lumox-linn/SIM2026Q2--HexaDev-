@@ -25,6 +25,20 @@
       cursor: pointer;
     }
   }
+  .hhhhh {
+    position: absolute;
+    right: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    a {
+      margin-right: 30px;
+      color: black;
+      &:hover {
+        color: rgb(109, 125, 132);
+      }
+    }
+  }
   .user {
     border-left: 1px dotted rgb(203, 200, 200);
     width: 120px;

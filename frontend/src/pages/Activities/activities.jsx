@@ -13,6 +13,7 @@ import {
   apiDeleteActivities,
   apiSaveFavourite,
   apiViewActivity,
+  apisearchActivities,
 } from "../../api";
 import { createStaticStyles } from "antd-style";
 import heart from "../../assets/heart.svg";
@@ -237,7 +238,7 @@ function ActivityStatus() {
     if (inpValue !== "") {
       console.log(inpValue);
       try {
-        apiGetDoneeActivities({ query: inpValue })
+        apisearchActivities({ query: inpValue })
           .then((res) => {
             console.log(res);
             if (res.activities) {
