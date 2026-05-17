@@ -14,39 +14,12 @@ function Login() {
   const [time, settime] = useState(30);
   const [loginstatus, setloginstatus] = useState(false);
   const navigate = useNavigate();
-  // const handleSendCode = async () => {
-  //   try {
-  //     // get value from the form
-  //     const email = form.getFieldValue("email");
 
-  //     if (
-  //       !email ||
-  //       !/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)
-  //     ) {
-  //       alert("Please enter a valid email address!");
-  //       return;
-  //     } else {
-  //       setcodeable(true);
-  //     }
-
-  //     //call api
-  //     const res = await apiSendCode({ email });
-
-  //     if (res.status === "success") {
-  //       console.log("Varification code sent:", email);
-  //     } else {
-  //       alert(res.message || "Send failed");
-  //     }
-  //   } catch (err) {
-  //     console.error("network:", err);
-  //   }
-  // };
   const onFinish = async (values) => {
     try {
       const res = await apiLogin(values);
       if (res.status == "success") {
         cookie.set("token", res.token, { expires: 1, path: "/" });
-        localStorage.setItem("token", res.token);
         localStorage.setItem(
           "userData",
           JSON.stringify({

@@ -57,11 +57,6 @@ export function apiGetAllProfiles(params) {
   return newRequest({ url: "/api/profiles/", method: "get", params: params });
 }
 
-export function apiViewProfile(id) {
-  return newRequest({ url: `/api/profiles/${id}`, method: 'get' })
-}
-
-
 export function apiCreateProfile(data) {
   return newRequest({ url: "/api/profiles/", method: "post", data: data });
 }
@@ -125,4 +120,34 @@ export function apiEditActivities(id, data) {
 export function apiDeleteActivities(id) {
   console.log("delete", id);
   return newRequest({ url: `/api/activities/${id}`, method: "delete" });
+}
+// donee
+export function apiMyDonations(params, token) {
+  console.log(params, token);
+  return newRequest({
+    url: "/api/donee/activities",
+    method: "get",
+    params: params,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+// favorites
+export function apiGetAllFavorites(params, token) {
+  return newRequest({
+    url: "/api/donee/favourites",
+    method: "get",
+    data: params,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+export function apiRemoveFavorites(userid, data) {
+  return newRequest({
+    url: `/api/remove/${userid}`,
+    method: "put",
+    data: data,
+  });
 }

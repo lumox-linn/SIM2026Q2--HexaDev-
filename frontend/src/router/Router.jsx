@@ -12,8 +12,8 @@ const Personalinfo = lazy(
 const Fundraise = lazy(
   () => import("../pages/navigationbar/Fondraise/Fundraise"),
 );
-const MyActivities = lazy(
-  () => import("../pages/Profilepage/myActivities/myactivities"),
+const MyDonations = lazy(
+  () => import("../pages/Profilepage/myDonations/myDonations"),
 );
 const ManageAccount = lazy(
   () => import("../pages/Profilepage/mangeAccount/ManageAccount"),
@@ -22,9 +22,7 @@ const ManageCategory = lazy(
   () => import("../pages/Profilepage/ManageCategories/manageCategory"),
 );
 
-const ManageActivities = lazy(
-  () => import("../pages/Profilepage/ManageActivities/ManageActivities"),
-);
+const Favorites = lazy(() => import("../pages/Favorites/Favorites"));
 
 const ActivityStatus = lazy(
   () => import("../pages/Profilepage/ActivityStatus/ActivityStatus"),
@@ -52,6 +50,11 @@ const Router = [
     element: <Login />,
   },
   {
+    path: "/favorites/:id",
+    stuff: { title: "User Favorites" },
+    element: <Favorites />,
+  },
+  {
     path: "/profile/:id/*",
     stuff: { title: "User profile" },
     element: <Profile />,
@@ -73,9 +76,9 @@ const Router = [
         element: <ManageProfile />,
       },
       {
-        path: "myactivities",
+        path: "myDonations",
         stuff: { title: "My Activities" },
-        element: <MyActivities />,
+        element: <MyDonations />,
       },
       {
         path: "ManageAccount",
@@ -87,11 +90,7 @@ const Router = [
         stuff: { title: "Manage Category" },
         element: <ManageCategory />,
       },
-      {
-        path: "ManageActivities",
-        stuff: { title: "Activity Management" },
-        element: <ManageActivities />,
-      },
+
       {
         path: "ActivityStatus",
         stuff: { title: "Activity Status" },

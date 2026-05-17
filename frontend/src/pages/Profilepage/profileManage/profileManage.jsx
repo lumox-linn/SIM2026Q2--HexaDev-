@@ -6,7 +6,6 @@ import {
   apiEditProfile,
   apiSuspendProfile,
   apiActivateProfile,
-  apiViewProfile,
 } from "../../../api";
 import "../profileManage/profileManage.css";
 import { Button, Checkbox, Form, Input, message, Modal } from "antd";
@@ -24,22 +23,6 @@ function profileManage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [editValue, setEditValue] = useState(null);
-
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [viewProfile, setViewProfile] = useState(null);
-
-  const handleViewProfile = (item) => {
-  apiViewProfile(item.id)
-    .then((res) => {
-      if (res.profile) {
-        setViewProfile(res.profile);
-        setIsViewModalOpen(true);
-      } else {
-        message.error(res.error || "Failed to load profile");
-      }
-    })
-    .catch((err) => message.error(err.response?.data?.error));
-};
 
   const showModal = (profile) => {
     setSelectedProfile(profile);
@@ -60,10 +43,12 @@ function profileManage() {
           }
         })
         .catch((err) => {
-          message.error("Network error");
+          console.log(err);
+          // message.error("Network error");
         });
     } catch (error) {
-      message.error(error.response?.data?.error);
+      console.log(error);
+      // message.error(error.response?.data?.error);
     }
   };
 
@@ -323,8 +308,6 @@ function profileManage() {
               <span>{item.description}</span>
 
               <li>
-                <button onClick={() => handleViewProfile(item)}>View</button>
-
                 <button onClick={() => editPro(item)}>Edit</button>
 
                 {item.status === "active" ? (
@@ -356,27 +339,6 @@ function profileManage() {
           );
         })}
       </div>
-
-      {/* View Profile Modal */}
-      <Modal
-        title="Profile Details"
-        open={isViewModalOpen}
-        onCancel={() => setIsViewModalOpen(false)}
-        footer={[
-          <Button key="close" onClick={() => setIsViewModalOpen(false)}>
-            Close
-          </Button>,
-        ]}
-      >
-        {viewProfile && (
-          <div style={{ lineHeight: "2" }}>
-            <p><b>Profile ID:</b> {viewProfile.profile_id}</p>
-            <p><b>Profile Name:</b> {viewProfile.profile_name}</p>
-            <p><b>Description:</b> {viewProfile.description || "N/A"}</p>
-            <p><b>Status:</b> {viewProfile.status}</p>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

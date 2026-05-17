@@ -43,9 +43,6 @@ function ManageAccount() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [updateValue, setupdateValue] = useState({});
 
-  const [isViewAccountModalOpen, setIsViewAccountModalOpen] = useState(false);
-  const [viewAccount, setViewAccount] = useState(null);
-
   const uploadButton = (
     <button style={{ border: 0, background: "none" }} type="button">
       {loading ? <LoadingOutlined /> : <PlusOutlined />}
@@ -113,7 +110,6 @@ function ManageAccount() {
       key: "action",
       render: (_, record) => (
         <Space size="medium">
-          <a onClick={() => handleViewAccount(record)}>View</a>
           <a
             onClick={() => {
               setshowcrea(true);
@@ -236,11 +232,6 @@ function ManageAccount() {
     } catch (error) {
       message.error(error.response?.data?.error);
     }
-  };
-
-  const handleViewAccount = (record) => {
-    setViewAccount(record);           // ← no API call, just use existing data
-    setIsViewAccountModalOpen(true);
   };
 
   // One onFinish handles both create and update
@@ -567,29 +558,6 @@ function ManageAccount() {
         <p>
           Are you sure you want to suspend <b>{selectedUser?.username}</b>?
         </p>
-      </Modal>
-
-      <Modal
-        title="Account Details"
-        open={isViewAccountModalOpen}
-        onCancel={() => setIsViewAccountModalOpen(false)}
-        footer={[
-          <Button key="close" onClick={() => setIsViewAccountModalOpen(false)}>
-            Close
-          </Button>,
-        ]}
-      >
-        {viewAccount && (
-          <div style={{ lineHeight: "2" }}>
-            <p><b>User ID:</b> {viewAccount.user_id}</p>
-            <p><b>Username:</b> {viewAccount.username}</p>
-            <p><b>Role:</b> {viewAccount.role}</p>
-            <p><b>Email:</b> {viewAccount.email || "N/A"}</p>
-            <p><b>Phone:</b> {viewAccount.phone || "N/A"}</p>
-            <p><b>Date of Birth:</b> {viewAccount.dob || "N/A"}</p>
-            <p><b>Status:</b> {viewAccount.access}</p>
-          </div>
-        )}
       </Modal>
     </div>
   );

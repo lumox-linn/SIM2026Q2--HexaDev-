@@ -36,11 +36,8 @@ function Profile() {
       ]);
     } else if (userdata.role === "platform_manager") {
       setlink([{ to: "ManageCategory", label: "Category Management" }]);
-    } else if (userdata.role === "Donee") {
-      setlink([
-        { to: "personalinfo", label: "Profile" },
-        { to: "ActivityStatus", label: "Activity Management" },
-      ]);
+    } else if (userdata.role === "donee") {
+      setlink([{ to: "MyDonations", label: "My Donations" }]);
     } else if (userdata.role === "fund_raiser") {
       setlink([{ to: "ActivityStatus", label: "Activity Management" }]);
     }

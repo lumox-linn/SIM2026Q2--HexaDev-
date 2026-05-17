@@ -40,7 +40,15 @@ function ProfileBar({ user, userRavatar }) {
         >
           Manage your account
         </li>
-        <li>Saved</li>
+        <li
+          onClick={() =>
+            navigate(`/favorites/${user.userid}`, {
+              state: { userdata: user, userRavatar: userRavatar },
+            })
+          }
+        >
+          Saved
+        </li>
         <li
           onClick={() => {
             logout(user.userid);

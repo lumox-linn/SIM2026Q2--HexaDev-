@@ -45,6 +45,7 @@ function ActivityStatus() {
     viewstatus: false,
     actId: null,
   });
+
   // const [cat, setcat] = useState(null);
   const [allcategories, setallCategories] = useState([
     { category: "Animal", catId: 2 },
@@ -335,7 +336,7 @@ function ActivityStatus() {
       (i) => i.category.toLowerCase() === item.category_name.toLowerCase(),
     );
 
-    console.log(item);
+    // console.log(item);
     setcreaVisi(true);
     console.log(allcategories);
     setTimeout(() => {

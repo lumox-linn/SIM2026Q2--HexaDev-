@@ -1,0 +1,287 @@
+.mac {
+  width: 100%;
+  height: 100%;
+  .top {
+    width: 100%;
+    height: 200px;
+    background-color: antiquewhite;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    img {
+      width: 100px;
+      height: 140;
+    }
+  }
+  .flist {
+    .search {
+      width: 100%;
+      height: 50px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      background-color: beige;
+      input {
+        width: 170px;
+        height: 30px;
+        margin-right: 10px;
+        padding-left: 10px;
+        &:focus {
+          border-color: rgb(191, 217, 239);
+        }
+      }
+      button {
+        width: 70px;
+        height: 30px;
+        background-color: rgb(99, 164, 166);
+        border-radius: 10px;
+        color: white;
+        border: 1px solid rgb(68, 115, 117);
+      }
+    }
+    .list {
+      margin-top: 20px;
+      width: 100%;
+      height: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 10px;
+      padding-bottom: 10px;
+      padding-left: 38px;
+      .card {
+        padding: 20px;
+        width: 400px;
+        height: auto;
+        border-radius: 10px;
+        border: 0.5px solid rgba(191, 164, 128, 0.5);
+        background-color: white;
+        transition: all 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        // justify-content: flex-start;
+        position: relative;
+        color: rgb(112, 109, 109);
+        gap: 18px;
+        .first {
+          width: 100%;
+          height: 50px;
+          display: flex;
+          flex-direction: row;
+
+          align-items: center;
+          button:hover {
+            background-color: rgb(224, 129, 129);
+          }
+        }
+
+        .role {
+          color: rgb(70, 69, 69);
+        }
+
+        .img {
+          width: 50px;
+          height: 50px;
+          background-color: lavender;
+          border-radius: 10px;
+          text-align: center;
+          line-height: 50px;
+          display: inline-block;
+          margin-right: 10px;
+          color: rgb(100, 98, 98);
+        }
+        // .butStyle {
+        //   // width: auto;
+        //   position: absolute;
+        //   bottom: 0;
+        //   z-index: 10;
+        // }
+
+        button {
+          width: 70px;
+          height: 30px;
+          background-color: white;
+          border: 1px solid rgb(193, 189, 189);
+          border-radius: 5px;
+          margin-right: 10px;
+          font-size: 12px;
+          &:hover {
+            background-color: palegoldenrod;
+            color: white;
+            cursor: pointer;
+          }
+        }
+        .activeBut {
+          background-color: rgba(155, 215, 155, 0.5);
+          color: grey;
+          &:hover {
+            background-color: palegoldenrod;
+          }
+        }
+        .status {
+          color: black;
+          background-color: rgb(218, 234, 247);
+          border-radius: 20px;
+          margin-left: 10px;
+          display: inline-block;
+          width: 70px;
+          height: 20px;
+          font-size: 14px;
+          text-align: center;
+          line-height: 20px;
+          color: #706d6d;
+        }
+        .active {
+          color: black;
+          background-color: rgb(205, 241, 205);
+          border-radius: 20px;
+          margin-left: 10px;
+          display: inline-block;
+          width: 70px;
+          height: 20px;
+          font-size: 14px;
+          text-align: center;
+          line-height: 20px;
+          color: #706d6d;
+        }
+        .disabled {
+          color: black;
+          background-color: rgb(229, 162, 162);
+          border-radius: 20px;
+          margin-left: 10px;
+          display: inline-block;
+          width: 70px;
+          height: 20px;
+          font-size: 14px;
+          text-align: center;
+          line-height: 20px;
+          color: white;
+        }
+      }
+
+      .cardView {
+        order: -1;
+        margin: 0 auto;
+        grid-column: 1 / -1;
+        position: relative;
+        padding: 20px;
+        margin-bottom: 10px;
+        width: 900px;
+        height: auto;
+        border-radius: 10px;
+        border: 0.5px solid rgba(191, 164, 128, 0.5);
+        background-color: white;
+        transition: all 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        // justify-content: flex-start;
+        color: rgb(112, 109, 109);
+        gap: 15px;
+
+        .first {
+          width: 100%;
+          height: 50px;
+          display: flex;
+          flex-direction: row;
+
+          align-items: center;
+        }
+        .date {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
+        .role {
+          color: rgb(70, 69, 69);
+        }
+        .img {
+          width: 50px;
+          height: 50px;
+          background-color: lavender;
+          border-radius: 10px;
+          text-align: center;
+          line-height: 50px;
+          display: inline-block;
+          margin-right: 10px;
+          color: rgb(100, 98, 98);
+        }
+
+        button {
+          width: 70px;
+          height: 30px;
+          background-color: white;
+          border: 1px solid rgb(193, 189, 189);
+          border-radius: 5px;
+          margin-right: 10px;
+          font-size: 12px;
+          &:hover {
+            background-color: palegoldenrod;
+            color: white;
+            cursor: pointer;
+          }
+        }
+        .activeBut {
+          background-color: rgba(155, 215, 155, 0.5);
+          color: grey;
+          &:hover {
+            background-color: palegoldenrod;
+          }
+        }
+
+        .status {
+          color: black;
+          background-color: rgb(218, 234, 247);
+          border-radius: 20px;
+          margin-left: 10px;
+          display: inline-block;
+          width: 70px;
+          height: 20px;
+          font-size: 14px;
+          text-align: center;
+          line-height: 20px;
+          color: #706d6d;
+        }
+        .active {
+          color: black;
+          background-color: rgb(205, 241, 205);
+          border-radius: 20px;
+          margin-left: 10px;
+          display: inline-block;
+          width: 70px;
+          height: 20px;
+          font-size: 14px;
+          text-align: center;
+          line-height: 20px;
+          color: #706d6d;
+        }
+        .closeView {
+          position: absolute;
+          right: 15px;
+          top: 7px;
+          font-size: 20px;
+          color: rgb(112, 109, 109);
+          &:hover {
+            cursor: pointer;
+            color: rgb(70, 69, 69);
+          }
+        }
+        .disabled {
+          color: black;
+          background-color: rgb(229, 162, 162);
+          border-radius: 20px;
+          margin-left: 10px;
+          display: inline-block;
+          width: 70px;
+          height: 20px;
+          font-size: 14px;
+          text-align: center;
+          line-height: 20px;
+          color: white;
+        }
+      }
+    }
+  }
+}
