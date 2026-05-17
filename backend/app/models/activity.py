@@ -7,6 +7,7 @@ Adds:
 - getHistory() for FR-HS-01, FR-HS-02
 - getDoneeHistory() for DN-HS-01, DN-HS-02
 """
+
 from app import mysql
 
 
@@ -21,7 +22,7 @@ class Activity:
         Alt 1: Title already exists for this user → return None
         Main: INSERT into DB, return True
         """
-        if Activity.existsByTitle(data['title'], data['created_by']):
+        if Activity.existsByTitle(data["title"], data["created_by"]):
             return None
 
         cursor = mysql.connection.cursor()
@@ -31,14 +32,14 @@ class Activity:
                 target_amount, amount_raised, start_date, end_date, status, view_count)
                VALUES (%s, %s, %s, %s, %s, 0.00, %s, %s, 'active', 0)""",
             (
-                data['title'].strip(),
-                data.get('description', None),
-                data.get('category_id', None),
-                data['created_by'],
-                data.get('target_amount', 0.00),
-                data.get('start_date', None),
-                data.get('end_date', None),
-            )
+                data["title"].strip(),
+                data.get("description", None),
+                data.get("category_id", None),
+                data["created_by"],
+                data.get("target_amount", 0.00),
+                data.get("start_date", None),
+                data.get("end_date", None),
+            ),
         )
         mysql.connection.commit()
         cursor.close()
@@ -57,37 +58,37 @@ class Activity:
         activity = Activity.findById(activity_id)
 
         if not activity:
-            return 'not_found'
-        if activity['created_by'] != user_id:
-            return 'unauthorized'
+            return "not_found"
+        if activity["created_by"] != user_id:
+            return "unauthorized"
 
         fields = []
         values = []
 
-        if data.get('title'):
-            fields.append('title = %s')
-            values.append(data['title'].strip())
-        if 'description' in data:
-            fields.append('description = %s')
-            values.append(data['description'])
-        if data.get('category_id') is not None:
-            fields.append('category_id = %s')
-            values.append(data['category_id'])
-        if data.get('target_amount') is not None:
-            fields.append('target_amount = %s')
-            values.append(data['target_amount'])
-        if data.get('amount_raised') is not None:
-            fields.append('amount_raised = %s')
-            values.append(data['amount_raised'])
-        if data.get('start_date') is not None:
-            fields.append('start_date = %s')
-            values.append(data['start_date'])
-        if data.get('end_date') is not None:
-            fields.append('end_date = %s')
-            values.append(data['end_date'])
-        if data.get('status') is not None:
-            fields.append('status = %s')
-            values.append(data['status'])
+        if data.get("title"):
+            fields.append("title = %s")
+            values.append(data["title"].strip())
+        if "description" in data:
+            fields.append("description = %s")
+            values.append(data["description"])
+        if data.get("category_id") is not None:
+            fields.append("category_id = %s")
+            values.append(data["category_id"])
+        if data.get("target_amount") is not None:
+            fields.append("target_amount = %s")
+            values.append(data["target_amount"])
+        if data.get("amount_raised") is not None:
+            fields.append("amount_raised = %s")
+            values.append(data["amount_raised"])
+        if data.get("start_date") is not None:
+            fields.append("start_date = %s")
+            values.append(data["start_date"])
+        if data.get("end_date") is not None:
+            fields.append("end_date = %s")
+            values.append(data["end_date"])
+        if data.get("status") is not None:
+            fields.append("status = %s")
+            values.append(data["status"])
 
         if not fields:
             return True
@@ -96,7 +97,7 @@ class Activity:
         cursor = mysql.connection.cursor()
         cursor.execute(
             f"UPDATE activity SET {', '.join(fields)} WHERE activity_id = %s",
-            tuple(values)
+            tuple(values),
         )
         mysql.connection.commit()
         cursor.close()
@@ -105,7 +106,7 @@ class Activity:
     # ── Delete ────────────────────────────────────────────────
 
     @staticmethod
-    def delete(activity_id: int, user_id: int):
+    def suspend(activity_id: int, user_id: int):
         """
         Delete a fundraising activity.
         Alt 1: Activity not found → return 'not_found'
@@ -115,13 +116,14 @@ class Activity:
         activity = Activity.findById(activity_id)
 
         if not activity:
-            return 'not_found'
-        if activity['created_by'] != user_id:
-            return 'unauthorized'
+            return "not_found"
+        if activity["created_by"] != user_id:
+            return "unauthorized"
 
         cursor = mysql.connection.cursor()
         cursor.execute(
-            "DELETE FROM activity WHERE activity_id = %s", (activity_id,)
+            "UPDATE activity SET status = 'suspended' WHERE activity_id = %s",
+            (activity_id,),
         )
         mysql.connection.commit()
         cursor.close()
@@ -135,7 +137,7 @@ class Activity:
         cursor = mysql.connection.cursor()
         cursor.execute(
             "UPDATE activity SET view_count = view_count + 1 WHERE activity_id = %s",
-            (activity_id,)
+            (activity_id,),
         )
         mysql.connection.commit()
         cursor.close()
@@ -149,17 +151,21 @@ class Activity:
         cursor = mysql.connection.cursor()
         cursor.execute(
             "SELECT COUNT(*) as shortlist_count FROM favourite WHERE activity_id = %s",
-            (activity_id,)
+            (activity_id,),
         )
         result = cursor.fetchone()
         cursor.close()
-        return result['shortlist_count'] if result else 0
+        return result["shortlist_count"] if result else 0
 
     # ── History (FR-HS-01, FR-HS-02) ─────────────────────────
 
     @staticmethod
-    def getHistory(user_id: int, category_id: int = None,
-                   start_date: str = None, end_date: str = None):
+    def getHistory(
+        user_id: int,
+        category_id: int = None,
+        start_date: str = None,
+        end_date: str = None,
+    ):
         """
         Get completed/ended activities for a Fund Raiser.
         Filters by category and/or date period.
@@ -200,8 +206,12 @@ class Activity:
     # ── Donee History (DN-HS-01, DN-HS-02) ───────────────────
 
     @staticmethod
-    def getDoneeHistory(user_id: int, category_id: int = None,
-                        start_date: str = None, end_date: str = None):
+    def getDoneeHistory(
+        user_id: int,
+        category_id: int = None,
+        start_date: str = None,
+        end_date: str = None,
+    ):
         """
         Get activities a Donee has favourited (donation history).
         Filters by category and/or date period.
@@ -253,7 +263,7 @@ class Activity:
                    LEFT JOIN useraccount u ON a.created_by = u.user_id
                    WHERE a.title LIKE %s AND a.created_by = %s
                    ORDER BY a.created_at DESC""",
-                (f"%{query}%", user_id)
+                (f"%{query}%", user_id),
             )
         else:
             cursor.execute(
@@ -263,7 +273,7 @@ class Activity:
                    LEFT JOIN useraccount u ON a.created_by = u.user_id
                    WHERE a.title LIKE %s
                    ORDER BY a.created_at DESC""",
-                (f"%{query}%",)
+                (f"%{query}%",),
             )
         activities = cursor.fetchall()
         cursor.close()
@@ -282,7 +292,7 @@ class Activity:
                LEFT JOIN category c ON a.category_id = c.category_id
                LEFT JOIN useraccount u ON a.created_by = u.user_id
                WHERE a.activity_id = %s""",
-            (activity_id,)
+            (activity_id,),
         )
         activity = cursor.fetchone()
         cursor.close()
@@ -294,7 +304,7 @@ class Activity:
         cursor = mysql.connection.cursor()
         cursor.execute(
             "SELECT activity_id FROM activity WHERE title = %s AND created_by = %s",
-            (title.strip(), user_id)
+            (title.strip(), user_id),
         )
         result = cursor.fetchone()
         cursor.close()
@@ -313,16 +323,14 @@ class Activity:
                    LEFT JOIN useraccount u ON a.created_by = u.user_id
                    WHERE a.created_by = %s
                    ORDER BY a.created_at DESC""",
-                (user_id,)
+                (user_id,),
             )
         else:
-            cursor.execute(
-                """SELECT a.*, c.category_name, u.username as creator
+            cursor.execute("""SELECT a.*, c.category_name, u.username as creator
                    FROM activity a
                    LEFT JOIN category c ON a.category_id = c.category_id
                    LEFT JOIN useraccount u ON a.created_by = u.user_id
-                   ORDER BY a.created_at DESC"""
-            )
+                   ORDER BY a.created_at DESC""")
         activities = cursor.fetchall()
         cursor.close()
         return activities

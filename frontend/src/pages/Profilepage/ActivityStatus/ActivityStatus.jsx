@@ -6,7 +6,7 @@ import {
   apiGetAllActivities,
   apiCreateActivities,
   apiEditActivities,
-  apiDeleteActivities,
+  apiSuspendActivities,
 } from "../../../api";
 import { createStaticStyles } from "antd-style";
 
@@ -98,14 +98,14 @@ function ActivityStatus() {
     if (!selectedActivities) return;
     console.log(selectedActivities);
     try {
-      apiDeleteActivities(selectedActivities.activity_id)
+      apiSuspendActivities(selectedActivities.activity_id)
         .then((res) => {
           console.log(res);
           if (res.status === "success") {
             message.success(res.message);
             refresh();
           } else {
-            message.error(res.error || "Failed to delete");
+            message.error(res.error || "Failed to suspend");
           }
         })
         .catch((err) => {

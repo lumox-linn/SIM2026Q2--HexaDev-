@@ -7,7 +7,7 @@ Separate controller class per use case:
 - CreateActivityController (FR-01)
 - ViewActivityController   (FR-02)
 - UpdateActivityController (FR-03)
-- DeleteActivityController (FR-04)
+- SuspendActivityController (FR-04)
 - SearchActivityController (FR-05)
 """
 from app.models.activity import Activity
