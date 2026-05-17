@@ -17,6 +17,7 @@ from app.services.activity_controller import (
     UpdateActivityController,
     SuspendActivityController,
     SearchActivityController,
+    ViewAllActivitiesController,
 )
 from app.utils.auth_utils import token_required
 
@@ -58,7 +59,7 @@ class ViewActivityBoundary:
 
     @staticmethod
     @activity_bp.route('/', methods=['GET'])
-    @token_required(roles=['fund_raiser', 'platform_manager'])
+    @token_required(roles=['fund_raiser'])
     def get_all_activities(current_user):
         query = request.args.get('query', '').strip()
 
@@ -151,3 +152,14 @@ class SearchActivityBoundary:
         if ok:
             return jsonify(payload), 200
         return jsonify(payload), 404
+    
+    
+class ViewAllActivitiesBoundary:
+    """Boundary — ViewAllActivitiesBoundary (PM-09)"""
+
+    @staticmethod
+    @activity_bp.route('/all', methods=['GET'])
+    @token_required(roles=['platform_manager'])
+    def get_all_activities_pm(current_user):
+        ok, payload = ViewAllActivitiesController.getAllActivities()
+        return jsonify(payload), 200

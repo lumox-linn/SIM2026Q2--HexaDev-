@@ -334,3 +334,21 @@ class Activity:
         activities = cursor.fetchall()
         cursor.close()
         return activities
+    
+    @staticmethod
+    def getAllForPM():
+        """Get ALL activities from ALL fund raisers for Platform Manager."""
+        cursor = mysql.connection.cursor()
+        cursor.execute("""
+            SELECT a.*, c.category_name, u.username as creator,
+                (SELECT COUNT(*) FROM favourite f WHERE f.activity_id = a.activity_id) as shortlist_count
+            FROM activity a
+            LEFT JOIN category c ON a.category_id = c.category_id
+            LEFT JOIN useraccount u ON a.created_by = u.user_id
+            ORDER BY a.created_at DESC
+        """)
+        activities = cursor.fetchall()
+        cursor.close()
+        return activities
+    
+    

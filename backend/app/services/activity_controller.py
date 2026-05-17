@@ -130,6 +130,17 @@ class SearchActivityController:
             'activities': activities
         }
 
+class ViewAllActivitiesController:
+    """Control — ViewAllActivitiesController (PM-09)"""
+
+    @staticmethod
+    def getAllActivities():
+        activities = Activity.getAllForPM()
+        return True, {
+            'status':     'success',
+            'message':    f'{len(activities)} activity(s) found.',
+            'activities': activities
+        }
 
 # Backward compatibility alias
 class ActivityController:
