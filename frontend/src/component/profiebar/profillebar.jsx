@@ -54,7 +54,7 @@ function ProfileBar({ user, userRavatar }) {
             logout(user.userid);
             // remove the localstorage
             localStorage.removeItem("userData");
-            // localStorage.removeItem("token");
+            localStorage.removeItem("token");
             cookie.remove("token");
             window.dispatchEvent(new Event("storage"));
             navigate("/home");
