@@ -6,10 +6,12 @@ Sprint 5 — DN-01 to DN-05: Donee Browse & Favourites
 import pytest
 from unittest.mock import patch
 from app.services.donee_controller import (
+    SearchActivityController,
     BrowseActivityController,
     SaveFavouriteController,
-    ViewFavouriteController,
+    RemoveFavouriteController,
     SearchFavouriteController,
+    ViewFavouriteController,
 )
 
 
@@ -49,7 +51,7 @@ def donee_token(app):
 
 
 # ══════════════════════════════════════════════════════════════
-# DN-01 — SEARCH ACTIVITIES — BrowseActivityController
+# DN-01 — SEARCH ACTIVITIES — SearchActivityController
 # ══════════════════════════════════════════════════════════════
 
 class TestSearchActivities:
@@ -57,19 +59,19 @@ class TestSearchActivities:
     def test_empty_query_fails(self, client, donee_token):
         with patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None), \
              patch('app.utils.auth_utils.UserAccount.findById', return_value=make_donee_account()):
-            res = client.get('/api/donee/activities?query=',
+            res = client.get('/api/donee/activities/search?query=',
                 headers={'Authorization': f'Bearer {donee_token}'})
         assert res.status_code == 400
 
     @patch('app.models.activity.Activity.search', return_value=[])
     def test_no_results(self, _):
-        ok, d = BrowseActivityController.searchActivities('xyz')
+        ok, d = SearchActivityController.searchActivities('xyz')
         assert ok is False and 'no activities' in d['error'].lower()
 
     @patch('app.models.activity.Activity.search')
     def test_search_success(self, mock_search):
         mock_search.return_value = [make_activity()]
-        ok, d = BrowseActivityController.searchActivities('help')
+        ok, d = SearchActivityController.searchActivities('help')
         assert ok is True and len(d['activities']) == 1
 
     @patch('app.models.activity.Activity.search')
@@ -78,7 +80,7 @@ class TestSearchActivities:
             make_activity(activity_id=1, status='active'),
             make_activity(activity_id=2, status='suspended'),
         ]
-        ok, d = BrowseActivityController.searchActivities('help')
+        ok, d = SearchActivityController.searchActivities('help')
         assert ok is True
         for a in d['activities']:
             assert a['status'] == 'active'
@@ -159,12 +161,12 @@ class TestSaveFavourite:
 
     @patch('app.models.favourite.Favourite.exists', return_value=False)
     def test_remove_not_in_favourites(self, _):
-        ok, d = SaveFavouriteController.removeFavourite(4, 1)
+        ok, d = RemoveFavouriteController.removeFavourite(4, 1)
         assert ok is False and 'not in' in d['error'].lower()
 
     @patch('app.models.favourite.Favourite.exists', return_value=True)
     def test_remove_success(self, _):
-        ok, d = SaveFavouriteController.removeFavourite(4, 1)
+        ok, d = RemoveFavouriteController.removeFavourite(4, 1)
         assert ok is True and d['status'] == 'success'
 
 
@@ -177,7 +179,7 @@ class TestSearchFavourites:
     def test_empty_query_fails(self, client, donee_token):
         with patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None), \
              patch('app.utils.auth_utils.UserAccount.findById', return_value=make_donee_account()):
-            res = client.get('/api/donee/favourites?query=',
+            res = client.get('/api/donee/favourites/search?query=',
                 headers={'Authorization': f'Bearer {donee_token}'})
         assert res.status_code == 400
 
