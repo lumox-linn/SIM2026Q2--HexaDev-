@@ -9,7 +9,7 @@ from app.services.activity_controller import (
     CreateActivityController,
     ViewActivityController,
     UpdateActivityController,
-    DeleteActivityController,
+    SuspendActivityController,
     SearchActivityController,
 )
 
@@ -162,7 +162,7 @@ class TestUpdateActivity:
 
     @patch('app.models.activity.Activity.findById')
     def test_update_unauthorized(self, mock_find):
-        mock_find.return_value = make_activity(user_id=5)  # different user
+        mock_find.return_value = make_activity(user_id=5)
         ok, d = UpdateActivityController.updateActivity(1, 3, {'title': 'New'})
         assert ok is False and 'only' in d['error'].lower()
 
@@ -188,32 +188,32 @@ class TestUpdateActivity:
 
 
 # ══════════════════════════════════════════════════════════════
-# FR-04 — DELETE ACTIVITY — DeleteActivityController
+# FR-04 — SUSPEND ACTIVITY — SuspendActivityController
 # ══════════════════════════════════════════════════════════════
 
-class TestDeleteActivity:
+class TestSuspendActivity:
 
     @patch('app.models.activity.Activity.findById', return_value=None)
-    def test_delete_not_found(self, _):
-        ok, d = DeleteActivityController.deleteActivity(999, 3)
+    def test_suspend_not_found(self, _):
+        ok, d = SuspendActivityController.suspendActivity(999, 3)
         assert ok is False and 'not found' in d['error'].lower()
 
     @patch('app.models.activity.Activity.findById')
-    def test_delete_unauthorized(self, mock_find):
-        mock_find.return_value = make_activity(user_id=5)  # different user
-        ok, d = DeleteActivityController.deleteActivity(1, 3)
+    def test_suspend_unauthorized(self, mock_find):
+        mock_find.return_value = make_activity(user_id=5)
+        ok, d = SuspendActivityController.suspendActivity(1, 3)
         assert ok is False and 'only' in d['error'].lower()
 
     @patch('app.models.activity.Activity.findById')
-    def test_delete_success(self, mock_find):
+    def test_suspend_success(self, mock_find):
         mock_find.return_value = make_activity(user_id=3)
-        ok, d = DeleteActivityController.deleteActivity(1, 3)
+        ok, d = SuspendActivityController.suspendActivity(1, 3)
         assert ok is True and d['status'] == 'success'
 
     @patch('app.models.activity.Activity.findById')
-    def test_delete_returns_activity_id(self, mock_find):
+    def test_suspend_returns_activity_id(self, mock_find):
         mock_find.return_value = make_activity(user_id=3)
-        ok, d = DeleteActivityController.deleteActivity(1, 3)
+        ok, d = SuspendActivityController.suspendActivity(1, 3)
         assert ok is True and d['activity_id'] == 1
 
 
