@@ -213,3 +213,7 @@ export function apiSearchAcHis(params) {
     params: params,
   });
 }
+
+export function apiBrowseCategories() {
+  return newRequest({ url: '/api/categories/browse', method: 'get' });
+}
