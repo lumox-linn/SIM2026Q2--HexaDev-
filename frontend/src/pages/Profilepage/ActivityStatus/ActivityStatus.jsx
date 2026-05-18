@@ -583,7 +583,7 @@ function ActivityStatus() {
                   </p>
                 )}
 
-                <span style={{ position: "absolute", right: "70px", display: "flex", gap: 10 }}>
+                <span style={{ position: "absolute", right: "90px", display: "flex", gap: 10 }}>
                   <img src={iconheart} alt="" style={{ width: "20px" }} />
                   {item.shortlist_count}
                 </span>
