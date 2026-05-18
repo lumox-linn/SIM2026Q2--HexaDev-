@@ -1,113 +1,75 @@
 import { useEffect, useState } from "react";
-import cookie from "js-cookie";
+import { useLocation } from "react-router-dom";
 import "./Myactivities.css";
-import { message, Flex, Space, Table, Tag, Progress } from "antd";
+import dayjs from "dayjs";
+import {
+  message,
+  Flex,
+  Space,
+  Table,
+  Tag,
+  Progress,
+  Select,
+  DatePicker,
+  ConfigProvider,
+} from "antd";
 import { createStaticStyles } from "antd-style";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
-import { apiMyDonations } from "../../../api";
+import { apiMyDonations, apisearchHistory } from "../../../api";
 import money from "../../../assets/money.svg";
 import donate from "../../../assets/donate.svg";
+import date from "../../../assets/date.svg";
+import restart from "../../../assets/restart.svg";
+
 function myDonations() {
-  const [userData, setuserData] = useState();
+  const location = useLocation();
   const userdata = localStorage.getItem("userData");
-  const [singleData, setsingleData] = useState({});
   const user = userdata ? JSON.parse(userdata) : null;
-  const [inpWarningVisi, setinpWarningVisi] = useState(false);
+
   const [data, setData] = useState([]);
+  const [singleData, setsingleData] = useState({});
+  const [allmoney, setallmoney] = useState(0);
+  const [allcat, setallcat] = useState([]);
+  const [selectv, setselectv] = useState(null);
+  const [catid, setcatid] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [inpWarningVisi, setinpWarningVisi] = useState(false);
   const [tableClass, settableClass] = useState(false);
-
-  const [inpValue, setinpvalue] = useState("");
   const [seeMore, setseeMore] = useState(false);
-  const token = cookie.get("token");
-  const getStatusClass = (item) => {
-    if (item.status === "suspended") return "disabled";
-    return "active";
-  };
-  const userDonate = {
-    donate: "$1000",
-    title: "Help the children learn",
-    donateDate: "2026-03-02",
-  };
-  // const alldata = [
-  //   {
-  //     key: "1",
-  //     title: "Help the children learn",
-  //     category: "Education",
-  //     TargetMoney: "$3000",
-  //     MoneyRaised: "$1000",
-  //     Start: "2026-01-01",
-  //     End: "2026-03-06",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  //   {
-  //     key: "2",
-  //     title: "huhuhuhdushdu",
-  //     category: "Animal",
-  //     TargetMoney: "$4000",
-  //     MoneyRaised: "$2000",
-  //     Start: "2026-02-04",
-  //     End: "2026-08-00",
-  //     status: "Active",
-  //   },
-  // ];
-  useEffect(() => {
-    if (user) {
-      setuserData(user);
-    }
-    // setData(alldata);
 
-    refresh();
-  }, []);
+  // ── Helpers ───────────────────────────────────────────────
+  const getStatusClass = (item) =>
+    item.status === "suspended" ? "disabled" : "active";
+
+  const mapItems = (list) =>
+    list.map((item) => ({
+      key:        item.donation_id,
+      title:      item.title,
+      category:   item.category_name,
+      description: item.description,
+      TargetMoney: item.target_amount,
+      MoneyRaised: item.amount_raised,
+      amount:     item.amount,
+      Start:      item.start_date?.split(" ").slice(0, 4).join(" "),
+      End:        item.end_date?.split(" ").slice(0, 4).join(" "),
+      status:     item.status,
+      donated_at: item.donated_at?.split(" ").slice(0, 4).join(" "),
+    }));
+
+  // ── percentage — raised / target ✅ fixed swap ─────────────
+  const percentage = (item) => {
+    const raised = parseFloat(item.MoneyRaised) || 0;
+    const target = parseFloat(item.TargetMoney) || 0;
+    if (target <= 0) return 0;
+    return Math.round((raised / target) * 100);
+  };
+
+  // ── Styles ────────────────────────────────────────────────
   const styles = {
-    root: {
-      backgroundColor: "#e6f7ff",
-    },
-    icon: {
-      color: "#52c41a",
-    },
-    content: {
-      color: "#706d6d",
-    },
+    root: { backgroundColor: "#e6f7ff" },
+    icon: { color: "#52c41a" },
+    content: { color: "#706d6d" },
   };
   const classNames = createStaticStyles(({ css }) => ({
     root: css`
@@ -123,92 +85,39 @@ function myDonations() {
   };
   const stylesFn = (info) => {
     const val = info.props.percent ?? 0;
-    const safeVal = Math.min(Math.max(val, 0), 100);
     const hue = 200 - (200 * val) / 100;
     return {
       indicator: {
-        backgroundImage: `
-        linear-gradient(
-          to right,
-          hsla(${hue}, 85%, 65%, 1),
-          height: '8px',
-          hsla(${hue + 30}, 90%, 55%, 0.95)
-        )`,
+        backgroundImage: `linear-gradient(to right, hsla(${hue}, 85%, 65%, 1), hsla(${hue + 30}, 90%, 55%, 0.95))`,
         borderRadius: 8,
         transition: "all 0.3s ease",
       },
-      rail: {
-        backgroundColor: "rgba(0, 0, 0, 0.1)",
-        borderRadius: 8,
-        height: "8px",
-      },
+      rail: { backgroundColor: "rgba(0,0,0,0.1)", borderRadius: 8, height: "8px" },
     };
   };
-  const searchDonations = (e) => {
-    setinpvalue(e.target.value);
-    // when input value changed,set warning to invisible
-    if (e.target.value !== "") {
-      setinpWarningVisi(false);
-    } else {
-      // if the input value is empty, refresh data
-      refresh();
-    }
-  };
 
-  const percentage = (item) => {
-    const raised = parseFloat(item.MoneyRaised) || 0;
-    const target = parseFloat(item.TargetMoney) || 0;
-    if (target <= 0) return 0;
-    const res = Math.round((raised / target) * 100);
-
-    return res;
-  };
-
-  // single row action
+  // ── Table row click ───────────────────────────────────────
   const see = (r) => {
     setseeMore(true);
     setsingleData(r);
     setData([r]);
     settableClass(true);
   };
-  // table
-  const columns = [
-    {
-      title: "Title",
-      dataIndex: "title",
-      key: "title",
 
-      // render: (text) => <a >{text}</a>,
-    },
-    {
-      title: "category",
-      dataIndex: "category",
-      key: "category",
-    },
-    {
-      title: "TargetMoney",
-      dataIndex: "TargetMoney",
-      key: "TargetMoney",
-    },
-    {
-      title: "Start",
-      dataIndex: "Start",
-      key: "Start",
-    },
-    {
-      title: "End",
-      dataIndex: "End",
-      key: "End",
-    },
+  // ── Columns ───────────────────────────────────────────────
+  const columns = [
+    { title: "Title",       dataIndex: "title",       key: "title" },
+    { title: "Category",    dataIndex: "category",    key: "category" },
+    { title: "Target ($)",  dataIndex: "TargetMoney", key: "TargetMoney" },
+    { title: "Start",       dataIndex: "Start",       key: "Start" },
+    { title: "End",         dataIndex: "End",         key: "End" },
     {
       title: "Status",
-      key: "Status",
-      dataIndex: "Status",
+      key: "status",
+      dataIndex: "status",           // ✅ lowercase — matches data field
       render: (_, { status }) => (
         <Flex gap="small" align="center" wrap>
-          <Tag color="green" key={status}>
-            {status}
-          </Tag>
+          <Tag color="green" key={status}>{status}</Tag>
         </Flex>
       ),
     },
@@ -217,160 +126,187 @@ function myDonations() {
       key: "action",
       render: (_, record) => (
         <Space size="medium">
-          <a
-            style={{ color: " rgb(181, 117, 98)" }}
-            onClick={() => see(record)}
-          >
-            See more{record.name}
-          </a>
-          <a
-            style={{ color: " rgb(120, 184, 83)" }}
-            onClick={() => see(record)}
-          >
-            Donate again
+          <a style={{ color: "rgb(181, 117, 98)" }} onClick={() => see(record)}>
+            See more
           </a>
         </Space>
       ),
     },
   ];
-  const searchPro = () => {
-    // if the input has value
-    if (inpValue !== "") {
-      console.log(inpValue);
-      try {
-        apiMyDonations()
-          .then((res) => {
-            console.log(res);
-            //    const backendList = res.activities;
 
-            // const activities = backendList.map((item) => ({
-            //   key: item.activity_id,
-            //   title: item.title,
-            //   category: item.category_name,
-            //   TargetMoney: item.target_amount,
-            //   MoneyRaised: item.amount_raised,
-            //   Start: item.start_date?.split(" ").slice(0, 4).join(" "),
-            //   End: item.end_date?.split(" ").slice(0, 4).join(" "),
-            //   status: item.status,
-            // }));
-            // console.log(activities);
-            // setData(activities);
-          })
-          .catch((err) => {
-            message.error(err.response?.data?.error);
-          });
-      } catch (error) {
-        message.error(error.response?.data?.error);
-      }
-    } else {
-      // if the input value is empty
-      setinpWarningVisi(true);
-    }
-  };
-
+  // ── Refresh — load all donation history ───────────────────
   const refresh = () => {
-  console.log(user);
-  if (!user) return;  // ← remove token check
-  try {
-    apiMyDonations()  // ✅ no params, no token
+    if (!user) return;
+    apiMyDonations()
       .then((res) => {
-        const backendList = res.history;  // ✅ change from res.activities to res.history
-
-        const activities = backendList.map((item) => ({
-          key: item.donation_id,           // ✅ use donation_id not activity_id
-          title: item.title,
-          category: item.category_name,
-          TargetMoney: item.target_amount,
-          MoneyRaised: item.amount_raised,
-          amount: item.amount,             // ✅ add donated amount
-          Start: item.start_date,
-          End: item.end_date,
-          status: item.status,
-          donated_at: item.donated_at,     // ✅ add donation date
-        }));
+        const activities = mapItems(res.history || []);
         setData(activities);
+
+        // ✅ compute total from real data
+        const total = activities.reduce(
+          (sum, item) => sum + (parseFloat(item.amount) || 0), 0
+        );
+        setallmoney(total);
+
+        // build category dropdown from history
+        const uniqueCats = [...new Set(activities.map((i) => i.category).filter(Boolean))];
+        setallcat(uniqueCats.map((name) => ({ value: name, label: name })));
       })
       .catch((err) => {
         console.log(err);
         message.error(err.response?.data?.error);
       });
-  } catch (error) {
-    message.error(error.response?.data?.error);
-  }
-};
+  };
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  // ── Search by category and/or date ───────────────────────
+  const searchPro = () => {
+    // build params from whatever is filled ✅
+    const params = {};
+    if (catid)     params.category_id = catid;
+    if (startDate) params.start_date  = startDate;
+    if (endDate)   params.end_date    = endDate;   // ✅ lowercase d
+
+    if (Object.keys(params).length === 0) {
+      setinpWarningVisi(true);
+      return;
+    }
+
+    setinpWarningVisi(false);
+    apisearchHistory(params)
+      .then((res) => {
+        const activities = mapItems(res.history || []);
+        setData(activities);                        // ✅ actually updates table
+      })
+      .catch((err) => {
+        console.log(err);
+        message.error(err.response?.data?.error);
+      });
+  };
+
+  const onSearch = (value) => console.log("search:", value);
+
   return (
     <div className="myDona">
       <li className="title">Donation History</li>
 
       <div className="mdContent">
+        {/* ── Left panel ── */}
         <div className="leftc">
           <div className="personInfo">
             <div>
-              <img src={user.useravatar} alt="" />
+              <img src={user?.useravatar} alt="" />
             </div>
             <li>{user?.username || "Username"}</li>
-            <li>{user?.useremail || "Email"}</li>
-            <li>{user?.userphone || "Phone"}</li>
+            <li>{user?.useremail  || "Email"}</li>
+            <li>{user?.userphone  || "Phone"}</li>
           </div>
+
           <div className="donations">
-            <div
-              className="totalD"
-              style={{
-                backgroundColor: "rgba(240, 220, 132, 0.49)",
-              }}
-            >
+            <div className="totalD" style={{ backgroundColor: "rgba(240, 220, 132, 0.49)" }}>
               <li>
                 <img src={donate} alt="" />
-                Total Activity
+                Total Activities
               </li>
-              <li>
+              <li style={{ paddingLeft: "20px" }}>
                 &nbsp;&nbsp;
-                <span style={{ fontSize: "25px" }}>3</span> &nbsp; Activities
+                <span style={{ fontSize: "25px" }}>{data.length}</span>  {/* ✅ dynamic */}
+                &nbsp;
               </li>
-              <li>Total activities donated</li>
+              <li style={{ paddingLeft: "6px" }}>Activities you've supported</li>
             </div>
-            <div
-              className="money"
-              style={{
-                backgroundColor: "rgba(197, 204, 130, 0.48)",
-              }}
-            >
+
+            <div className="money" style={{ backgroundColor: "rgba(197, 204, 130, 0.48)" }}>
               <li>
                 <img src={money} alt="" />
-                Total Amount
+                Total Contributions
               </li>
-              <li style={{ fontSize: "25px" }}>$ 3000</li>
-              <li>Total amount of money donated</li>
+              <li style={{ fontSize: "25px", paddingLeft: "20px" }}>
+                $ {allmoney}  {/* ✅ dynamic */}
+              </li>
+              <li>Total amount you've donated</li>
             </div>
           </div>
         </div>
 
+        {/* ── Right panel ── */}
         <div className="allInfo">
           <div className="mdHead">
             <li>
-              <input
-                type="text"
-                placeholder="Category name..."
-                onChange={(e) => searchDonations(e)}
+              {/* Reset button */}
+              <img
+                src={restart}
+                alt=""
+                className="restart"
+                onClick={() => {
+                  setStartDate(null);
+                  setEndDate(null);
+                  setselectv(undefined);
+                  setcatid(null);
+                  setinpWarningVisi(false);
+                  refresh();
+                }}
               />
+
+              Date:
+              <ConfigProvider
+                theme={{
+                  components: {
+                    DatePicker: {
+                      colorPrimary: "#78b853",
+                      colorLink: "#78b853",
+                      activeBorderColor: "#78b853",
+                      hoverBorderColor: "#62b580",
+                      borderRadius: 4,
+                      cellHoverBg: "rgba(120, 184, 83, 0.1)",
+                    },
+                  },
+                }}
+              >
+                <DatePicker
+                  style={{ width: "140px", height: "30px" }}
+                  variant="borderless"
+                  value={startDate ? dayjs(startDate) : null}
+                  onChange={(_, dateString) => setStartDate(dateString)}
+                />
+                -
+                <DatePicker
+                  style={{ width: "140px", height: "30px" }}
+                  variant="borderless"
+                  value={endDate ? dayjs(endDate) : null}
+                  onChange={(_, dateString) => setEndDate(dateString)}
+                />
+              </ConfigProvider>
+
+              {/* ✅ Category dropdown — catId stored directly in option */}
+              <Select
+                value={selectv}
+                allowClear
+                showSearch={{ optionFilterProp: "label", onSearch }}
+                placeholder="Select a category"
+                onChange={(value, option) => {
+                  setselectv(value);
+                  setcatid(option?.catId || null);  // ✅ no extra API call needed
+                }}
+                options={allcat.map((opt) => ({
+                  value: opt.value,
+                  label: opt.label,
+                  catId: opt.catId,
+                }))}
+              />
+
               <button onClick={searchPro}>Search</button>
-              {inpWarningVisi ? (
-                <span className="inpWarning">
-                  Please enter a category to search
-                </span>
-              ) : (
-                ""
+
+              {inpWarningVisi && (
+                <span className="inpWarning">Please choose something to search!</span>
               )}
             </li>
           </div>
 
-          {/* <div className={tableClass ? "onedata" : "tableS"}>
-            {
-              data.map((item)=>{
-                return 
-              })
-            } */}
-          {console.log(data)}
+          {/* Table */}
           <div className={tableClass ? "onedata" : "tableS"}>
             <Table
               bordered="true"
@@ -378,102 +314,85 @@ function myDonations() {
               columns={columns}
               dataSource={data}
               rowKey="key"
-              pagination={
-                tableClass
-                  ? false
-                  : {
-                      pageSize: 8,
-                    }
-              }
+              pagination={tableClass ? false : { pageSize: 6 }}
             />
           </div>
 
-          {/* {seeMore ? (
-          <div className="seemore">
-            <div className="cardView">
-              <i
-                onClick={() => {
-                  setData(alldata);
-                  setseeMore(false);
-                  settableClass(false);
-                }}
-                className="closeView"
-              >
-                X
-              </i>
-
-              <li className="first">
-                <span className="name">{singleData.title}</span>
-
-                <div className={getStatusClass(singleData)}>
-                  {singleData.status === "Active" ? "Active" : "Suspended"}
-                </div>
-
-                <p>
-                  <Tag
-                    classNames={classNames}
-                    styles={styles}
-                    icon={
-                      singleData.status === "Active" ? (
-                        <CheckCircleOutlined />
-                      ) : (
-                        <CloseCircleOutlined />
-                      )
-                    }
-                  >
-                    {singleData.category}
-                  </Tag>
-                </p>
-              </li>
-
-              <li className="date">
-                <p>
-                  <span>Start date: {singleData.Start}</span>
-                  <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
-                    End date: {singleData.End}
-                  </span>
-                </p>
-
-                <p
-                  style={{
-                    width: "100%",
-                    height: "20px",
-                    display: "flex",
-                    flexDirection: "row",
-                    // padding: "0 2px",
-                    justifyContent: "space-between",
+          {/* See more detail card */}
+          {seeMore && (
+            <div className="seemore">
+              <div className="cardView">
+                <i
+                  onClick={() => {
+                    setseeMore(false);
+                    settableClass(false);
+                    refresh();
                   }}
+                  className="closeView"
                 >
-                  {" "}
-                  <span style={{ color: "#6bacea" }}>
-                    Target: ${singleData.TargetMoney}
-                  </span>
-                  <span style={{ color: "#b3bc4b" }}>
-                    Raised: ${singleData.MoneyRaised}
-                  </span>
-                </p>
-                <Flex vertical gap="large">
-                  {/* <span>{item.targetAmount}</span> */}
-          {/* <Progress
-                    classNames={progressClass}
-                    styles={stylesFn}
-                    percent={percentage(singleData)}
-                  />
-                </Flex>
-                {/* <hr /> */}
-          {/* </li> */}
+                  X
+                </i>
 
-          {/* <span style={{ marginBottom: "45px" }}>{item.description}</span> */}
-          {/* <li className="myD">
-                <span>I donated: &nbsp;{userDonate.donate}</span>
-                <span>Date of donation: &nbsp; {userDonate.donateDate}</span>
-              </li>
+                <li className="first">
+                  <span className="name">{singleData.title}</span>
+                  <div className={getStatusClass(singleData)}>
+                    {singleData.status === "active" ? "Active" : "Suspended"}
+                  </div>
+                  <p>
+                    <Tag
+                      classNames={classNames}
+                      styles={styles}
+                      icon={
+                        singleData.status === "active"
+                          ? <CheckCircleOutlined />
+                          : <CloseCircleOutlined />
+                      }
+                    >
+                      {singleData.category}
+                    </Tag>
+                  </p>
+                </li>
+
+                <li className="date">
+                  <p>
+                    <span>Start date: {singleData.Start}</span>
+                    <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
+                      End date: {singleData.End}
+                    </span>
+                  </p>
+                  <p style={{ width: "100%", height: "20px", display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#6bacea" }}>Target: ${singleData.TargetMoney}</span>
+                    <span style={{ color: "#b3bc4b" }}>Raised: ${singleData.MoneyRaised}</span>
+                  </p>
+                  <Flex vertical gap="large">
+                    <Progress
+                      classNames={progressClass}
+                      styles={stylesFn}
+                      percent={percentage(singleData)}
+                    />
+                  </Flex>
+                  <hr />
+                </li>
+
+                <span style={{ marginBottom: "10px" }}>{singleData.description}</span>
+
+                <li className="myD">
+                  <span>
+                    <img src={money} alt="" style={{ width: "30px", marginRight: "20px" }} />
+                    My Contribution: &nbsp;${singleData.amount}
+                  </span>
+                  <span>
+                    <img src={date} alt="" style={{ width: "30px", marginRight: "10px" }} />
+                    Donation Date: &nbsp;{singleData.donated_at}
+                  </span>
+                </li>
+              </div>
             </div>
-          </div>
-        ) : null} */}
+          )}
         </div>
       </div>
     </div>
   );
 }
+
 export default myDonations;
