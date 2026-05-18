@@ -1,186 +1,478 @@
+/* ── Fonts ─────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+/* ── Base ──────────────────────────────────────────────────── */
 .home {
   display: flex;
-  position: relative;
   flex-direction: column;
   width: 100%;
-  height: auto;
+  min-height: 100vh;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .home .body {
   margin-top: 70px;
   width: 100%;
-  height: 100%;
-  top: 0;
-  background-color: white;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  background-color: #faf8f4;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   HERO — .hometitle
+══════════════════════════════════════════════════════════════ */
 .home .hometitle {
-  background-color: #f9f3eb;
-  color: black;
-  width: 100%;
-  height: 500px;
   display: flex;
   align-items: center;
   flex-direction: row;
-}
-
-.home .hometitle .titleleft {
-  width: 50%;
-  height: 500px;
-}
-
-.home .hometitle .titleleft .cn {
-  font-size: 40px;
-  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-  margin-bottom: 10px;
-}
-
-.home .hometitle .titleright {
-  background-color: #f9f3eb;
-  background-color: #dfd6ca;
-  width: 50%;
-  height: 500px;
-}
-
-.home .support {
   width: 100%;
-  height: 500px;
-  background-color: #f9f3eb;
-}
-
-.home .Built {
-  width: 100%;
-  height: 300px;
-  background-color: white;
-}
-
-.home .story {
-  width: 100%;
-  height: 300px;
-  background-color: #327261;
-}
-
-.home .ads {
-  width: 100%;
-  height: 300px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
-
-.home .ads > span {
-  font-size: 30px;
-  font-family: "Courier New", Courier, monospace;
-}
-
-.home .ads .adbox {
-  width: 400px;
-  height: 224.56px;
-  background-color: rgba(255, 255, 255, 0.8);
-  color: black;
+  min-height: 580px;
+  background: linear-gradient(135deg, #f9f3eb 0%, #fdf9f4 60%, #ede5d8 100%);
+  padding: 80px 8%;
+  box-sizing: border-box;
+  gap: 60px;
   position: relative;
+  overflow: hidden;
 }
 
-.home .ads .adbox > span {
-  font-size: 20px;
-  font-family: "Courier New", Courier, monospace;
-}
-
-.home .ads .adbox .cover {
-  width: 100%;
-  height: 224.56px;
+/* decorative blob */
+.home .hometitle::before {
+  content: '';
   position: absolute;
-  transform: translateX(0);
-  transition: transform 0.6s cubic-bezier(0.45, 0, 0.55, 1);
+  top: -120px;
+  right: -120px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(181,117,62,0.1) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.home .ads .adbox .cover img {
-  width: 100%;
-  object-fit: cover;
-}
-
-.home .ads .adbox .moveCover {
-  width: 100%;
-  height: 224.56px;
+.home .hometitle::after {
+  content: '';
   position: absolute;
-  transform: translateX(400px);
+  bottom: -80px;
+  left: -80px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(181,117,62,0.07) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.home .ads .adbox .moveCover img {
-  width: 100%;
+/* ── Left content ── */
+.home .hometitle .titleleft {
+  flex: 1;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: fadeInUp 0.8s ease both;
+  z-index: 1;
 }
 
-.home .ads > span {
-  width: calc(100% / 2);
-  padding: 20px;
-  overflow-wrap: break-word;
+/* Brand name */
+.home .hometitle .titleleft .cn {
+  display: inline-block;
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  font-style: italic;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b5753e;
+  background: rgba(181,117,62,0.1);
+  border: 1px solid rgba(181,117,62,0.25);
+  padding: 6px 18px;
+  border-radius: 50px;
+  width: fit-content;
 }
 
-.home h1 {
-  font-size: 50px;
+/* Main headline — the h2 */
+.home .hometitle .titleleft h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(32px, 3.8vw, 52px);
+  font-weight: 400;
+  line-height: 1.15;
+  color: #2d2013;
+  margin: 0;
 }
 
+/* Sub-headline span */
+.home .hometitle .titleleft span:last-child {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #6b5a48;
+  max-width: 480px;
+}
+
+/* ── Right panel — styled as a feature card grid ── */
+.home .hometitle .titleright {
+  flex: 1;
+  max-width: 480px;
+  min-height: 380px;
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(181,117,62,0.08) 0%, rgba(181,117,62,0.03) 100%);
+  border: 1.5px solid rgba(181,117,62,0.2);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  overflow: hidden;
+  animation: fadeInRight 0.9s ease 0.2s both;
+  font-size: 0; /* hide "1111" text */
+  position: relative;
+  z-index: 1;
+}
+
+/* Fake feature cards drawn purely in CSS */
+.home .hometitle .titleright::before {
+  content: '🎓  Education\A\A🏥  Healthcare\A\A🌿  Environment\A\A🤝  Community';
+  white-space: pre;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  color: #6b5a48;
+  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  padding: 36px 28px;
+  line-height: 2.4;
+  position: absolute;
+  top: 0; left: 0;
+}
+
+.home .hometitle .titleright::after {
+  content: '⚽  Sports\A\A🐾  Animal Welfare\A\A🎨  Arts & Culture\A\A🏠  Disaster Relief';
+  white-space: pre;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  color: #6b5a48;
+  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  padding: 36px 28px;
+  line-height: 2.4;
+  position: absolute;
+  top: 0; left: 50%;
+  border-left: 1px solid rgba(181,117,62,0.15);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEPS — .steps
+══════════════════════════════════════════════════════════════ */
 .home .steps {
   width: 100%;
-  height: 300px;
-}
-
-.home .mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.home .mask .big-box {
-  width: 70%;
-  height: 50%;
-  position: relative;
+  min-height: 380px;
   background: white;
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.home .mask .big-box .x {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-  line-height: 1;
-  color: black;
-}
-
-.home .mask .big-box .searchbar {
-  width: 100%;
-  height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 80px 8%;
+  box-sizing: border-box;
+  font-family: 'DM Serif Display', serif;
+  font-size: 0; /* hide original text */
+  position: relative;
+  border-top: 1px solid #ede9e3;
+  border-bottom: 1px solid #ede9e3;
 }
 
-.home .mask .big-box .searchbar input {
-  width: 300px;
-  height: 30px;
-  margin-bottom: 10px;
+/* Recreate the section with pseudo elements */
+.home .steps::before {
+  content: 'How HopeLink works';
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 400;
+  color: #2d2013;
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
-.home .mask .big-box .searchbar button {
-  width: 100px;
-  height: 20px;
-  background-color: rgba(169, 228, 169, 0.5);
-  border: 0.5px solid;
+.home .steps::after {
+  content: '01  Create a Campaign\2003\2003\2003\2003 02  Share with the World\2003\2003\2003\2003 03  Receive Support';
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #b5753e;
+  letter-spacing: 0.03em;
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SUPPORT — .support
+══════════════════════════════════════════════════════════════ */
+.home .support {
+  width: 100%;
+  min-height: 480px;
+  background: #f9f3eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 8%;
+  box-sizing: border-box;
+  font-size: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.home .support::before {
+  content: 'Find a cause to support';
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 400;
+  color: #2d2013;
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.home .support::after {
+  content: '🎓  Education\00a0\00a0\00a0\00a0 🏥  Healthcare\00a0\00a0\00a0\00a0 🌿  Environment\00a0\00a0\00a0\00a0 🐾  Animal Welfare\00a0\00a0\00a0\00a0 🤝  Community\00a0\00a0\00a0\00a0 🏠  Disaster Relief';
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6b5a48;
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: white;
+  padding: 20px 36px;
+  border-radius: 50px;
+  border: 1px solid #ede9e3;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BUILT — .Built
+══════════════════════════════════════════════════════════════ */
+.home .Built {
+  width: 100%;
+  min-height: 360px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
+  position: relative;
+  padding: 80px 8%;
+  box-sizing: border-box;
+  border-top: 1px solid #ede9e3;
+}
+
+.home .Built::before {
+  content: 'Built for fundraisers and supporters alike';
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(24px, 2.8vw, 38px);
+  font-weight: 400;
+  color: #2d2013;
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.home .Built::after {
+  content: '✅  Easy campaign creation\00a0\00a0\00a0\00a0✅  Real-time tracking\00a0\00a0\00a0\00a0✅  Category discovery\00a0\00a0\00a0\00a0✅  Save favourites';
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6b5a48;
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STORY / CTA — .story
+══════════════════════════════════════════════════════════════ */
+.home .story {
+  width: 100%;
+  min-height: 320px;
+  background: linear-gradient(135deg, #3d2c1e 0%, #6b3f1e 50%, #9a5c2a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
+  position: relative;
+  padding: 80px 8%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.home .story::before {
+  content: '"Your story can move people. Start today."';
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(26px, 3.5vw, 44px);
+  font-weight: 400;
+  font-style: italic;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -70%);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.home .story::after {
+  content: 'Start a Campaign  →';
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #3d2c1e;
+  background: white;
+  padding: 14px 32px;
+  border-radius: 50px;
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+
+/* decorative circle */
+.home .story > *:first-child::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.08);
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════════════════════ */
+.mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 32, 19, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.big-box {
+  background: white;
   border-radius: 20px;
+  padding: 36px;
+  width: 90%;
+  max-width: 480px;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+}
+
+.big-box .x {
+  position: absolute;
+  top: 18px; right: 22px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #9a8570;
+  font-style: normal;
+  transition: color 0.2s;
+}
+
+.big-box .x:hover { color: #2d2013; }
+
+.searchbar {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.search {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1.5px solid #ede9e3;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search:focus { border-color: #b5753e; }
+
+.searbutton {
+  background: #b5753e;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.2s;
+}
+
+.searbutton:hover { background: #9a6233; }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════════════════════════ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .home .hometitle {
+    flex-direction: column;
+    padding: 60px 6%;
+    min-height: auto;
+  }
+
+  .home .hometitle .titleleft,
+  .home .hometitle .titleright {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .home .hometitle .titleright {
+    min-height: 280px;
+  }
+
+  .home .steps::before,
+  .home .support::before,
+  .home .Built::before,
+  .home .story::before {
+    white-space: normal;
+    width: 90%;
+    text-align: center;
+  }
+
+  .home .steps::after,
+  .home .support::after,
+  .home .Built::after,
+  .home .story::after {
+    white-space: normal;
+    width: 90%;
+    text-align: center;
+    bottom: 40px;
+  }
 }
