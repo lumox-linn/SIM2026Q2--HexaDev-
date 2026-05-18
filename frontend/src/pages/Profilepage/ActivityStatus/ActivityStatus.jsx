@@ -256,72 +256,73 @@ function ActivityStatus() {
 }, []);
 const [endDate, setEndDate] = useState(null);
 const searchPro = () => {
-  // if the input has value
+
+  // ── Title search ──────────────────────────────────────────
   if (inpValue !== "") {
-    console.log(inpValue);
-    try {
-      apiGetAllActivities({ query: inpValue })
-        .then((res) => {
-          console.log(res);
-          if (res.categories) {
-            const cats = res.categories
-              .filter(c => c.status === 'active')
-              .map(c => ({
-                category: c.category_name,
-                catId: c.category_id,
-              }));
-            setallCategories(cats);
-          }
-          if (res.activities) {
-            const activities = res.activities.map((item) => ({
-              activity_id: item.activity_id,
-              title: item.title,
-              description: item.description,
-              amount_raised: item.amount_raised,
-              category: item.category_name,
-              status: item.status,
-              created_at: item.created_at.split(" ").slice(0, 4).join(" "),
-              creator: item.creator,
-              target_amount: item.target_amount,
-              category_name: item.category_name,
-              start_date: item.start_date,
-              // start_date: item.start_date.split(" ").slice(0, 4).join(" "),
-              end_date: item.end_date,
-            }));
-            setactivityData(activities);
-          }
-        })
-        .catch((err) => {
-          setactivityData([]);
-          message.error(err.response?.data?.error);
-        });
-    } catch (error) {
-      message.error(error.response?.data?.error);
-    }
-  } else {
-    // if the input value is empty
+    apiGetAllActivities({ query: inpValue })
+      .then((res) => {
+        if (res.activities) {
+          const activities = res.activities.map((item) => ({
+            activity_id:   item.activity_id,
+            title:         item.title,
+            description:   item.description,
+            amount_raised: item.amount_raised,
+            category:      item.category_name,
+            status:        item.status,
+            created_at:    item.created_at.split(" ").slice(0, 4).join(" "),
+            creator:       item.creator,
+            target_amount: item.target_amount,
+            category_name: item.category_name,
+            start_date:    item.start_date,
+            end_date:      item.end_date,
+          }));
+          setactivityData(activities);
+        }
+      })
+      .catch((err) => {
+        setactivityData([]);
+        message.error(err.response?.data?.error);
+      });
+    return; // ✅ stop here, don't run filter below
+  }
+
+  // ── Category / Date filter ────────────────────────────────
+  const params = {};
+  if (catid)     params.category_id = catid;
+  if (startDate) params.start_date  = startDate;
+  if (endDate)   params.end_date    = endDate;   // ✅ fixed capital D
+
+  if (Object.keys(params).length === 0) {
     setinpWarningVisi(true);
+    return;
   }
-  if (selectv || (startDate && endDate)) {
-    setinpWarningVisi(false);
-    try {
-      apiSearchAcHis(
-        selectv
-          ? { category_id: catid }
-          : { start_date: startDate, end_Date: endDate },
-      )
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.log(err);
-          message.error(err.response?.data?.error);
-        });
-    } catch (error) {
-      console.log(error);
-      message.error(error.response?.data?.error);
-    }
-  }
+
+  setinpWarningVisi(false);
+  apiSearchAcHis(params)                         // ✅ sends all filled params together
+    .then((res) => {
+      console.log(res);
+      if (res.activities) {                      // ✅ actually updates the table
+        const activities = res.activities.map((item) => ({
+          activity_id:   item.activity_id,
+          title:         item.title,
+          description:   item.description,
+          amount_raised: item.amount_raised,
+          category:      item.category_name,
+          status:        item.status,
+          created_at:    item.created_at?.split(" ").slice(0, 4).join(" "),
+          creator:       item.creator,
+          target_amount: item.target_amount,
+          category_name: item.category_name,
+          start_date:    item.start_date,
+          end_date:      item.end_date,
+        }));
+        setactivityData(activities);
+      }
+    })
+    .catch((err) => {
+      setactivityData([]);
+      message.error(err.response?.data?.error);
+    });
 };
 
 const getStatusClass = (item) => {
