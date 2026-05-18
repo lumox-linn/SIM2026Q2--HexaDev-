@@ -206,9 +206,10 @@ class TestDeleteCategory:
 
 class TestSearchCategory:
 
+    # ✅ Fixed
     def test_empty_query_fails(self, client, pm_token):
         with patch('app.utils.auth_utils.UserAccount.getProfilePicture', return_value=None), \
-             patch('app.utils.auth_utils.UserAccount.findById', return_value=make_pm_account()):
+            patch('app.utils.auth_utils.UserAccount.findById', return_value=make_pm_account()):
             res = client.get('/api/categories/?query=',
                 headers={'Authorization': f'Bearer {pm_token}'})
         assert res.status_code == 400
