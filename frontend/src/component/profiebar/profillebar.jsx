@@ -52,6 +52,7 @@ function ProfileBar({ user, userRavatar }) {
         <li
           onClick={() => {
             logout(user.userid);
+            localStorage.removeItem("token");
             // remove the localstorage
             localStorage.removeItem("userData");
             // localStorage.removeItem("token");

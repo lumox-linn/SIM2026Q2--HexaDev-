@@ -28,13 +28,13 @@ request.interceptors.response.use(
     return config.data;
   },
   (err) => {
-    // if (err.response && err.response.status === 401) {
-    //   console.warn("Login expired, redirecting to home page...");
-    //   localStorage.removeItem("token");
-    //   localStorage.removeItem("userData");
-    //   cookie.remove("token");
-    //   window.location.href = "/home";
-    // }
+    if (err.response && err.response.status === 401) {
+      console.warn("Login expired, redirecting to home page...");
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      cookie.remove("token");
+      window.location.href = "/home";
+    }
     console.error("!!! the interceptor caught a network error:", err);
     const msg = err.response?.data?.msg || "server error";
     return Promise.reject(err);
