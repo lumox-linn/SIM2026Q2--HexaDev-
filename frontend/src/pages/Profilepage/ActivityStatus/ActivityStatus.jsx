@@ -11,6 +11,7 @@ import {
   apiSuspendActivities,
   apiSearchAcHis,
   apiBrowseCategories,
+  apiGetAllCategories
 } from "../../../api";
 import { createStaticStyles } from "antd-style";
 import restart from "../../../assets/restart.svg";
@@ -242,7 +243,22 @@ function ActivityStatus() {
 
   useEffect(() => {
     refresh();
+<<<<<<< HEAD
 
+=======
+    apiGetAllCategories()
+      .then((res) => {
+        if (res.categories) {
+          const cats = res.categories
+            .filter(c => c.status === 'active')
+            .map(c => ({
+              category: c.category_name,
+              catId: c.category_id,
+            }));
+          setallCategories(cats);
+        }
+      })
+>>>>>>> parent of eaa3a226 (Update ActivityStatus.jsx)
     apiBrowseCategories()
       .then((res) => {
         if (res.categories) {
