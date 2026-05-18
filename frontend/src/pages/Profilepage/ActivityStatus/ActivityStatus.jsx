@@ -53,14 +53,17 @@ function ActivityStatus() {
     actId: null,
   });
   const [catid, setcatid] = useState(0);
-  // const [cat, setcat] = useState(null);
-  const [allcategories, setallCategories] = useState([
-    { category: "Animal", catId: 2 },
-    { category: "Education", catId: 3 },
-    { category: "Environment", catId: 5 },
-    { category: "Health", catId: 4 },
-    { category: "School", catId: 1 },
-  ]);
+  // // const [cat, setcat] = useState(null);
+  // const [allcategories, setallCategories] = useState([
+  //   { category: "Animal", catId: 2 },
+  //   { category: "Education", catId: 3 },
+  //   { category: "Environment", catId: 5 },
+  //   { category: "Health", catId: 4 },
+  //   { category: "School", catId: 1 },
+  // ]);
+
+  // ✅ Start empty
+  const [allcategories, setallCategories] = useState([]);
 
   const [targetNumber, settargetNumber] = useState(false);
   const percentage = (item) => {
@@ -248,6 +251,15 @@ function ActivityStatus() {
         apiGetAllActivities({ query: inpValue })
           .then((res) => {
             console.log(res);
+            if (res.categories) {
+              const cats = res.categories
+                .filter(c => c.status === 'active')
+                .map(c => ({
+                  category: c.category_name,
+                  catId: c.category_id,
+                }));
+              setallCategories(cats);
+            }
             if (res.activities) {
               const activities = res.activities.map((item) => ({
                 activity_id: item.activity_id,
