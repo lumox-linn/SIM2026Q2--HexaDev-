@@ -44,8 +44,6 @@ function ManageAccount() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [updateValue, setupdateValue] = useState({});
 
-  const [updateValue, setupdateValue] = useState({});
-
 
   const [viewUser, setViewUser] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
