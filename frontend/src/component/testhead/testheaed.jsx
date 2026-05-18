@@ -10,8 +10,10 @@ function Testheader({ onNavClick, Router, user, isVisible, setIsVisible }) {
   const location = useLocation();
   const [showpro, setshowpro] = useState(false);
   const [userRavatar, setuserRavatar] = useState(avatar);
+  const [role, setrole] = useState(null);
   const userdata = location.state?.userdata || {};
   useEffect(() => {
+    setrole(user?.role || null);
     if (user && user.useravatar !== "null") {
       setuserRavatar(user.useravatar);
     } else {
@@ -36,7 +38,7 @@ function Testheader({ onNavClick, Router, user, isVisible, setIsVisible }) {
         className={isVisible ? "active" : ""}
       ></Navfull> */}
       <div className="hhhhh">
-        {userdata.role == "donee" ? (
+        {role == "donee" ? (
           <li>
             <a href="/activities">Activities</a>
           </li>
