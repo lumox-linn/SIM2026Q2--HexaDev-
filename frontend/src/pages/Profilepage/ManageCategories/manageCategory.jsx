@@ -157,7 +157,7 @@ function ManageCategory() {
       } else if (buttype === "edit") {
         console.log("edit");
         apiEditCategories(Number(editValue.id), {
-          category_name: values.role,
+          category_name: values.name,
           description: values.description,
         })
           .then((res) => {

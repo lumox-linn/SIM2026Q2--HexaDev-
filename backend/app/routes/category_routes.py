@@ -51,7 +51,7 @@ class ViewCategoryBoundary:
 
     @staticmethod
     @category_bp.route('/', methods=['GET'])
-    @token_required(roles=['platform_manager'])
+    @token_required(roles=['platform_manager, fund_raiser', 'donee'])
     def get_all_categories(current_user):
         query = request.args.get('query', '').strip()
 
@@ -67,7 +67,7 @@ class ViewCategoryBoundary:
 
     @staticmethod
     @category_bp.route('/<int:category_id>', methods=['GET'])
-    @token_required(roles=['platform_manager'])
+    @token_required(roles=['platform_manager', 'fund_raiser', 'donee'])
     def view_category(current_user, category_id):
         ok, payload = ViewCategoryController.viewCategory(category_id)
         if ok:

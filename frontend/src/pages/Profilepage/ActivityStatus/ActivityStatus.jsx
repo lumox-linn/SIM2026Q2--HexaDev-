@@ -241,6 +241,19 @@ function ActivityStatus() {
 
   useEffect(() => {
     refresh();
+    apiGetAllCategories()
+      .then((res) => {
+        if (res.categories) {
+          const cats = res.categories
+            .filter(c => c.status === 'active')
+            .map(c => ({
+              category: c.category_name,
+              catId: c.category_id,
+            }));
+          setallCategories(cats);
+        }
+      })
+      .catch((err) => console.log(err));
   }, []);
   const [endDate, setEndDate] = useState(null);
   const searchPro = () => {
