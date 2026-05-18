@@ -250,7 +250,7 @@ function Favorites() {
         <li className="search">
           <input
             type="text"
-            placeholder="Enter Category"
+            placeholder="Search Favorites..."
             onChange={(e) => searchAccount(e)}
             className="inp"
           />
