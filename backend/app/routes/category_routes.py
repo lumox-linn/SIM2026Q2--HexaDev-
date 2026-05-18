@@ -3,7 +3,7 @@ app/routes/category_routes.py — Boundary Layer
 ================================================
 Sprint 3 — PM-01 to PM-05: FSA Category Management
 
-Separate boundary class per use case:
+Separate boundary class per usecase:
 - CreateCategoryBoundary (PM-01)
 - ViewCategoryBoundary   (PM-02)
 - UpdateCategoryBoundary (PM-03)
