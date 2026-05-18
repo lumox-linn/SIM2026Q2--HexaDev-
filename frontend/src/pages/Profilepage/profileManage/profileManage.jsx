@@ -8,7 +8,7 @@ import {
   apiActivateProfile,
 } from "../../../api";
 import "../profileManage/profileManage.css";
-import { Button, Checkbox, Form, Input, message, Modal } from "antd";
+import { Button, Checkbox, Form, Input, message, Modal, Tag, Descriptions} from "antd";
 
 function profileManage() {
   const location = useLocation();
@@ -23,6 +23,14 @@ function profileManage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [editValue, setEditValue] = useState(null);
+
+  const [viewProfile, setViewProfile] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+  const viewPro = (item) => {
+    setViewProfile(item);
+    setIsViewModalOpen(true);
+  };
 
   const showModal = (profile) => {
     setSelectedProfile(profile);
@@ -308,6 +316,7 @@ function profileManage() {
               <span>{item.description}</span>
 
               <li>
+                <button onClick={() => viewPro(item)}>View</button>
                 <button onClick={() => editPro(item)}>Edit</button>
 
                 {item.status === "active" ? (
@@ -333,6 +342,36 @@ function profileManage() {
                     <b>{selectedProfile?.role}</b>? All associated accounts will
                     also be suspended.
                   </p>
+                </Modal>
+
+                <Modal
+                  title="Profile Details"
+                  open={isViewModalOpen}
+                  onCancel={() => setIsViewModalOpen(false)}
+                  footer={[
+                    <Button key="close" onClick={() => setIsViewModalOpen(false)}>
+                      Close
+                    </Button>,
+                  ]}
+                >
+                  {viewProfile && (
+                    <Descriptions bordered column={1} size="small">
+                      <Descriptions.Item label="Profile ID">
+                        {viewProfile.id}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Profile Name">
+                        {viewProfile.role}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Status">
+                        <Tag color={viewProfile.status === "active" ? "green" : "red"}>
+                          {viewProfile.status?.toUpperCase()}
+                        </Tag>
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Description">
+                        {viewProfile.description || "—"}
+                      </Descriptions.Item>
+                    </Descriptions>
+                  )}
                 </Modal>
               </li>
             </div>
