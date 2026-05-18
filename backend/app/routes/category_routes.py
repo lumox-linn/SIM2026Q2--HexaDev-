@@ -51,7 +51,7 @@ class ViewCategoryBoundary:
 
     @staticmethod
     @category_bp.route('/', methods=['GET'])
-    @token_required(roles=['platform_manager, fund_raiser', 'donee'])
+    @token_required(roles=['platform_manager'])
     def get_all_categories(current_user):
         query = request.args.get('query', '').strip()
 
@@ -67,7 +67,7 @@ class ViewCategoryBoundary:
 
     @staticmethod
     @category_bp.route('/<int:category_id>', methods=['GET'])
-    @token_required(roles=['platform_manager', 'fund_raiser', 'donee'])
+    @token_required(roles=['platform_manager'])
     def view_category(current_user, category_id):
         ok, payload = ViewCategoryController.viewCategory(category_id)
         if ok:
@@ -118,3 +118,13 @@ class SearchCategoryBoundary:
         if ok:
             return jsonify(payload), 200
         return jsonify(payload), 404
+    
+class BrowseCategoryBoundary:
+    """Boundary — BrowseCategoryBoundary (FR/Donee browse categories)"""
+
+    @staticmethod
+    @category_bp.route('/browse', methods=['GET'])
+    @token_required(roles=['fund_raiser', 'donee'])
+    def browse_categories(current_user):
+        ok, payload = ViewCategoryController.getAllCategories()
+        return jsonify(payload), 200
