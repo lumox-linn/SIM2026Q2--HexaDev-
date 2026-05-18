@@ -5,13 +5,13 @@ import dayjs from "dayjs";
 import {
   message,
   Flex,
-  Space,
   Table,
   Tag,
   Progress,
   Select,
   DatePicker,
   ConfigProvider,
+  Space,
 } from "antd";
 import { createStaticStyles } from "antd-style";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
@@ -21,43 +21,55 @@ import donate from "../../../assets/donate.svg";
 import date from "../../../assets/date.svg";
 import restart from "../../../assets/restart.svg";
 
+// ── helper: strip time from date string ──────────────────────
+const fmtDate = (str) => {
+  if (!str) return "-";
+  // handles "Tue, 05 May 2026 00:00:00 GMT" or "2026-05-05"
+  const d = new Date(str);
+  if (isNaN(d)) return str;
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+};
+
 function myDonations() {
   const location = useLocation();
   const userdata = localStorage.getItem("userData");
   const user = userdata ? JSON.parse(userdata) : null;
 
-  const [data, setData] = useState([]);
-  const [singleData, setsingleData] = useState({});
-  const [allmoney, setallmoney] = useState(0);
-  const [allcat, setallcat] = useState([]);
-  const [selectv, setselectv] = useState(null);
-  const [catid, setcatid] = useState(null);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [data, setData]                     = useState([]);
+  const [singleData, setsingleData]         = useState({});
+  const [allmoney, setallmoney]             = useState(0);
+  const [allcat, setallcat]                 = useState([]);
+  const [selectv, setselectv]               = useState(null);
+  const [catid, setcatid]                   = useState(null);
+  const [startDate, setStartDate]           = useState(null);
+  const [endDate, setEndDate]               = useState(null);
   const [inpWarningVisi, setinpWarningVisi] = useState(false);
-  const [tableClass, settableClass] = useState(false);
-  const [seeMore, setseeMore] = useState(false);
+  const [tableClass, settableClass]         = useState(false);
+  const [seeMore, setseeMore]               = useState(false);
 
   // ── Helpers ───────────────────────────────────────────────
   const getStatusClass = (item) =>
     item.status === "suspended" ? "disabled" : "active";
 
+  // ✅ category_id + creator + clean dates
   const mapItems = (list) =>
     list.map((item) => ({
-      key:        item.donation_id,
-      title:      item.title,
-      category:   item.category_name,
+      key:         item.donation_id,
+      title:       item.title,
+      category:    item.category_name,
+      category_id: item.category_id,
+      creator:     item.creator,
       description: item.description,
       TargetMoney: item.target_amount,
       MoneyRaised: item.amount_raised,
-      amount:     item.amount,
-      Start:      item.start_date?.split(" ").slice(0, 4).join(" "),
-      End:        item.end_date?.split(" ").slice(0, 4).join(" "),
-      status:     item.status,
-      donated_at: item.donated_at?.split(" ").slice(0, 4).join(" "),
+      amount:      item.amount,
+      Start:       fmtDate(item.start_date),   // ✅ clean date
+      End:         fmtDate(item.end_date),     // ✅ clean date
+      status:      item.status,
+      donated_at:  fmtDate(item.donated_at),  // ✅ clean date
     }));
 
-  // ── percentage — raised / target ✅ fixed swap ─────────────
+  // ✅ raised/target correct order
   const percentage = (item) => {
     const raised = parseFloat(item.MoneyRaised) || 0;
     const target = parseFloat(item.TargetMoney) || 0;
@@ -65,7 +77,6 @@ function myDonations() {
     return Math.round((raised / target) * 100);
   };
 
-  // ── Styles ────────────────────────────────────────────────
   const styles = {
     root: { backgroundColor: "#e6f7ff" },
     icon: { color: "#52c41a" },
@@ -96,7 +107,8 @@ function myDonations() {
     };
   };
 
-  // ── Table row click ───────────────────────────────────────
+  const onSearch = (value) => console.log("search:", value);
+
   const see = (r) => {
     setseeMore(true);
     setsingleData(r);
@@ -104,37 +116,33 @@ function myDonations() {
     settableClass(true);
   };
 
-  // ── Columns ───────────────────────────────────────────────
+  // ── Table columns ─────────────────────────────────────────
   const columns = [
-    { title: "Title",       dataIndex: "title",       key: "title" },
-    { title: "Category",    dataIndex: "category",    key: "category" },
-    { title: "Target ($)",  dataIndex: "TargetMoney", key: "TargetMoney" },
-    { title: "Start",       dataIndex: "Start",       key: "Start" },
-    { title: "End",         dataIndex: "End",         key: "End" },
+    { title: "Title",      dataIndex: "title",       key: "title" },
+    { title: "Category",   dataIndex: "category",    key: "category" },
+    { title: "Target ($)", dataIndex: "TargetMoney", key: "TargetMoney" },
+    { title: "Start",      dataIndex: "Start",       key: "Start" },
+    { title: "End",        dataIndex: "End",         key: "End" },
     {
       title: "Status",
       key: "status",
-      dataIndex: "status",           // ✅ lowercase — matches data field
+      dataIndex: "status",  // ✅ lowercase
       render: (_, { status }) => (
-        <Flex gap="small" align="center" wrap>
-          <Tag color="green" key={status}>{status}</Tag>
-        </Flex>
+        <Tag color={status === "active" ? "green" : "red"}>{status}</Tag>
       ),
     },
     {
       title: "Action",
       key: "action",
       render: (_, record) => (
-        <Space size="medium">
-          <a style={{ color: "rgb(181, 117, 98)" }} onClick={() => see(record)}>
-            See more
-          </a>
-        </Space>
+        <a style={{ color: "rgb(181, 117, 98)" }} onClick={() => see(record)}>
+          See more
+        </a>
       ),
     },
   ];
 
-  // ── Refresh — load all donation history ───────────────────
+  // ── Refresh ───────────────────────────────────────────────
   const refresh = () => {
     if (!user) return;
     apiMyDonations()
@@ -142,15 +150,21 @@ function myDonations() {
         const activities = mapItems(res.history || []);
         setData(activities);
 
-        // ✅ compute total from real data
         const total = activities.reduce(
           (sum, item) => sum + (parseFloat(item.amount) || 0), 0
         );
         setallmoney(total);
 
-        // build category dropdown from history
-        const uniqueCats = [...new Set(activities.map((i) => i.category).filter(Boolean))];
-        setallcat(uniqueCats.map((name) => ({ value: name, label: name })));
+        // ✅ build category dropdown with real catId
+        const catMap = {};
+        activities.forEach((i) => {
+          if (i.category) catMap[i.category] = i.category_id;
+        });
+        setallcat(
+          Object.entries(catMap).map(([name, id]) => ({
+            value: name, label: name, catId: id,
+          }))
+        );
       })
       .catch((err) => {
         console.log(err);
@@ -158,17 +172,14 @@ function myDonations() {
       });
   };
 
-  useEffect(() => {
-    refresh();
-  }, []);
+  useEffect(() => { refresh(); }, []);
 
-  // ── Search by category and/or date ───────────────────────
+  // ── Search ────────────────────────────────────────────────
   const searchPro = () => {
-    // build params from whatever is filled ✅
     const params = {};
     if (catid)     params.category_id = catid;
     if (startDate) params.start_date  = startDate;
-    if (endDate)   params.end_date    = endDate;   // ✅ lowercase d
+    if (endDate)   params.end_date    = endDate;
 
     if (Object.keys(params).length === 0) {
       setinpWarningVisi(true);
@@ -179,15 +190,13 @@ function myDonations() {
     apisearchHistory(params)
       .then((res) => {
         const activities = mapItems(res.history || []);
-        setData(activities);                        // ✅ actually updates table
+        setData(activities);
       })
       .catch((err) => {
         console.log(err);
         message.error(err.response?.data?.error);
       });
   };
-
-  const onSearch = (value) => console.log("search:", value);
 
   return (
     <div className="myDona">
@@ -197,9 +206,7 @@ function myDonations() {
         {/* ── Left panel ── */}
         <div className="leftc">
           <div className="personInfo">
-            <div>
-              <img src={user?.useravatar} alt="" />
-            </div>
+            <div><img src={user?.useravatar} alt="" /></div>
             <li>{user?.username || "Username"}</li>
             <li>{user?.useremail  || "Email"}</li>
             <li>{user?.userphone  || "Phone"}</li>
@@ -207,26 +214,16 @@ function myDonations() {
 
           <div className="donations">
             <div className="totalD" style={{ backgroundColor: "rgba(240, 220, 132, 0.49)" }}>
-              <li>
-                <img src={donate} alt="" />
-                Total Activities
-              </li>
+              <li><img src={donate} alt="" /> Total Activities</li>
               <li style={{ paddingLeft: "20px" }}>
-                &nbsp;&nbsp;
-                <span style={{ fontSize: "25px" }}>{data.length}</span>  {/* ✅ dynamic */}
-                &nbsp;
+                &nbsp;&nbsp;<span style={{ fontSize: "25px" }}>{data.length}</span>&nbsp;
               </li>
               <li style={{ paddingLeft: "6px" }}>Activities you've supported</li>
             </div>
 
             <div className="money" style={{ backgroundColor: "rgba(197, 204, 130, 0.48)" }}>
-              <li>
-                <img src={money} alt="" />
-                Total Contributions
-              </li>
-              <li style={{ fontSize: "25px", paddingLeft: "20px" }}>
-                $ {allmoney}  {/* ✅ dynamic */}
-              </li>
+              <li><img src={money} alt="" /> Total Contributions</li>
+              <li style={{ fontSize: "25px", paddingLeft: "20px" }}>$ {allmoney}</li>
               <li>Total amount you've donated</li>
             </div>
           </div>
@@ -236,70 +233,50 @@ function myDonations() {
         <div className="allInfo">
           <div className="mdHead">
             <li>
-              {/* Reset button */}
               <img
-                src={restart}
-                alt=""
-                className="restart"
+                src={restart} alt="" className="restart"
                 onClick={() => {
                   setStartDate(null);
                   setEndDate(null);
-                  setselectv(undefined);
                   setcatid(null);
+                  setselectv(undefined);
                   setinpWarningVisi(false);
                   refresh();
                 }}
               />
-
               Date:
               <ConfigProvider
-                theme={{
-                  components: {
-                    DatePicker: {
-                      colorPrimary: "#78b853",
-                      colorLink: "#78b853",
-                      activeBorderColor: "#78b853",
-                      hoverBorderColor: "#62b580",
-                      borderRadius: 4,
-                      cellHoverBg: "rgba(120, 184, 83, 0.1)",
-                    },
-                  },
-                }}
+                theme={{ components: { DatePicker: {
+                  colorPrimary: "#78b853", colorLink: "#78b853",
+                  activeBorderColor: "#78b853", hoverBorderColor: "#62b580",
+                  borderRadius: 4, cellHoverBg: "rgba(120, 184, 83, 0.1)",
+                }}}}
               >
                 <DatePicker
-                  style={{ width: "140px", height: "30px" }}
-                  variant="borderless"
+                  style={{ width: "140px", height: "30px" }} variant="borderless"
                   value={startDate ? dayjs(startDate) : null}
-                  onChange={(_, dateString) => setStartDate(dateString)}
+                  onChange={(_, ds) => setStartDate(ds)}
                 />
                 -
                 <DatePicker
-                  style={{ width: "140px", height: "30px" }}
-                  variant="borderless"
+                  style={{ width: "140px", height: "30px" }} variant="borderless"
                   value={endDate ? dayjs(endDate) : null}
-                  onChange={(_, dateString) => setEndDate(dateString)}
+                  onChange={(_, ds) => setEndDate(ds)}
                 />
               </ConfigProvider>
 
-              {/* ✅ Category dropdown — catId stored directly in option */}
               <Select
-                value={selectv}
-                allowClear
+                value={selectv} allowClear
                 showSearch={{ optionFilterProp: "label", onSearch }}
                 placeholder="Select a category"
                 onChange={(value, option) => {
                   setselectv(value);
-                  setcatid(option?.catId || null);  // ✅ no extra API call needed
+                  setcatid(option?.catId || null);
                 }}
-                options={allcat.map((opt) => ({
-                  value: opt.value,
-                  label: opt.label,
-                  catId: opt.catId,
-                }))}
+                options={allcat}
               />
 
               <button onClick={searchPro}>Search</button>
-
               {inpWarningVisi && (
                 <span className="inpWarning">Please choose something to search!</span>
               )}
@@ -309,16 +286,13 @@ function myDonations() {
           {/* Table */}
           <div className={tableClass ? "onedata" : "tableS"}>
             <Table
-              bordered="true"
-              className="only-title-line"
-              columns={columns}
-              dataSource={data}
-              rowKey="key"
+              bordered="true" className="only-title-line"
+              columns={columns} dataSource={data} rowKey="key"
               pagination={tableClass ? false : { pageSize: 6 }}
             />
           </div>
 
-          {/* See more detail card */}
+          {/* ── See More detail card ── */}
           {seeMore && (
             <div className="seemore">
               <div className="cardView">
@@ -333,6 +307,7 @@ function myDonations() {
                   X
                 </i>
 
+                {/* Title + status */}
                 <li className="first">
                   <span className="name">{singleData.title}</span>
                   <div className={getStatusClass(singleData)}>
@@ -340,50 +315,56 @@ function myDonations() {
                   </div>
                   <p>
                     <Tag
-                      classNames={classNames}
-                      styles={styles}
-                      icon={
-                        singleData.status === "active"
-                          ? <CheckCircleOutlined />
-                          : <CloseCircleOutlined />
-                      }
+                      classNames={classNames} styles={styles}
+                      icon={singleData.status === "active" ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
                     >
                       {singleData.category}
                     </Tag>
                   </p>
                 </li>
 
+                {/* Fundraiser */}
+                <p style={{ fontSize: "13px", color: "#888", marginBottom: "6px" }}>
+                  Fundraiser: <b>{singleData.creator || "—"}</b>
+                </p>
+
+                {/* Dates + amounts + progress */}
                 <li className="date">
                   <p>
-                    <span>Start date: {singleData.Start}</span>
+                    <span>Start: {singleData.Start}</span>
                     <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
-                      End date: {singleData.End}
+                      End: {singleData.End}
                     </span>
                   </p>
-                  <p style={{ width: "100%", height: "20px", display: "flex", justifyContent: "space-between" }}>
+                  <p style={{ width: "100%", display: "flex", justifyContent: "space-between", height: "20px" }}>
                     <span style={{ color: "#6bacea" }}>Target: ${singleData.TargetMoney}</span>
                     <span style={{ color: "#b3bc4b" }}>Raised: ${singleData.MoneyRaised}</span>
                   </p>
                   <Flex vertical gap="large">
                     <Progress
-                      classNames={progressClass}
-                      styles={stylesFn}
+                      classNames={progressClass} styles={stylesFn}
                       percent={percentage(singleData)}
                     />
                   </Flex>
                   <hr />
                 </li>
 
-                <span style={{ marginBottom: "10px" }}>{singleData.description}</span>
+                {/* Description */}
+                {singleData.description && (
+                  <p style={{ marginBottom: "12px", color: "#555", lineHeight: "1.5" }}>
+                    {singleData.description}
+                  </p>
+                )}
 
+                {/* My donation info */}
                 <li className="myD">
                   <span>
                     <img src={money} alt="" style={{ width: "30px", marginRight: "20px" }} />
-                    My Contribution: &nbsp;${singleData.amount}
+                    My Contribution: &nbsp;<b>${singleData.amount}</b>
                   </span>
                   <span>
                     <img src={date} alt="" style={{ width: "30px", marginRight: "10px" }} />
-                    Donation Date: &nbsp;{singleData.donated_at}
+                    Donation Date: &nbsp;<b>{singleData.donated_at}</b>
                   </span>
                 </li>
               </div>
