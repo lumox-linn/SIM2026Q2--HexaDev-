@@ -19,21 +19,21 @@
   color: #7c6256;
 }
 
-.mc .pmhead li {
+.mc .pmhead .sear {
   margin-top: 40px;
   width: 100%;
   height: 40px;
   position: relative;
 }
 
-.mc .pmhead li .inpWarning {
+.mc .pmhead .sear .inpWarning {
   position: absolute;
   bottom: -15px;
   color: red;
   left: 0;
 }
 
-.mc .pmhead li input {
+.mc .pmhead .sear input {
   width: 200px;
   height: 30px;
   border: 1px solid #81b9cf;
@@ -41,11 +41,11 @@
   padding-left: 10px;
 }
 
-.mc .pmhead li input::placeholder {
+.mc .pmhead .sear input::placeholder {
   color: #1c5066;
 }
 
-.mc .pmhead li button {
+.mc .pmhead .sear button {
   width: 70px;
   height: 30px;
   margin: 0 10px;
@@ -55,12 +55,12 @@
   border-radius: 20px;
 }
 
-.mc .pmhead li button:hover {
+.mc .pmhead .sear button:hover {
   cursor: pointer;
   background-color: #3690b6;
 }
 
-.mc .pmhead li .creaPro {
+.mc .pmhead .sear .creaPro {
   width: auto;
   position: absolute;
   padding: 0 5px;

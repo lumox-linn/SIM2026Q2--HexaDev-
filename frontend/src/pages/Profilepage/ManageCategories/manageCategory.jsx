@@ -199,7 +199,7 @@ function ManageCategory() {
     <div className="mc">
       <div className="pmhead">
         <span className="title">Category management</span>
-        <li>
+        <li className="sear">
           <input
             type="text"
             placeholder="Search category..."
