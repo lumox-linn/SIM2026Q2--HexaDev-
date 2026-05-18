@@ -314,7 +314,7 @@ function Favorites() {
                         </Tag>
                       </p>
                     ) : null}
-                    
+
                   </li>
                   {item.activity_id === viewActivity.actId ? (
                     <li className="date">
@@ -376,7 +376,17 @@ function Favorites() {
                       >
                         View
                       </button>
+
+
+
+
                     )}
+                    <button
+                      onClick={() => removeac(item)}
+                      style={{ backgroundColor: "#e5a2a2", color: "white", border: "none" }}
+                    >
+                      Remove
+                    </button>
 
                     {/* <Modal
                       title="Remove confirmation"
