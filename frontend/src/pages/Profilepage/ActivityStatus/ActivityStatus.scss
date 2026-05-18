@@ -59,6 +59,15 @@
           background-color: rgb(54, 144, 182);
         }
       }
+      .restart {
+        width: 30px;
+        margin-left: 10px;
+        transition: transform 0.3s ease-in-out;
+        &:hover {
+          transform: rotate(-90deg);
+          cursor: pointer;
+        }
+      }
       .creaPro {
         width: auto;
         position: absolute;

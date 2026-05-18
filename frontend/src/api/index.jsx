@@ -104,6 +104,13 @@ export function apiGetAllActivities(params) {
   return newRequest({ url: "/api/activities/", method: "get", params: params });
 }
 
+export function apiGetActivities(params) {
+  return newRequest({
+    url: "/api/activities/all",
+    method: "get",
+    params: params,
+  });
+}
 export function apiCreateActivities(data) {
   return newRequest({ url: "/api/activities/", method: "post", data: data });
 }
@@ -195,5 +202,14 @@ export function apiGetAllFavorites(params, token) {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  });
+}
+
+export function apiSearchAcHis(params) {
+  console.log(params);
+  return newRequest({
+    url: `/api/history/fr/search`,
+    method: "get",
+    params: params,
   });
 }

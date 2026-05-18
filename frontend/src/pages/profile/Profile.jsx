@@ -35,7 +35,10 @@ function Profile() {
         { to: "ManageProfile", label: "Profile Management" },
       ]);
     } else if (userdata.role === "platform_manager") {
-      setlink([{ to: "ManageCategory", label: "Category Management" }]);
+      setlink([
+        { to: "Report", label: "Report" },
+        { to: "ManageCategory", label: "Category Management" },
+      ]);
     } else if (userdata.role === "donee") {
       setlink([{ to: "MyDonations", label: "My Donations" }]);
     } else if (userdata.role === "fund_raiser") {

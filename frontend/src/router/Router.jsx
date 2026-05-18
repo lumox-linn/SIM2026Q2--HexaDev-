@@ -6,9 +6,7 @@ const Profile = lazy(() => import("../pages/profile/Profile"));
 const Donate = lazy(() => import("../pages/navigationbar/Donate/Donate"));
 const About = lazy(() => import("../pages/about/About"));
 const Activities = lazy(() => import("../pages/Activities/activities"));
-const Personalinfo = lazy(
-  () => import("../pages/Profilepage/personalinfo/personalinfo"),
-);
+const Report = lazy(() => import("../pages/Profilepage/personalinfo/Report"));
 const Fundraise = lazy(
   () => import("../pages/navigationbar/Fondraise/Fundraise"),
 );
@@ -60,15 +58,9 @@ const Router = [
     element: <Profile />,
     children: [
       {
-        index: true,
-        stuff: {},
-        element: <DefaultPage />,
-      },
-
-      {
-        path: "personalinfo",
-        stuff: { title: "UserPersonal Info" },
-        element: <Personalinfo />,
+        path: "Report",
+        stuff: { title: "Report" },
+        element: <Report />,
       },
       {
         path: "ManageProfile",

@@ -17,6 +17,7 @@ function ManageCategory() {
   const [inpValue, setinpvalue] = useState("");
   const [creaVisi, setcreaVisi] = useState(false);
   const [buttype, setbuttype] = useState("");
+
   const { TextArea } = Input;
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -60,6 +60,17 @@
   background-color: #3690b6;
 }
 
+.mc .pmhead li .restart {
+  width: 30px;
+  margin-left: 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.mc .pmhead li .restart:hover {
+  transform: rotate(-90deg);
+  cursor: pointer;
+}
+
 .mc .pmhead li .creaPro {
   width: auto;
   position: absolute;

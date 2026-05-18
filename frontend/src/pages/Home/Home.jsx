@@ -29,7 +29,6 @@ function Home(props) {
       const savedData = localStorage.getItem("userData");
       setUser(savedData ? JSON.parse(savedData) : null);
     };
-    console.log(user);
 
     updateUserFromStorage();
     window.addEventListener("storage", updateUserFromStorage);
@@ -48,7 +47,6 @@ function Home(props) {
 
   return (
     <div className="home">
-      {console.log(user)}
       <Testheader
         Router={props.Router}
         user={user}

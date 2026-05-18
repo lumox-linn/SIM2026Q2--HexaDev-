@@ -2,17 +2,21 @@ import "./ActivityStatus.css";
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import eye from "../../../assets/eye.svg";
+import iconheart from "../../../assets/iconheart.svg";
 import {
   apiGetAllActivities,
   apiCreateActivities,
   apiEditActivities,
   apiSuspendActivities,
+  apiSearchAcHis,
 } from "../../../api";
 import { createStaticStyles } from "antd-style";
-
+import restart from "../../../assets/restart.svg";
 import {
   Button,
   Checkbox,
+  ConfigProvider,
   Form,
   Input,
   message,
@@ -26,6 +30,7 @@ import {
 } from "antd";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 function ActivityStatus() {
+  const [startDate, setStartDate] = useState(null);
   const location = useLocation();
   const [activityData, setactivityData] = useState([]);
   const userdata = location.state?.userdata || {};
@@ -33,6 +38,8 @@ function ActivityStatus() {
   const userId = localStorage.getItem("userData")
     ? JSON.parse(localStorage.getItem("userData")).userid
     : null;
+  const [allcat, setallcat] = useState([]);
+  const [selectv, setselectv] = useState(null);
   const [inpValue, setinpvalue] = useState("");
   const [creaVisi, setcreaVisi] = useState(false);
   const [buttype, setbuttype] = useState("");
@@ -45,7 +52,7 @@ function ActivityStatus() {
     viewstatus: false,
     actId: null,
   });
-
+  const [catid, setcatid] = useState(0);
   // const [cat, setcat] = useState(null);
   const [allcategories, setallCategories] = useState([
     { category: "Animal", catId: 2 },
@@ -54,6 +61,7 @@ function ActivityStatus() {
     { category: "Health", catId: 4 },
     { category: "School", catId: 1 },
   ]);
+
   const [targetNumber, settargetNumber] = useState(false);
   const percentage = (item) => {
     const raised = parseFloat(item.amount_raised) || 0;
@@ -144,7 +152,19 @@ function ActivityStatus() {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-
+  const onChange = (value) => {
+    console.log(value);
+    if (value) {
+      // const newdata = activityData.find((item) => item.category == value);
+      // console.log(newdata);
+      // setactivityData([newdata]);
+    } else {
+      // refresh();
+    }
+  };
+  const onSearch = (value) => {
+    console.log("search:", value);
+  };
   const refresh = () => {
     console.log(userId);
     try {
@@ -166,18 +186,35 @@ function ActivityStatus() {
               start_date: item.start_date,
               // start_date: item.start_date.split(" ").slice(0, 4).join(" "),
               end_date: item.end_date,
+              view_count: item.view_count,
+
+              shortlist_count: item.shortlist_count,
+
               // end_date: item.end_date.split(" ").slice(0, 4).join(" "),
             }));
             setactivityData(activities);
+
+            const uniqueCategoryNamess = [
+              ...new Set(
+                activities.map((item) => item.category_name).filter(Boolean),
+              ),
+            ];
+
+            const selectOptions = uniqueCategoryNamess.map((name) => ({
+              value: name,
+              label: name,
+            }));
+            setallcat(selectOptions);
+            console.log(selectOptions);
           }
         })
         .catch((err) => {
           console.log(err);
-          // message.error(err.response?.data?.error);
+          message.error(err.response?.data?.error);
         });
     } catch (error) {
       console.log(error);
-      // message.error(error.response?.data?.error);
+      message.error(error.response?.data?.error);
     }
   };
   const viewAct = (item) => {
@@ -202,7 +239,7 @@ function ActivityStatus() {
   useEffect(() => {
     refresh();
   }, []);
-
+  const [endDate, setEndDate] = useState(null);
   const searchPro = () => {
     // if the input has value
     if (inpValue !== "") {
@@ -240,6 +277,26 @@ function ActivityStatus() {
     } else {
       // if the input value is empty
       setinpWarningVisi(true);
+    }
+    if (selectv || (startDate && endDate)) {
+      setinpWarningVisi(false);
+      try {
+        apiSearchAcHis(
+          selectv
+            ? { category_id: catid }
+            : { start_date: startDate, end_Date: endDate },
+        )
+          .then((res) => {
+            console.log(res);
+          })
+          .catch((err) => {
+            console.log(err);
+            message.error(err.response?.data?.error);
+          });
+      } catch (error) {
+        console.log(error);
+        message.error(error.response?.data?.error);
+      }
     }
   };
 
@@ -287,10 +344,11 @@ function ActivityStatus() {
           .catch((err) => message.error(err.response?.data?.error));
       } else if (buttype === "edit") {
         console.log("edit");
+        console.log(cat);
         apiEditActivities(Number(editValue.activity_id), {
           title: values.title,
           description: values.description,
-          category_id: cat.catId,
+          category_id: cat ? cat.catId : null,
           created_by: userId,
           amount_raised: values.amount_raised,
           target_amount: values.target_amount,
@@ -329,21 +387,22 @@ function ActivityStatus() {
   const editPro = (item) => {
     document.querySelector(".pmhead")?.scrollIntoView({ behavior: "smooth" });
     setbuttype("edit");
+    console.log(item);
     setEditValue(item);
     setViewActivity({ actId: null, viewstatus: false });
-
+    console.log(allcategories);
     const found = allcategories.find(
-      (i) => i.category.toLowerCase() === item.category_name.toLowerCase(),
+      (i) => i.category?.toLowerCase() === item.category_name?.toLowerCase(),
     );
 
     // console.log(item);
     setcreaVisi(true);
-    console.log(allcategories);
+    console.log(found);
     setTimeout(() => {
       form.setFieldsValue({
         title: item.title,
         description: item.description,
-        category_id: found.category,
+        category_id: found?.category || null,
         created_by: item.creator,
         target_amount: item.target_amount,
         start_date: item.start_date ? dayjs(item.start_date) : null,
@@ -361,8 +420,9 @@ function ActivityStatus() {
             type="text"
             placeholder="Search Activities..."
             onChange={(e) => searchActivities(e)}
+            disabled={selectv !== null || startDate !== null ? true : false}
           />
-          <button onClick={searchPro}>Search</button>
+
           {inpWarningVisi ? (
             <span className="inpWarning">
               Please enter a activity to search
@@ -370,6 +430,87 @@ function ActivityStatus() {
           ) : (
             ""
           )}
+          <span style={{ fontSize: "14px", marginLeft: "10px" }}>
+            Fundraising history:
+          </span>
+          <ConfigProvider
+            theme={{
+              components: {
+                DatePicker: {
+                  colorPrimary: "#78b853",
+                  colorLink: "#78b853",
+                  activeBorderColor: "#78b853",
+                  hoverBorderColor: "#62b580",
+                  borderRadius: 4,
+                  cellHoverBg: "rgba(120, 184, 83, 0.1)",
+                },
+              },
+            }}
+          >
+            <DatePicker
+              style={{ width: "140px", height: "30px" }}
+              variant="borderless"
+              onChange={(date, dateString) => {
+                setStartDate(dateString);
+              }}
+              value={startDate ? dayjs(startDate) : null}
+            />
+            -
+            <DatePicker
+              style={{ width: "140px", height: "30px" }}
+              variant="borderless"
+              onChange={(date, dateString) => {
+                setEndDate(dateString);
+              }}
+              value={endDate ? dayjs(endDate) : null}
+            />
+          </ConfigProvider>
+
+          <Select
+            value={selectv}
+            allowClear
+            showSearch={{ optionFilterProp: "label", onSearch }}
+            placeholder="Select a category"
+            onChange={(value) => {
+              // const uniqueCategoryNamess = [
+              //   ...new Set(data.map((item) => item.category)),
+              // ];
+              setselectv(value);
+              apiGetAllActivities({ user_id: userId })
+                .then((res) => {
+                  console.log(res);
+
+                  if (value !== null) {
+                    const selectOptions = res.activities.find((item) => {
+                      return item.category_name == value;
+                    });
+                    console.log(selectOptions);
+
+                    setcatid(selectOptions.category_id);
+                  }
+                })
+                .catch((err) => {
+                  console.log(err);
+                  // message.error(err.response?.data?.error);
+                });
+            }}
+            options={allcat}
+          />
+          <img
+            src={restart}
+            alt=""
+            className="restart"
+            style={{ width: "20px" }}
+            onClick={() => {
+              setStartDate(null);
+
+              setselectv(undefined);
+              setinpWarningVisi(false);
+              refresh();
+            }}
+          />
+          <button onClick={searchPro}>Search</button>
+
           <button
             className="creaPro"
             onClick={() => {
@@ -536,6 +677,30 @@ function ActivityStatus() {
                       </Tag>
                     </p>
                   ) : null}
+                  <span
+                    style={{
+                      position: "absolute",
+                      right: "70px",
+                      display: "flex",
+                      flexDirection: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <img src={iconheart} alt="" style={{ width: "20px" }} />
+                    {item.shortlist_count}
+                  </span>
+                  <span
+                    style={{
+                      position: "absolute",
+                      right: "20px",
+                      display: "flex",
+                      flexDirection: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <img src={eye} alt="" style={{ width: "20px" }} />
+                    {item.view_count}
+                  </span>
                 </li>
                 {item.activity_id === viewActivity.actId ? (
                   <li className="date">

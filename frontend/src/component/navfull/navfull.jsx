@@ -6,16 +6,22 @@ function Navfull({
 
   className,
 }) {
+  const location = useLocation();
+  const userdata = location.state?.userdata || {};
+  console.log(userdata);
   return (
     <div className={`navfull ${className || ""}`}>
       <ul>
-        <li onClick={() => onLinkClick("search")} style={{ cursor: "pointer" }}>
+        11
+        {/* <li onClick={() => onLinkClick("search")} style={{ cursor: "pointer" }}>
           Search
-        </li>
-        <li>
-          <a href="/activities">Activities</a>
-        </li>
-
+        </li> */}
+        {console.log(userdata)}
+        {userdata.role == "donee" ? (
+          <li>
+            <a href="/activities">Activities</a>
+          </li>
+        ) : null}
         {/* {RouterConfig.filter((item) => item.nav?.title).map((item, idx) => (
           <li key={idx}>
             <a href={item.path}>{item.nav.title}</a>
