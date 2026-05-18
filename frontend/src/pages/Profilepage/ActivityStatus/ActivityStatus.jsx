@@ -244,8 +244,11 @@ function ActivityStatus() {
   useEffect(() => {
     refresh();
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
+=======
+>>>>>>> parent of eaa3a226 (Update ActivityStatus.jsx)
     apiGetAllCategories()
       .then((res) => {
         if (res.categories) {
@@ -258,6 +261,9 @@ function ActivityStatus() {
           setallCategories(cats);
         }
       })
+<<<<<<< HEAD
+>>>>>>> parent of eaa3a226 (Update ActivityStatus.jsx)
+=======
 >>>>>>> parent of eaa3a226 (Update ActivityStatus.jsx)
     apiBrowseCategories()
       .then((res) => {
