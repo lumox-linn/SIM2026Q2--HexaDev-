@@ -615,7 +615,7 @@ function ActivityStatus() {
 
               <li className="butStyle" style={{ position: "absolute", bottom: "13px", zIndex: 10, left: "19px" }}>
                 <button onClick={() => editPro(item)}>Edit</button>
-                <button onClick={() => showModal(item)}>Delete</button>
+                <button onClick={() => showModal(item)}>Suspend</button>
 
                 {viewActivity.actId !== item.activity_id && (
                   <button
@@ -629,16 +629,16 @@ function ActivityStatus() {
                 )}
 
                 <Modal
-                  title="Deletion Confirmation"
+                  title="Suspension Confirmation"
                   open={isModalOpen}
                   onOk={handleOk}
                   onCancel={handleCancel}
-                  okText="Delete"
+                  okText="Suspend"
                   okType="danger"
                   className="modall"
                 >
                   <p>
-                    Are you sure you want to delete <b>{selectedActivities?.title}</b>?
+                    Are you sure you want to suspend <b>{selectedActivities?.title}</b>?
                   </p>
                 </Modal>
               </li>
