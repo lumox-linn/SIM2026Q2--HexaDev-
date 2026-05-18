@@ -25,6 +25,7 @@ import {
   message,
   Modal,
   Select,
+  Descriptions,
 } from "antd";
 
 function ManageAccount() {
@@ -43,6 +44,16 @@ function ManageAccount() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [updateValue, setupdateValue] = useState({});
 
+  const [updateValue, setupdateValue] = useState({});
+
+
+  const [viewUser, setViewUser] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+  const viewAccount = (record) => {
+    setViewUser(record);
+    setIsViewModalOpen(true);
+  };
   const uploadButton = (
     <button style={{ border: 0, background: "none" }} type="button">
       {loading ? <LoadingOutlined /> : <PlusOutlined />}
@@ -110,6 +121,9 @@ function ManageAccount() {
       key: "action",
       render: (_, record) => (
         <Space size="medium">
+          <a onClick={() => viewAccount(record)} style={{ color: "#1890ff" }}>
+            View
+          </a>
           <a
             onClick={() => {
               setshowcrea(true);
@@ -558,6 +572,36 @@ function ManageAccount() {
         <p>
           Are you sure you want to suspend <b>{selectedUser?.username}</b>?
         </p>
+      </Modal>
+
+      <Modal
+        title="Account Details"
+        open={isViewModalOpen}
+        onCancel={() => setIsViewModalOpen(false)}
+        footer={[
+          <Button key="close" onClick={() => setIsViewModalOpen(false)}>Close</Button>
+        ]}
+      >
+        {viewUser && (
+          <Descriptions bordered column={1} size="small">
+            <Descriptions.Item label="User ID">{viewUser.user_id}</Descriptions.Item>
+            <Descriptions.Item label="Username">{viewUser.username}</Descriptions.Item>
+            <Descriptions.Item label="Role">{viewUser.role}</Descriptions.Item>
+            <Descriptions.Item label="Email">{viewUser.email || "—"}</Descriptions.Item>
+            <Descriptions.Item label="Phone">{viewUser.phone || "—"}</Descriptions.Item>
+            <Descriptions.Item label="Date of Birth">{viewUser.dob || "—"}</Descriptions.Item>
+            <Descriptions.Item label="Login Status">
+              <Tag color={viewUser.status === "online" ? "blue" : "default"}>
+                {String(viewUser.status || "offline").toUpperCase()}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Account Access">
+              <Tag color={viewUser.access === "active" ? "green" : "red"}>
+                {String(viewUser.access || "active").toUpperCase()}
+              </Tag>
+            </Descriptions.Item>
+          </Descriptions>
+        )}
       </Modal>
     </div>
   );

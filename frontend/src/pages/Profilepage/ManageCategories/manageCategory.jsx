@@ -320,8 +320,10 @@ function ManageCategory() {
               <span>{item.description}</span>
 
               <li>
+                <button onClick={() => viewPro(item)}>View</button>
                 <button onClick={() => editPro(item)}>Edit</button>
                 <button onClick={() => showModal(item)}>Delete</button>
+                
 
                 {/* {item.status === "active" ? (
                   <button onClick={() => showModal(item)}>Suspend</button>
@@ -345,6 +347,28 @@ function ManageCategory() {
                     Are you sure you want to delete the category
                     <b> {selectedCategory?.name}?</b>
                   </p>
+                </Modal>
+
+                <Modal
+                  title="Category Details"
+                  open={isViewModalOpen}
+                  onCancel={() => setIsViewModalOpen(false)}
+                  footer={[
+                    <Button key="close" onClick={() => setIsViewModalOpen(false)}>Close</Button>
+                  ]}
+                >
+                  {viewCategory && (
+                    <Descriptions bordered column={1} size="small">
+                      <Descriptions.Item label="Category ID">{viewCategory.id}</Descriptions.Item>
+                      <Descriptions.Item label="Category Name">{viewCategory.name}</Descriptions.Item>
+                      <Descriptions.Item label="Status">
+                        <Tag color={viewCategory.status === "active" ? "green" : "red"}>
+                          {viewCategory.status?.toUpperCase()}
+                        </Tag>
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Description">{viewCategory.description || "—"}</Descriptions.Item>
+                    </Descriptions>
+                  )}
                 </Modal>
               </li>
             </div>
