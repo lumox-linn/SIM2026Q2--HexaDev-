@@ -20,17 +20,17 @@ import {
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
 function ActivityStatus() {
-  const location  = useLocation();
-  const userId    = localStorage.getItem("userData")
+  const location = useLocation();
+  const userId = localStorage.getItem("userData")
     ? JSON.parse(localStorage.getItem("userData")).userid
     : null;
 
-  const [activityData, setactivityData]   = useState([]);
+  const [activityData, setactivityData] = useState([]);
   const [allActivities, setAllActivities] = useState([]); // ✅ full list for filter reset
-  const [allcat, setallcat]               = useState([]);
-  const [inpValue, setinpvalue]           = useState("");
+  const [allcat, setallcat] = useState([]);
+  const [inpValue, setinpvalue] = useState("");
   const [inpWarningVisi, setinpWarningVisi] = useState(false);
-  const [viewActivity, setViewActivity]   = useState({ viewstatus: false, actId: null });
+  const [viewActivity, setViewActivity] = useState({ viewstatus: false, actId: null });
 
   // ── Helpers ───────────────────────────────────────────────
   const getStatusClass = (item) =>
@@ -81,18 +81,18 @@ function ActivityStatus() {
   // ── Map backend items ─────────────────────────────────────
   const mapActivities = (list) =>
     list.map((item) => ({
-      activity_id:   item.activity_id,
-      title:         item.title,
-      description:   item.description,
+      activity_id: item.activity_id,
+      title: item.title,
+      description: item.description,
       amount_raised: item.amount_raised,
-      category:      item.category_name,
+      category: item.category_name,
       category_name: item.category_name,
-      status:        item.status,
-      created_at:    item.created_at?.split(" ").slice(0, 4).join(" "),
-      creator:       item.creator,
+      status: item.status,
+      created_at: item.created_at?.split(" ").slice(0, 4).join(" "),
+      creator: item.creator,
       target_amount: item.target_amount,
-      start_date:    item.start_date?.split(" ").slice(0, 4).join(" "),
-      end_date:      item.end_date?.split(" ").slice(0, 4).join(" "),
+      start_date: item.start_date?.split(" ").slice(0, 4).join(" "),
+      end_date: item.end_date?.split(" ").slice(0, 4).join(" "),
     }));
 
   // ── Refresh ───────────────────────────────────────────────
@@ -264,7 +264,7 @@ function ActivityStatus() {
               <span style={{ marginBottom: "45px" }}>{item.description}</span>
 
               <li className="butStyle" style={{ position: "absolute", bottom: "13px", zIndex: 10, left: "19px" }}>
-                <button className="donate">
+                <button onClick={() => message.success("Thank you for your donation! 🎉")} className="donate">
                   <img src={heart} alt="" className="heart" />
                   Donate
                 </button>
@@ -272,6 +272,10 @@ function ActivityStatus() {
                 {viewActivity.actId !== item.activity_id && (
                   <button onClick={() => viewAct(item)}>View</button>
                 )}
+
+                <button onClick={() => removeac(item)} className="remove">
+                  Remove
+                </button>
               </li>
             </div>
           ))}

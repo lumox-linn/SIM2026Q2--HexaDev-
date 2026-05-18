@@ -314,9 +314,7 @@ function Favorites() {
                         </Tag>
                       </p>
                     ) : null}
-                    <button onClick={() => removeac(item)} className="remove">
-                      Remove
-                    </button>
+                    
                   </li>
                   {item.activity_id === viewActivity.actId ? (
                     <li className="date">
@@ -368,7 +366,7 @@ function Favorites() {
                       left: "19px",
                     }}
                   >
-                    <button>Donate</button>
+                    <button onClick={() => message.success("Thank you for your donation! 🎉")}>Donate</button>
 
                     {viewActivity.actId == item.activity_id ? null : (
                       <button
