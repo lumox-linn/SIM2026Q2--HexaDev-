@@ -242,7 +242,7 @@ function ActivityStatus() {
 
   useEffect(() => {
     refresh();
-
+   
     apiBrowseCategories()
       .then((res) => {
         if (res.categories) {
@@ -252,354 +252,357 @@ function ActivityStatus() {
           setallCategories(cats);
         }
       })
-      .catch((err) => console.log(err));
-  }, []);
-  const [endDate, setEndDate] = useState(null);
-  const searchPro = () => {
-    // if the input has value
-    if (inpValue !== "") {
-      console.log(inpValue);
-      try {
-        apiGetAllActivities({ query: inpValue })
-          .then((res) => {
-            console.log(res);
-            if (res.categories) {
-              const cats = res.categories
-                .filter(c => c.status === 'active')
-                .map(c => ({
-                  category: c.category_name,
-                  catId: c.category_id,
-                }));
-              setallCategories(cats);
-            }
-            if (res.activities) {
-              const activities = res.activities.map((item) => ({
-                activity_id: item.activity_id,
-                title: item.title,
-                description: item.description,
-                amount_raised: item.amount_raised,
-                category: item.category_name,
-                status: item.status,
-                created_at: item.created_at.split(" ").slice(0, 4).join(" "),
-                creator: item.creator,
-                target_amount: item.target_amount,
-                category_name: item.category_name,
-                start_date: item.start_date,
-                // start_date: item.start_date.split(" ").slice(0, 4).join(" "),
-                end_date: item.end_date,
-              }));
-              setactivityData(activities);
-            }
-          })
-          .catch((err) => {
-            setactivityData([]);
-            message.error(err.response?.data?.error);
-          });
-      } catch (error) {
-        message.error(error.response?.data?.error);
-      }
-    } else {
-      // if the input value is empty
-      setinpWarningVisi(true);
-    }
-    if (selectv || (startDate && endDate)) {
-      setinpWarningVisi(false);
-      try {
-        apiSearchAcHis(params)
-          .then((res) => {
-            console.log(res);
-            if (res.activities) {
-              const activities = res.activities.map((item) => ({
-                activity_id: item.activity_id,
-                title: item.title,
-                description: item.description,
-                amount_raised: item.amount_raised,
-                category: item.category_name,
-                status: item.status,
-                created_at: item.created_at?.split(" ").slice(0, 4).join(" "),
-                creator: item.creator,
-                target_amount: item.target_amount,
-                category_name: item.category_name,
-                start_date: item.start_date,
-                end_date: item.end_date,
-              }));
-              setactivityData(activities);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            message.error(err.response?.data?.error);
-          });
-      } catch (error) {
-        console.log(error);
-        message.error(error.response?.data?.error);
-      }
-    }
-  };
-
-  const getStatusClass = (item) => {
-    if (item.status === "suspended") return "disabled";
-    return "active";
-  };
-
-  const onFinish = (values) => {
-    // const pp = allcategories.find(
-    //   (item) => item.category == values.category_id,
-    // );
-    // console.log(pp);
-    const cat = allcategories.find(
-      (item) => item.category == values.category_id,
-    );
-    console.log(values);
+      .catch ((err) => console.log(err));
+}, []);
+const [endDate, setEndDate] = useState(null);
+const searchPro = () => {
+  // if the input has value
+  if (inpValue !== "") {
+    console.log(inpValue);
     try {
-      if (buttype === "create") {
-        console.log(values);
-        apiCreateActivities({
-          title: values.title,
-          description: values.description,
-          category_id: cat.catId,
-          created_by: userId,
-          target_amount: values.target_amount,
-          start_date: values.start_date
-            ? values.start_date.format("YYYY-MM-DD")
-            : null,
-          end_date: values.end_date
-            ? values.end_date.format("YYYY-MM-DD")
-            : null,
+      apiGetAllActivities({ query: inpValue })
+        .then((res) => {
+          console.log(res);
+          if (res.categories) {
+            const cats = res.categories
+              .filter(c => c.status === 'active')
+              .map(c => ({
+                category: c.category_name,
+                catId: c.category_id,
+              }));
+            setallCategories(cats);
+          }
+          if (res.activities) {
+            const activities = res.activities.map((item) => ({
+              activity_id: item.activity_id,
+              title: item.title,
+              description: item.description,
+              amount_raised: item.amount_raised,
+              category: item.category_name,
+              status: item.status,
+              created_at: item.created_at.split(" ").slice(0, 4).join(" "),
+              creator: item.creator,
+              target_amount: item.target_amount,
+              category_name: item.category_name,
+              start_date: item.start_date,
+              // start_date: item.start_date.split(" ").slice(0, 4).join(" "),
+              end_date: item.end_date,
+            }));
+            setactivityData(activities);
+          }
         })
-          .then((res) => {
-            console.log(res);
-            if (res.status === "success") {
-              message.success(res.message);
-              setcreaVisi(false);
-              form.resetFields();
-              refresh();
-            } else {
-              message.error(res.error || res.message);
-            }
-          })
-          .catch((err) => message.error(err.response?.data?.error));
-      } else if (buttype === "edit") {
-        console.log("edit");
-        console.log(cat);
-        apiEditActivities(Number(editValue.activity_id), {
-          title: values.title,
-          description: values.description,
-          category_id: cat ? cat.catId : null,
-          created_by: userId,
-          amount_raised: values.amount_raised,
-          target_amount: values.target_amount,
-          start_date: values.start_date
-            ? values.start_date.format("YYYY-MM-DD")
-            : null,
-          end_date: values.end_date
-            ? values.end_date.format("YYYY-MM-DD")
-            : null,
-        })
-          .then((res) => {
-            console.log(res);
-            if (res.status === "success") {
-              message.success(res.message);
-              setcreaVisi(false);
-              form.resetFields();
-              refresh();
-            } else {
-              message.error(res.error || res.message);
-            }
-          })
-          .catch((err) => {
-            message.error(err.response?.data?.error);
-          });
-      }
+        .catch((err) => {
+          setactivityData([]);
+          message.error(err.response?.data?.error);
+        });
     } catch (error) {
       message.error(error.response?.data?.error);
-      console.log(error);
     }
-  };
+  } else {
+    // if the input value is empty
+    setinpWarningVisi(true);
+  }
+  if (selectv || (startDate && endDate)) {
+    setinpWarningVisi(false);
+    try {
+      apiSearchAcHis(
+        selectv
+          ? { category_id: catid }
+          : { start_date: startDate, end_Date: endDate },
+      )
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+          message.error(err.response?.data?.error);
+        });
+    } catch (error) {
+      console.log(error);
+      message.error(error.response?.data?.error);
+    }
+  }
+};
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
+const getStatusClass = (item) => {
+  if (item.status === "suspended") return "disabled";
+  return "active";
+};
 
-  const editPro = (item) => {
-    document.querySelector(".pmhead")?.scrollIntoView({ behavior: "smooth" });
-    setbuttype("edit");
-    console.log(item);
-    setEditValue(item);
-    setViewActivity({ actId: null, viewstatus: false });
-    console.log(allcategories);
-    const found = allcategories.find(
-      (i) => i.category?.toLowerCase() === item.category_name?.toLowerCase(),
-    );
+const onFinish = (values) => {
+  // const pp = allcategories.find(
+  //   (item) => item.category == values.category_id,
+  // );
+  // console.log(pp);
+  const cat = allcategories.find(
+    (item) => item.category == values.category_id,
+  );
+  console.log(values);
+  try {
+    if (buttype === "create") {
+      console.log(values);
+      apiCreateActivities({
+        title: values.title,
+        description: values.description,
+        category_id: cat.catId,
+        created_by: userId,
+        target_amount: values.target_amount,
+        start_date: values.start_date
+          ? values.start_date.format("YYYY-MM-DD")
+          : null,
+        end_date: values.end_date
+          ? values.end_date.format("YYYY-MM-DD")
+          : null,
+      })
+        .then((res) => {
+          console.log(res);
+          if (res.status === "success") {
+            message.success(res.message);
+            setcreaVisi(false);
+            form.resetFields();
+            refresh();
+          } else {
+            message.error(res.error || res.message);
+          }
+        })
+        .catch((err) => message.error(err.response?.data?.error));
+    } else if (buttype === "edit") {
+      console.log("edit");
+      console.log(cat);
+      apiEditActivities(Number(editValue.activity_id), {
+        title: values.title,
+        description: values.description,
+        category_id: cat ? cat.catId : null,
+        created_by: userId,
+        amount_raised: values.amount_raised,
+        target_amount: values.target_amount,
+        start_date: values.start_date
+          ? values.start_date.format("YYYY-MM-DD")
+          : null,
+        end_date: values.end_date
+          ? values.end_date.format("YYYY-MM-DD")
+          : null,
+      })
+        .then((res) => {
+          console.log(res);
+          if (res.status === "success") {
+            message.success(res.message);
+            setcreaVisi(false);
+            form.resetFields();
+            refresh();
+          } else {
+            message.error(res.error || res.message);
+          }
+        })
+        .catch((err) => {
+          message.error(err.response?.data?.error);
+        });
+    }
+  } catch (error) {
+    message.error(error.response?.data?.error);
+    console.log(error);
+  }
+};
 
-    // console.log(item);
-    setcreaVisi(true);
-    console.log(found);
-    setTimeout(() => {
-      form.setFieldsValue({
-        title: item.title,
-        description: item.description,
-        category_id: found?.category || null,
-        created_by: item.creator,
-        target_amount: item.target_amount,
-        start_date: item.start_date ? dayjs(item.start_date) : null,
-        amount_raised: item.amount_raised,
-        end_date: item.end_date ? dayjs(item.end_date) : null,
-      });
-    }, 100);
-  };
-  return (
-    <div className="mc">
-      <div className="pmhead">
-        <span className="title">Activity management</span>
-        <li>
-          <input
-            type="text"
-            placeholder="Search Activities..."
-            onChange={(e) => searchActivities(e)}
-            disabled={selectv !== null || startDate !== null ? true : false}
-          />
+const onFinishFailed = (errorInfo) => {
+  console.log("Failed:", errorInfo);
+};
 
-          {inpWarningVisi ? (
-            <span className="inpWarning">
-              Please enter a activity to search
-            </span>
-          ) : (
-            ""
-          )}
-          <span style={{ fontSize: "14px", marginLeft: "10px" }}>
-            Fundraising history:
+const editPro = (item) => {
+  document.querySelector(".pmhead")?.scrollIntoView({ behavior: "smooth" });
+  setbuttype("edit");
+  console.log(item);
+  setEditValue(item);
+  setViewActivity({ actId: null, viewstatus: false });
+  console.log(allcategories);
+  const found = allcategories.find(
+    (i) => i.category?.toLowerCase() === item.category_name?.toLowerCase(),
+  );
+
+  // console.log(item);
+  setcreaVisi(true);
+  console.log(found);
+  setTimeout(() => {
+    form.setFieldsValue({
+      title: item.title,
+      description: item.description,
+      category_id: found?.category || null,
+      created_by: item.creator,
+      target_amount: item.target_amount,
+      start_date: item.start_date ? dayjs(item.start_date) : null,
+      amount_raised: item.amount_raised,
+      end_date: item.end_date ? dayjs(item.end_date) : null,
+    });
+  }, 100);
+};
+return (
+  <div className="mc">
+    <div className="pmhead">
+      <span className="title">Activity management</span>
+      <li>
+        <input
+          type="text"
+          placeholder="Search Activities..."
+          onChange={(e) => searchActivities(e)}
+          disabled={selectv !== null || startDate !== null ? true : false}
+        />
+
+        {inpWarningVisi ? (
+          <span className="inpWarning">
+            Please enter a activity to search
           </span>
-          <ConfigProvider
-            theme={{
-              components: {
-                DatePicker: {
-                  colorPrimary: "#78b853",
-                  colorLink: "#78b853",
-                  activeBorderColor: "#78b853",
-                  hoverBorderColor: "#62b580",
-                  borderRadius: 4,
-                  cellHoverBg: "rgba(120, 184, 83, 0.1)",
-                },
+        ) : (
+          ""
+        )}
+        <span style={{ fontSize: "14px", marginLeft: "10px" }}>
+          Fundraising history:
+        </span>
+        <ConfigProvider
+          theme={{
+            components: {
+              DatePicker: {
+                colorPrimary: "#78b853",
+                colorLink: "#78b853",
+                activeBorderColor: "#78b853",
+                hoverBorderColor: "#62b580",
+                borderRadius: 4,
+                cellHoverBg: "rgba(120, 184, 83, 0.1)",
               },
+            },
+          }}
+        >
+          <DatePicker
+            style={{ width: "140px", height: "30px" }}
+            variant="borderless"
+            onChange={(date, dateString) => {
+              setStartDate(dateString);
             }}
-          >
-            <DatePicker
-              style={{ width: "140px", height: "30px" }}
-              variant="borderless"
-              onChange={(date, dateString) => {
-                setStartDate(dateString);
-              }}
-              value={startDate ? dayjs(startDate) : null}
-            />
-            -
-            <DatePicker
-              style={{ width: "140px", height: "30px" }}
-              variant="borderless"
-              onChange={(date, dateString) => {
-                setEndDate(dateString);
-              }}
-              value={endDate ? dayjs(endDate) : null}
-            />
-          </ConfigProvider>
-
-          <Select
-            value={selectv}
-            allowClear
-            showSearch={{ optionFilterProp: "label", onSearch }}
-            placeholder="Select a category"
-            onChange={(value) => {
-              // const uniqueCategoryNamess = [
-              //   ...new Set(data.map((item) => item.category)),
-              // ];
-              setselectv(value);
-              apiGetAllActivities({ user_id: userId })
-                .then((res) => {
-                  console.log(res);
-
-                  if (value !== null) {
-                    const selectOptions = res.activities.find((item) => {
-                      return item.category_name == value;
-                    });
-                    console.log(selectOptions);
-
-                    setcatid(selectOptions.category_id);
-                  }
-                })
-                .catch((err) => {
-                  console.log(err);
-                  // message.error(err.response?.data?.error);
-                });
-            }}
-            options={allcat}
+            value={startDate ? dayjs(startDate) : null}
           />
-          <img
-            src={restart}
-            alt=""
-            className="restart"
-            style={{ width: "20px" }}
-            onClick={() => {
-              setStartDate(null);
-
-              setselectv(undefined);
-              setinpWarningVisi(false);
-              refresh();
+          -
+          <DatePicker
+            style={{ width: "140px", height: "30px" }}
+            variant="borderless"
+            onChange={(date, dateString) => {
+              setEndDate(dateString);
             }}
+            value={endDate ? dayjs(endDate) : null}
           />
-          <button onClick={searchPro}>Search</button>
+        </ConfigProvider>
 
-          <button
-            className="creaPro"
-            onClick={() => {
-              setcreaVisi(!creaVisi);
-              setbuttype("create");
-              form.resetFields();
-              if (viewActivity.viewstatus) {
-                setViewActivity({ actId: null, viewstatus: false });
-              }
-            }}
+        <Select
+          value={selectv}
+          allowClear
+          showSearch={{ optionFilterProp: "label", onSearch }}
+          placeholder="Select a category"
+          onChange={(value) => {
+            // const uniqueCategoryNamess = [
+            //   ...new Set(data.map((item) => item.category)),
+            // ];
+            setselectv(value);
+            apiGetAllActivities({ user_id: userId })
+              .then((res) => {
+                console.log(res);
+
+                if (value !== null) {
+                  const selectOptions = res.activities.find((item) => {
+                    return item.category_name == value;
+                  });
+                  console.log(selectOptions);
+
+                  setcatid(selectOptions.category_id);
+                }
+              })
+              .catch((err) => {
+                console.log(err);
+                // message.error(err.response?.data?.error);
+              });
+          }}
+          options={allcat}
+        />
+        <img
+          src={restart}
+          alt=""
+          className="restart"
+          style={{ width: "20px" }}
+          onClick={() => {
+            setStartDate(null);
+
+            setselectv(undefined);
+            setinpWarningVisi(false);
+            refresh();
+          }}
+        />
+        <button onClick={searchPro}>Search</button>
+
+        <button
+          className="creaPro"
+          onClick={() => {
+            setcreaVisi(!creaVisi);
+            setbuttype("create");
+            form.resetFields();
+            if (viewActivity.viewstatus) {
+              setViewActivity({ actId: null, viewstatus: false });
+            }
+          }}
+        >
+          + Create New Activity
+        </button>
+      </li>
+    </div>
+
+    <div className="profileContent">
+      <div className={`createPro ${creaVisi ? "show" : ""}`}>
+        <i onClick={() => setcreaVisi(false)}>X</i>
+        <div className="createCard">
+          <li>
+            {buttype === "create"
+              ? "Create Activities"
+              : buttype === "edit"
+                ? "Edit Activities"
+                : ""}
+          </li>
+          <Form
+            name="basic"
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 18 }}
+            style={{ maxWidth: 600 }}
+            initialValues={{ remember: true }}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            autoComplete="off"
+            form={form}
           >
-            + Create New Activity
-          </button>
-        </li>
-      </div>
-
-      <div className="profileContent">
-        <div className={`createPro ${creaVisi ? "show" : ""}`}>
-          <i onClick={() => setcreaVisi(false)}>X</i>
-          <div className="createCard">
-            <li>
-              {buttype === "create"
-                ? "Create Activities"
-                : buttype === "edit"
-                  ? "Edit Activities"
-                  : ""}
-            </li>
-            <Form
-              name="basic"
-              labelCol={{ span: 8 }}
-              wrapperCol={{ span: 18 }}
-              style={{ maxWidth: 600 }}
-              initialValues={{ remember: true }}
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              autoComplete="off"
-              form={form}
+            <Form.Item
+              label="Activities Title"
+              name="title"
+              rules={[
+                { required: true, message: "Please input Activities title!" },
+              ]}
             >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Target Amount"
+              name="target_amount"
+              rules={[
+                { required: true, message: "Please input target amount!" },
+                {
+                  transform: (value) => Number(value),
+                  type: "number",
+                  message: "Please input a valid number!",
+                },
+              ]}
+              style={{ position: "relative" }}
+            >
+              <Input />
+            </Form.Item>
+            {buttype === "edit" ? (
               <Form.Item
-                label="Activities Title"
-                name="title"
+                label="Amount Raised"
+                name="amount_raised"
                 rules={[
-                  { required: true, message: "Please input Activities title!" },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label="Target Amount"
-                name="target_amount"
-                rules={[
-                  { required: true, message: "Please input target amount!" },
+                  { required: true, message: "Please input raised amount!" },
                   {
                     transform: (value) => Number(value),
                     type: "number",
@@ -610,189 +613,173 @@ function ActivityStatus() {
               >
                 <Input />
               </Form.Item>
-              {buttype === "edit" ? (
-                <Form.Item
-                  label="Amount Raised"
-                  name="amount_raised"
-                  rules={[
-                    { required: true, message: "Please input raised amount!" },
-                    {
-                      transform: (value) => Number(value),
-                      type: "number",
-                      message: "Please input a valid number!",
-                    },
-                  ]}
-                  style={{ position: "relative" }}
-                >
-                  <Input />
-                </Form.Item>
-              ) : null}
+            ) : null}
 
-              <Form.Item label="Category" name="category_id">
-                <Select
-                  rules={[{ required: true, message: "Please input!" }]}
-                  options={allcategories.map((element, index) => ({
-                    value: element.category,
-                    label: element.category,
-                    key: element.catId,
-                  }))}
-                />
-              </Form.Item>
+            <Form.Item label="Category" name="category_id">
+              <Select
+                rules={[{ required: true, message: "Please input!" }]}
+                options={allcategories.map((element, index) => ({
+                  value: element.category,
+                  label: element.category,
+                  key: element.catId,
+                }))}
+              />
+            </Form.Item>
 
-              <Form.Item label="Start Date" name="start_date">
-                <DatePicker />
-              </Form.Item>
-              <Form.Item label="End Date" name="end_date">
-                <DatePicker />
-              </Form.Item>
-              <Form.Item
-                label="Description"
-                name="description"
-                rules={[
-                  { required: true, message: "Please input description!" },
-                ]}
-              >
-                <TextArea rows={3} />
-              </Form.Item>
+            <Form.Item label="Start Date" name="start_date">
+              <DatePicker />
+            </Form.Item>
+            <Form.Item label="End Date" name="end_date">
+              <DatePicker />
+            </Form.Item>
+            <Form.Item
+              label="Description"
+              name="description"
+              rules={[
+                { required: true, message: "Please input description!" },
+              ]}
+            >
+              <TextArea rows={3} />
+            </Form.Item>
 
-              <Form.Item label={null}>
-                <Button type="primary" htmlType="submit">
-                  {buttype === "create" ? "Create" : "Save"}
-                </Button>
-              </Form.Item>
-            </Form>
-          </div>
+            <Form.Item label={null}>
+              <Button type="primary" htmlType="submit">
+                {buttype === "create" ? "Create" : "Save"}
+              </Button>
+            </Form.Item>
+          </Form>
         </div>
+      </div>
 
-        {activityData
-          .slice()
-          .sort((a, b) => {
-            if (a.activity_id === viewActivity.actId) return -1;
-            if (b.activity_id === viewActivity.actId) return 1;
-            return 0;
-          })
-          .map((item) => {
-            return (
-              <div
-                key={item.activity_id}
-                className={
-                  item.activity_id === viewActivity.actId ? "cardView" : "card"
-                }
-              >
+      {activityData
+        .slice()
+        .sort((a, b) => {
+          if (a.activity_id === viewActivity.actId) return -1;
+          if (b.activity_id === viewActivity.actId) return 1;
+          return 0;
+        })
+        .map((item) => {
+          return (
+            <div
+              key={item.activity_id}
+              className={
+                item.activity_id === viewActivity.actId ? "cardView" : "card"
+              }
+            >
+              {item.activity_id === viewActivity.actId ? (
+                <i
+                  onClick={() =>
+                    setViewActivity({ actId: null, viewstatus: false })
+                  }
+                  className="closeView"
+                >
+                  X
+                </i>
+              ) : (
+                ""
+              )}
+              <li className="first">
+                <span className="name">{item.title}</span>
+
+                <div className={getStatusClass(item)}>
+                  {item.status === "active" ? "Active" : "Suspended"}
+                </div>
                 {item.activity_id === viewActivity.actId ? (
-                  <i
-                    onClick={() =>
-                      setViewActivity({ actId: null, viewstatus: false })
-                    }
-                    className="closeView"
-                  >
-                    X
-                  </i>
-                ) : (
-                  ""
-                )}
-                <li className="first">
-                  <span className="name">{item.title}</span>
-
-                  <div className={getStatusClass(item)}>
-                    {item.status === "active" ? "Active" : "Suspended"}
-                  </div>
-                  {item.activity_id === viewActivity.actId ? (
-                    <p>
-                      <Tag
-                        classNames={classNames}
-                        styles={styles}
-                        icon={
-                          item.status === "active" ? (
-                            <CheckCircleOutlined />
-                          ) : (
-                            <CloseCircleOutlined />
-                          )
-                        }
-                      >
-                        {item.category}
-                      </Tag>
-                    </p>
-                  ) : null}
-                  <span
-                    style={{
-                      position: "absolute",
-                      right: "70px",
-                      display: "flex",
-                      flexDirection: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <img src={iconheart} alt="" style={{ width: "20px" }} />
-                    {item.shortlist_count}
-                  </span>
-                  <span
-                    style={{
-                      position: "absolute",
-                      right: "20px",
-                      display: "flex",
-                      flexDirection: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <img src={eye} alt="" style={{ width: "20px" }} />
-                    {item.view_count}
-                  </span>
-                </li>
-                {item.activity_id === viewActivity.actId ? (
-                  <li className="date">
-                    <p>
-                      <span>Start date: {item.start_date}</span>
-                      <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
-                        End date: {item.end_date}
-                      </span>
-                    </p>
-
-                    <p
-                      style={{
-                        width: "100%",
-                        height: "20px",
-                        display: "flex",
-                        flexDirection: "row",
-                        // padding: "0 2px",
-                        justifyContent: "space-between",
-                      }}
+                  <p>
+                    <Tag
+                      classNames={classNames}
+                      styles={styles}
+                      icon={
+                        item.status === "active" ? (
+                          <CheckCircleOutlined />
+                        ) : (
+                          <CloseCircleOutlined />
+                        )
+                      }
                     >
-                      {" "}
-                      <span style={{ color: "#6bacea" }}>
-                        Target: ${item.target_amount}
-                      </span>
-                      <span style={{ color: "#b3bc4b" }}>
-                        Raised: ${item.amount_raised}
-                      </span>
-                    </p>
-                    <Flex vertical gap="large">
-                      {/* <span>{item.targetAmount}</span> */}
-                      <Progress
-                        classNames={progressClass}
-                        styles={stylesFn}
-                        percent={percentage(item)}
-                      />
-                    </Flex>
-                    {/* <hr /> */}
-                  </li>
+                      {item.category}
+                    </Tag>
+                  </p>
                 ) : null}
-
-                <span style={{ marginBottom: "45px" }}>{item.description}</span>
-
-                <li
-                  className="butStyle"
+                <span
                   style={{
                     position: "absolute",
-                    bottom: "13px",
-                    zIndex: 10,
-                    left: "19px",
+                    right: "70px",
+                    display: "flex",
+                    flexDirection: "center",
+                    gap: 10,
                   }}
                 >
-                  <button onClick={() => editPro(item)}>Edit</button>
-                  <button onClick={() => showModal(item)}>Delete</button>
+                  <img src={iconheart} alt="" style={{ width: "20px" }} />
+                  {item.shortlist_count}
+                </span>
+                <span
+                  style={{
+                    position: "absolute",
+                    right: "20px",
+                    display: "flex",
+                    flexDirection: "center",
+                    gap: 10,
+                  }}
+                >
+                  <img src={eye} alt="" style={{ width: "20px" }} />
+                  {item.view_count}
+                </span>
+              </li>
+              {item.activity_id === viewActivity.actId ? (
+                <li className="date">
+                  <p>
+                    <span>Start date: {item.start_date}</span>
+                    <span style={{ marginLeft: "30px", color: "#eb2f2f" }}>
+                      End date: {item.end_date}
+                    </span>
+                  </p>
 
-                  {/* {item.status === "active" ? (
+                  <p
+                    style={{
+                      width: "100%",
+                      height: "20px",
+                      display: "flex",
+                      flexDirection: "row",
+                      // padding: "0 2px",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    {" "}
+                    <span style={{ color: "#6bacea" }}>
+                      Target: ${item.target_amount}
+                    </span>
+                    <span style={{ color: "#b3bc4b" }}>
+                      Raised: ${item.amount_raised}
+                    </span>
+                  </p>
+                  <Flex vertical gap="large">
+                    {/* <span>{item.targetAmount}</span> */}
+                    <Progress
+                      classNames={progressClass}
+                      styles={stylesFn}
+                      percent={percentage(item)}
+                    />
+                  </Flex>
+                  {/* <hr /> */}
+                </li>
+              ) : null}
+
+              <span style={{ marginBottom: "45px" }}>{item.description}</span>
+
+              <li
+                className="butStyle"
+                style={{
+                  position: "absolute",
+                  bottom: "13px",
+                  zIndex: 10,
+                  left: "19px",
+                }}
+              >
+                <button onClick={() => editPro(item)}>Edit</button>
+                <button onClick={() => showModal(item)}>Delete</button>
+
+                {/* {item.status === "active" ? (
                     <button onClick={() => showModal(item)}>Suspend</button>
                   ) : (
                     <button
@@ -802,39 +789,39 @@ function ActivityStatus() {
                       Activity
                     </button>
                   )} */}
-                  {viewActivity.actId == item.activity_id ? null : (
-                    <button
-                      onClick={() => {
-                        viewAct(item);
-                        if (creaVisi) {
-                          setcreaVisi(!creaVisi);
-                        }
-                      }}
-                    >
-                      View
-                    </button>
-                  )}
-
-                  <Modal
-                    title="Suspension Confirmation"
-                    open={isModalOpen}
-                    onOk={handleOk}
-                    onCancel={handleCancel}
-                    okText="Delete"
-                    okType="danger"
-                    className="modall"
+                {viewActivity.actId == item.activity_id ? null : (
+                  <button
+                    onClick={() => {
+                      viewAct(item);
+                      if (creaVisi) {
+                        setcreaVisi(!creaVisi);
+                      }
+                    }}
                   >
-                    <p>
-                      Are you sure you want to delete the Activities
-                      <b> {selectedActivities?.title}?</b>
-                    </p>
-                  </Modal>
-                </li>
-              </div>
-            );
-          })}
-      </div>
+                    View
+                  </button>
+                )}
+
+                <Modal
+                  title="Suspension Confirmation"
+                  open={isModalOpen}
+                  onOk={handleOk}
+                  onCancel={handleCancel}
+                  okText="Delete"
+                  okType="danger"
+                  className="modall"
+                >
+                  <p>
+                    Are you sure you want to delete the Activities
+                    <b> {selectedActivities?.title}?</b>
+                  </p>
+                </Modal>
+              </li>
+            </div>
+          );
+        })}
     </div>
-  );
+  </div>
+);
 }
 export default ActivityStatus;
